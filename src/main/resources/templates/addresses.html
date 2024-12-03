@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNEAKER HEAD - Addresses</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+<!--        /* Custom CSS */-->
+<!--        .nav-link.active {-->
+<!--            -->
+<!--        }-->
+
+        .sale-link {
+            color: red !important;
+        }
+
+        .account-sidebar .nav-link {
+            color: black;
+            padding: 0.5rem 0;
+        }
+
+        .account-sidebar .nav-link.active {
+            background-color: white;
+            color:black;
+            font-weight: bold;
+
+        }
+
+        .address-card {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            width:20rem;
+        }
+        .address-default-card {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            width:40rem;
+        }
+
+        .address-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            background-color: #f8f9fa;
+            font-size: 0.875rem;
+            float: right;
+        }
+
+        .address-actions {
+            border-top: 1px solid #dee2e6;
+            margin-top: 1rem;
+            padding-top: 1rem;
+        }
+
+        .address-actions a {
+            text-decoration: none;
+            color: #0d6efd;
+            padding: 0 1rem;
+        }
+
+        .address-actions a:first-child {
+            padding-left: 0;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-container .bi-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        /* Footer Styles */
+         .footer {
+             background: #000;
+             color: white;
+             padding: 4rem 0;
+             margin-top: 4rem;
+         }
+         .footer h5 {
+             font-size: 0.9rem;
+             margin-bottom: 1rem;
+         }
+         .footer ul {
+             list-style: none;
+             padding: 0;
+         }
+         .footer ul li {
+             margin-bottom: 0.5rem;
+         }
+         .footer a {
+             color: white;
+             text-decoration: none;
+             font-size: 0.9rem;
+         }
+
+        @media (max-width: 768px) {
+            .account-sidebar {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3  d-block z-3 position-fixed w-100 " style="top:0;">
+    <div class="container-fluid position-relative ">
+        <a class="nav-link d-lg-block  d-none" href="#">+ Contact Us</a>
+        <a class="navbar-brand position-absolute start-50 top-50 translate-middle" href="#" id="title">SNEAKER HEAD</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group input-group-sm d-none d-xl-flex">
+                <input type="search" class="form-control" placeholder="Search">
+                <span class="input-group-text" id="basic-addon1">
+                        <i class="bi bi-search"></i>
+                    </span>
+            </div>
+            <a href="#" class="text-dark position-relative d-none d-lg-flex">
+                <i class="bi bi-heart fs-4"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                        5 <!-- Replace this with dynamic count -->
+                    </span>
+            </a>
+            <a href="/user/cart" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>
+            <i class="bi bi-person fs-4" id="userIcon" data-bs-toggle="dropdown" aria-expanded="false"></i>
+            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;">
+                <li style="padding-left:0.8rem;"><a href="/user/overview"><span style="font-size:15px;">Hello,</span><h6 style="font-weight:600;">Aflah Zameen</h6></a></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/orders'">Orders</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/editprofile'">Edit profile</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/addresses'">Saved addresses</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/logout'">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+    <div class="collapse navbar-collapse  " id="navbarNav">
+        <ul class="navbar-nav mx-auto gap-lg-5">
+            <li class="nav-item">
+                <a class="nav-link" href="#">New Arrivals</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Trending</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/men">Men</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/women">Women</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Brands</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sale" href="#">Sale</a>
+            </li><li class="nav-item">
+            <li class="nav-item">
+                <a href="#" class="text-dark d-lg-none"><i class="bi bi-person fs-4"></i></a>
+            </li>
+            <li>
+                <a href="#" class="text-dark position-relative d-lg-none mt-2">
+                    <i class="bi bi-heart fs-4"></i>
+                    <span class="position-absolute top-0  translate-middle badge rounded-pill bg-dark">
+                                5 <!-- Replace this with dynamic count -->
+                            </span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="text-dark  d-sm-none"><i class="bi bi-bag fs-4"></i></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container " style="margin-top:7rem;">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <h3 class="mb-4">Account</h3>
+            <p class="mb-4" th:if="${user.full_name}" th:text="'Hello ,'+ ${user.full_name}"></p>
+            <div class="account-sidebar">
+                <div class="nav flex-column nav-pills">
+                    <a class="nav-link" href="/user/overview">Overview</a>
+                    <a class="nav-link" href="#">Wallet</a>
+                    <a class="nav-link" href="/user/orders">Orders & Returns</a>
+                    <a class="nav-link active" href="/user/addresses">Addresses</a>
+                    <a class="nav-link" href="/user/editprofile">Profile</a>
+                    <a class="nav-link" href="/user/editprofile">Edit Profile</a>
+                    <a class="nav-link" href="#">Delete Account</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Saved addresses</h4>
+                <button class="btn btn-primary" onclick='window.location.href="/user/addresses/add"'>+ Add new address</button>
+            </div>
+
+            <h5 class="mb-3 " >Default address</h5>
+            <div class="address-default-card" th:if="${defaultAddress.id != null}">
+                <span class="address-type" th:text="${defaultAddress.type}"></span>
+                <h6 th:text="${defaultAddress.name}"></h6>
+                <p class="mb-1" th:text="${defaultAddress.building}+', '+${defaultAddress.landmark}">Paruthikuth house, near Ration shop</p>
+                <p class="mb-1" th:text="${defaultAddress.street}">Mandamkundu,Nenmini</p>
+                <p class="mb-1"th:text="${defaultAddress.city}+' - '+${defaultAddress.zipCode}">Perinthalmanna - 679325</p>
+                <p class="mb-1" th:text="${defaultAddress.state}">Kerala</p>
+                <p class="mb-3" th:text="'Mobile: '+${defaultAddress.phone}">Mobile: 9846015843</p>
+                <div class="address-actions">
+                    <a href="/user/addresses/edit">Edit</a>
+                    <a th:href="@{/user/addresses/remove/{id}(id=${defaultAddress.id})}" class="text-danger">Remove</a>
+                </div>
+            </div>
+            <div th:unless="${defaultAddress.id != null}">(empty)</div>
+
+            <h5 class="mb-3" >Other addresses</h5>
+            <div class="row " th:if="${allAddress}">
+                <div class="address-card col-md-4 mx-1 " th:each="address : ${allAddress}" th:if="${address.defaultAddressStatus == false}">
+                    <span class="address-type" th:text="${address.type}"></span>
+                    <h6 th:text="${address.name}"></h6>
+                    <p class="mb-1" th:text="${address.building}+', '+${address.landmark}"></p>
+                    <p class="mb-1" th:text="${address.street}"></p>
+                    <p class="mb-1"th:text="${address.city}+' - '+${address.zipCode}"></p>
+                    <p class="mb-1" th:text="${address.state}"></p>
+                    <p class="mb-3" th:text="'Mobile: '+${address.phone}"></p>
+                    <div class="address-actions">
+                        <a href="/user/addresses/edit">Edit</a>
+                        <a href="/user/addresses/remove" class="text-danger">Remove</a>
+                        <a th:href="@{/user/addresses/default/{id}(id=${address.id})}">Set default</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">INFO</h5>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Brands</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">POLICIES</h5>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Return & Exchange</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Order & Shipping</a></li>
+                    <li><a href="#">Term of Service</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">OUR SOCIALS</h5>
+                <div class="d-flex gap-3">
+                    <a href="#"><i class="bi bi-instagram fs-5"></i></a>
+                    <a href="#"><i class="bi bi-facebook fs-5"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">SUBSCRIBE TO OUR NEWSLETTER</h5>
+                <form class="d-flex gap-2">
+                    <input type="email" class="form-control" placeholder="Email Address">
+                    <button type="submit" class="btn btn-light">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <p>&copy; 2024, SNEAKER HEAD</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

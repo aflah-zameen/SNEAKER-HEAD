@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in - SNEAKER HEAD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .container-fluid {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .sign-in-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .sign-in-form {
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .sign-in-title {
+            font-size: 1.75rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            color: #000;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.5rem;
+            border: 1px solid #e5e5e5;
+            font-size: 0.875rem;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #000;
+        }
+
+        .btn-sign-in, .btn-create-account {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 0.875rem;
+        }
+
+        .forgot-password {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.75rem;
+            display: block;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .terms-text {
+            font-size: 0.75rem;
+            color: #000;
+            margin-top: 0.5rem;
+            text-align: left;
+        }
+
+        .terms-text a {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 0.5rem 0;
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .divider span {
+            padding: 0 0.5rem;
+        }
+
+        .btn-social {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-social i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-google {
+            background-color: #fff;
+            color: #757575;
+            border: 1px solid #ddd;
+        }
+
+        .btn-facebook {
+            background-color: #1877f2;
+            color: #fff;
+            border: none;
+        }
+
+        .footer {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="text-center mt-3 mb-2">
+            <a href="#" class="logo">SNEAKER HEAD</a>
+        </header>
+
+        <div class="sign-in-container">
+            <div class="sign-in-form">
+                <h1 class="sign-in-title text-center">Sign in</h1>
+                
+                <button class="btn-social btn-google mb-2" onclick="window.location.href='/oauth2/authorization/google'">
+                    <i class="fab fa-google"></i> Sign in with Google
+                </button>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <form id="signInForm" class="mb-2">
+                    <div class="mb-2">
+                        <label for="emailPhone" class="form-label">Email or phone number</label>
+                        <input type="text" class="form-control" id="emailPhone" name="username" required>
+                        <small id="emailPhoneError" class="text-danger" style="display: none;">This field cannot be empty or only spaces.</small>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <small id="passwordError" class="text-danger" style="display: none;">Password must be at least 8 characters long and not only spaces.</small>
+                    </div>
+                    <small id="credentialError" class="text-danger" style="display: none;">Invalid Email or Password</small>
+                    <button type="button" class="btn-sign-in" onclick="submitForm()">Sign in</button>
+
+                    <a href="/forgetpassword" class="forgot-password">Forget password?</a>
+
+                    <p class="terms-text">
+                        By continuing, you agree to Sneaker Head's
+                        <a href="#">Conditions of Use</a> and
+                        <a href="#">Privacy Notice</a>.
+                    </p>
+
+                    <div id="responseMessage" class="mt-3"></div> <!-- Response will be displayed here -->
+                </form>
+
+
+                <div class="divider">
+                    <span>New to Sneaker Head ?</span>
+                </div>
+
+                <button class="btn-create-account" onclick="window.location.href='/signup'">
+                    Create your new account
+                </button>
+            </div>
+        </div>
+
+        <footer class="footer">
+            © 2023 Sneaker Head. All rights reserved.
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function submitForm() {
+    // Get the input fields
+    const emailPhone = document.getElementById('emailPhone');
+    const passwordInput = document.getElementById('password'); // Changed variable name to avoid conflict
+    // Get the error elements
+    const emailPhoneError = document.getElementById('emailPhoneError');
+    const passwordError = document.getElementById('passwordError');
+    const responseMessage = document.getElementById('responseMessage');
+    const credentialError = document.getElementById('credentialError')
+    credentialError.style.display = 'none';
+    // Reset error messages
+    emailPhoneError.style.display = 'none';
+    passwordError.style.display = 'none';
+    responseMessage.innerHTML = ''; // Clear any previous response
+
+    // Validation flags
+    let isValid = true;
+
+    // Validate email or phone (non-empty and not only spaces)
+    if (!emailPhone.value.trim()) {
+        emailPhoneError.style.display = 'block';
+        isValid = false;
+    }
+
+    // Validate password (at least 8 characters and not only spaces)
+    if (passwordInput.value.trim().length < 8) {
+        passwordError.style.display = 'block';
+        isValid = false;
+    }
+
+    // If validation fails, stop further execution
+    if (!isValid) {
+        return;
+    }
+
+    // Prepare data for POST request
+    const formData = {
+        username: emailPhone.value.trim(),
+        password: passwordInput.value.trim(), // Updated to use passwordInput
+    };
+    console.log(formData);
+    try {
+        // Send POST request
+        const response = await fetch('/logindata', {
+            method: 'POST',
+            headers: {
+        'Content-Type': 'application/x-www-form-urlencoded', // Use form-urlencoded for Spring Security
+            },
+    body: new URLSearchParams(formData).toString(), // Format as form-urlencoded
+        });
+
+        // Handle response
+        if (response.ok) {
+            credentialError.style.display = 'none';
+            window.location.href="/";
+        } else {
+                        credentialError.style.display = 'block';
+        }
+    } catch (error) {
+        responseMessage.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+    }
+}
+
+
+
+    </script>
+<!--    <script>-->
+<!--        document.getElementById('signInForm').addEventListener('submit', function(e) {-->
+<!--            e.preventDefault();-->
+
+<!--            const emailPhone = document.getElementById('emailPhone').value;-->
+<!--            const password = document.getElementById('password').value;-->
+
+<!--            // Add your sign-in logic here-->
+<!--            console.log('Sign in attempt with:', emailPhone);-->
+<!--        });-->
+
+<!--        function signInWithGoogle() {-->
+<!--            // Implement Google Sign-In logic here-->
+<!--            console.log('Signing in with Google');-->
+<!--            // In a real implementation, you would use the Google Sign-In API-->
+<!--            // and redirect to Google's authentication page-->
+<!--        }-->
+
+<!--        function signInWithFacebook() {-->
+<!--            // Implement Facebook Sign-In logic here-->
+<!--            console.log('Signing in with Facebook');-->
+<!--            // In a real implementation, you would use the Facebook Login API-->
+<!--            // and redirect to Facebook's authentication page-->
+<!--        }-->
+<!--    </script>-->
+</body>
+</html>

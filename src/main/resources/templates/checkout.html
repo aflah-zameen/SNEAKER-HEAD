@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNEAKER HEAD - Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        /* Custom CSS */
+        .nav-link.active {
+            border-bottom: 2px solid black;
+        }
+
+        .sale-link {
+            color: red !important;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-container .bi-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .payment-method {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+        }
+
+        .payment-method .form-check {
+            margin-bottom: 1rem;
+        }
+
+        .payment-icons {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: 1.5rem;
+        }
+
+        .payment-icons img {
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .order-summary {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .promo-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .total-row {
+            border-top: 1px solid #dee2e6;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+
+        .footer {
+            background-color: black;
+            color: white;
+            padding: 3rem 0;
+            margin-top: 5rem;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer li {
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .order-summary {
+                margin-top: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3  d-block z-3 position-fixed w-100 " style="top:0;">
+    <div class="container-fluid position-relative ">
+        <a class="nav-link d-lg-block  d-none" href="#">+ Contact Us</a>
+        <a class="navbar-brand position-absolute start-50 top-50 translate-middle" href="#" id="title">SNEAKER HEAD</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group input-group-sm d-none d-xl-flex">
+                <input type="search" class="form-control" placeholder="Search">
+                <span class="input-group-text" id="basic-addon1">
+                        <i class="bi bi-search"></i>
+                    </span>
+            </div>
+            <a href="#" class="text-dark position-relative d-none d-lg-flex">
+                <i class="bi bi-heart fs-4"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                        5 <!-- Replace this with dynamic count -->
+                    </span>
+            </a>
+            <a href="/user/cart" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>
+            <i class="bi bi-person fs-4" id="userIcon" data-bs-toggle="dropdown" aria-expanded="false"></i>
+            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;">
+                <li style="padding-left:0.8rem;"><a href="/user/overview"><span style="font-size:15px;">Hello,</span><h6 style="font-weight:600;">Aflah Zameen</h6></a></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/orders'">Orders</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/editprofile'">Edit profile</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/addresses'">Saved addresses</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/logout'">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+    <div class="collapse navbar-collapse  " id="navbarNav">
+        <ul class="navbar-nav mx-auto gap-lg-5">
+            <li class="nav-item">
+                <a class="nav-link" href="#">New Arrivals</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Trending</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/men">Men</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/women">Women</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Brands</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sale" href="#">Sale</a>
+            </li><li class="nav-item">
+            <li class="nav-item">
+                <a href="#" class="text-dark d-lg-none"><i class="bi bi-person fs-4"></i></a>
+            </li>
+            <li>
+                <a href="#" class="text-dark position-relative d-lg-none mt-2">
+                    <i class="bi bi-heart fs-4"></i>
+                    <span class="position-absolute top-0  translate-middle badge rounded-pill bg-dark">
+                                5 <!-- Replace this with dynamic count -->
+                            </span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="text-dark  d-sm-none"><i class="bi bi-bag fs-4"></i></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container "style="margin-top:7rem;">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-dark">Home</a></li>
+            <li class="breadcrumb-item active">Trending</li>
+        </ol>
+    </nav>
+
+
+
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-3">Checkout</h1>
+            <!-- Delivery Address -->
+            <div class="mb-5" th:if="${defaultAddress.id}">
+                <h4 class="mb-4">1.Delivery address</h4>
+                <div class="mb-3" >
+                    <p class="mb-1"><strong th:text="${defaultAddress.name}"></strong></p>
+                    <p class="mb-1" th:text="${defaultAddress.landmark}+' ,'+${defaultAddress.street}"></p>
+                    <p class="mb-1" th:text="${defaultAddress.city}"></p>
+                    <p class="mb-1" th:text="${defaultAddress.building}"></p>
+                    <p class="mb-1" th:text="${defaultAddress.state}"></p>
+                    <p class="mb-1" th:text="${defaultAddress.zipCode}"></p>
+                </div>
+                <div class="d-flex gap-3">
+                    <a href="/user/addresses" class="text-primary text-decoration-none">Change</a>
+<!--                    <a href="#" class="text-primary text-decoration-none">Add Delivery Instructions</a>-->
+                    <button class="btn btn-dark" onclick="window.location.href='/user/addresses'">Add address</button>
+                </div>
+            </div>
+            <div class="mb-5" th:unless="${defaultAddress.id}">
+                <h4 class="mb-4">Please add address</h4>
+                <button class="btn btn-dark" onclick="window.location.href='/user/addresses'">Add address</button>
+                <div class="text-danger d-none" id="select-address" >( Add a address )</div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="mb-5">
+                <h4 class="mb-4">2.Select a payment method</h4>
+                <div class="text-danger d-none" id="select-payment-method" >( select a method )</div>
+                <div class="payment-method">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment" id="credit">
+                        <label class="form-check-label" for="credit">
+                            Credit or debit card
+                        </label>
+                        <div class="payment-icons">
+                            <img src="/placeholder.svg" alt="Visa">
+                            <img src="/placeholder.svg" alt="Mastercard">
+                            <img src="/placeholder.svg" alt="PayPal">
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment" id="netbanking">
+                        <label class="form-check-label" for="netbanking">
+                            Net banking
+                        </label>
+                        <select class="form-select ms-4 mt-2" style="width: auto;">
+                            <option>Choose an option</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment" id="upi">
+                        <label class="form-check-label" for="upi">
+                            Other UPI Apps
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment" id="emi">
+                        <label class="form-check-label" for="emi">
+                            EMI
+                        </label>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="radio" name="payment" id="cod">
+                        <label class="form-check-label" for="cod">
+                            Cash on Delivery/Pay on Delivery
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="order-summary">
+                <h5 class="mb-4">Order Summary</h5>
+                <div class="promo-input mb-4">
+                    <input type="text" class="form-control" placeholder="Promo code">
+                    <button class="btn btn-outline-dark">Apply</button>
+                </div>
+                <div class="summary-row">
+                    <span>Sub Total</span>
+                    <span th:text="'₹'+${subtotalFormatted}"></span>
+                </div>
+                <div class="summary-row">
+                    <span>Estimated delivery charge</span>
+                    <span>Free Delivery</span>
+                </div>
+                <div class="summary-row">
+                    <span>Promotion Applied</span>
+                    <span>--</span>
+                </div>
+                <div class="summary-row total-row">
+                    <span>Total</span>
+                    <span class="text-danger" th:text="'₹'+${subtotalFormatted}"></span>
+                </div>
+                <button class="btn btn-dark w-100 mb-4" th:onclick="submitOrder(this)" th:data-address-id="${defaultAddress.id}">Place Order</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">INFO</h5>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Brands</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">POLICIES</h5>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Return & Exchange</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Order & Shipping</a></li>
+                    <li><a href="#">Term of Service</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">OUR SOCIALS</h5>
+                <div class="d-flex gap-3">
+                    <a href="#"><i class="bi bi-instagram fs-5"></i></a>
+                    <a href="#"><i class="bi bi-facebook fs-5"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">SUBSCRIBE TO OUR NEWSLETTER</h5>
+                <form class="d-flex gap-2">
+                    <input type="email" class="form-control" placeholder="Email Address">
+                    <button type="submit" class="btn btn-light">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <p>&copy; 2024, SNEAKER HEAD</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:inline="javascript">
+
+    let selectedMethod=null;
+    // Function to get the selected payment method
+function getSelectedPaymentMethod() {
+    // Find the selected radio button in the 'payment' group
+    const selectedPayment = document.querySelector('input[name="payment"]:checked');
+
+    // Return the ID or label of the selected option, if one is selected
+    return selectedPayment ? selectedPayment.id : null;
+}
+
+// Example usage
+document.querySelectorAll('input[name="payment"]').forEach(input => {
+    input.addEventListener('change', () => {
+        selectedMethod = getSelectedPaymentMethod();
+        console.log('Selected payment method:', selectedMethod);
+    });
+});
+
+    //submit-order
+
+    function submitOrder(data){
+
+    let addressIdTemp = data.getAttribute("data-address-id");
+    if( addressIdTemp==null || selectedMethod == null )
+    {
+        if(addressIdTemp == null)
+                document.getElementById("select-address").classList.remove("d-none");
+        if(selectedMethod == null )
+                document.getElementById("select-payment-method").classList.remove("d-none");
+
+    }
+    else
+    {
+    console.log(selectedMethod+">>>>>>>>");
+        const bodyData = {
+        paymentMethod:selectedMethod,
+        addressId: addressIdTemp
+        }
+
+        fetch('/user/checkout',{
+           method:'POST',
+           headers:{'Content-type':'application/json'},
+           body:JSON.stringify(bodyData)
+        })
+        .then((response)=>{
+            if(response.ok)
+            {
+                Swal.fire({
+                    icon: "success",
+                    title: "Order placed",
+                    text: "Check the order page or continue shopping.",
+                    showCancelButton: true, // Enables a second button
+                    confirmButtonText: "Order Details", // Text for the primary button
+                    cancelButtonText: "Continue Shopping", // Text for the secondary button
+                    allowOutsideClick: false, // Prevent closing by clicking outside
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Logic for "Order Details" button
+                        window.location.href = "/user/orders"; // Replace with the actual order details page URL
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        // Logic for "Continue Shopping" button
+                        window.location.href = "/"; // Replace with the actual shop page URL
+                    }
+                });
+
+
+            }
+            else if(response.status === 400)
+            {
+                return response.text().then(text => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Bad Request",
+                    text: text, // Display the error message from the backend
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                })
+                .then(()=>{
+                window.location.href="/user/cart";
+                })
+            });
+            }
+            else
+            {
+                Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Failed to add product",
+                            confirmButtonText: "OK", // This sets the button text
+                            allowOutsideClick: false,
+                        });
+            }
+        })
+        .catch((error) => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Failed to connect to the server. Please try again later.",
+                    });
+                });
+    }
+
+    }
+
+</script>
+</body>
+</html>

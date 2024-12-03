@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNEAKER HEAD - Shopping Bag</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+  <link href="/css/style.css" rel="stylesheet">
+  <style>
+    /* Custom CSS */
+    .nav-link.active {
+        border-bottom: 2px solid black;
+    }
+
+    .remove-btn {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+        }
+
+    .sale-link {
+        color: red !important;
+    }
+
+    .search-container {
+        position: relative;
+    }
+
+    .search-container .bi-search {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+    }
+
+    .product-card {
+        display: flex;
+        gap: 2rem;
+        padding: 2rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .product-image {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .quantity-control {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 0.25rem;
+    }
+
+    .quantity-control button {
+        background: none;
+        border: none;
+        padding: 0 0.5rem;
+        font-size: 1.25rem;
+    }
+
+    .quantity-control span {
+        padding: 0 1rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .wishlist-btn {
+        background: none;
+        border: 1px solid #dee2e6;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        margin-left: 0.5rem;
+    }
+
+    .shipping-info {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 1rem;
+    }
+
+    .in-stock {
+        color: green;
+    }
+
+    .out-of-stock {
+        color: red;
+    }
+
+    .summary-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .promo-input {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .footer {
+        background-color: black;
+        color: white;
+        padding: 3rem 0;
+        margin-top: 5rem;
+    }
+
+    .footer a {
+        color: white;
+        text-decoration: none;
+    }
+
+    .footer ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer li {
+        margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .product-card {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .summary-card {
+            margin-top: 2rem;
+        }
+    }
+  </style>
+</head>
+<body>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3  d-block z-3 position-fixed w-100 " style="top:0;">
+  <div class="container-fluid position-relative ">
+    <a class="nav-link d-lg-block  d-none" href="#">+ Contact Us</a>
+    <a class="navbar-brand position-absolute start-50 top-50 translate-middle" href="#" id="title">SNEAKER HEAD</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="d-flex align-items-center gap-3">
+      <div class="input-group input-group-sm d-none d-xl-flex">
+        <input type="search" class="form-control" placeholder="Search">
+        <span class="input-group-text" id="basic-addon1">
+                        <i class="bi bi-search"></i>
+                    </span>
+      </div>
+      <a href="#" class="text-dark position-relative d-none d-lg-flex">
+        <i class="bi bi-heart fs-4"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                        5 <!-- Replace this with dynamic count -->
+                    </span>
+      </a>
+      <a href="#" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>
+      <i class="bi bi-person fs-4" id="userIcon" data-bs-toggle="dropdown" aria-expanded="false"></i>
+      <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;">
+        <li style="padding-left:0.8rem;"><a href="/user/overview"><span style="font-size:15px;">Hello,</span><h6 style="font-weight:600;">Aflah Zameen</h6></a></li>
+        <li><button class="dropdown-item" onclick="window.location.href='/user/orders'">Orders</button></li>
+        <li><button class="dropdown-item" onclick="window.location.href='/user/editprofile'">Edit profile</button></li>
+        <li><button class="dropdown-item" onclick="window.location.href='/user/addresses'">Saved addresses</button></li>
+        <li><button class="dropdown-item" onclick="window.location.href='/logout'">Logout</button></li>
+      </ul>
+    </div>
+  </div>
+  <div class="collapse navbar-collapse  " id="navbarNav">
+    <ul class="navbar-nav mx-auto gap-lg-5">
+      <li class="nav-item">
+        <a class="nav-link" href="#">New Arrivals</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Trending</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/user/men">Men</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/user/women">Women</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Brands</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link sale" href="#">Sale</a>
+      </li><li class="nav-item">
+      <li class="nav-item">
+        <a href="#" class="text-dark d-lg-none"><i class="bi bi-person fs-4"></i></a>
+      </li>
+      <li>
+        <a href="#" class="text-dark position-relative d-lg-none mt-2">
+          <i class="bi bi-heart fs-4"></i>
+          <span class="position-absolute top-0  translate-middle badge rounded-pill bg-dark">
+                                5 <!-- Replace this with dynamic count -->
+                            </span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="text-dark  d-sm-none"><i class="bi bi-bag fs-4"></i></a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container " style="margin-top:7rem; height:100vh;">
+  <div class="row" th:if="${carts}">
+    <!-- Products List -->
+    <div class="col-lg-8">
+      <h2 class="mb-4">Bags</h2>
+
+      <!-- Product 1 -->
+      <div class="product-card" th:each="cart : ${carts}">
+          <button class="remove-btn" th:data-cart-id="${cart.id}">×</button>
+        <img th:src="${cart.productVariant.images.get(0)}" alt="Nike P-6000" class="product-image">
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h5 class="mb-1" th:text="${cart.productVariant.product.name}"></h5>
+              <p class="mb-1"th:text="${cart.productVariant.product.category.name}+' Shoes'"></p>
+              <p class="mb-1"th:text="${cart.productVariant.color}"></p>
+              <p class="mb-3"th:text="'Size :'+${cart.size}"></p>
+              <p class="mb-1" th:text="'Quantity : ' + ${cart.quantity}"></p>
+<!--              <div class="d-flex align-items-center">-->
+<!--                <div class="quantity-control">-->
+<!--                  <button class="text-muted">-</button>-->
+<!--                  <span>1</span>-->
+<!--                  <button>+</button>-->
+<!--                </div>-->
+<!--                <button class="wishlist-btn">-->
+<!--                  <i class="bi bi-heart"></i>-->
+<!--                </button>-->
+<!--              </div>-->
+            </div>
+            <div class="text-end">
+              <h5 class="text-success cart-price" th:text="'total: ₹ '+${cart.getFormattedPrice()}" th:data-cart-price="${cart.totalAmount}"></h5>
+            </div>
+          </div>
+          <div class="shipping-info">
+            <p class="mb-1">Shipping</p>
+            <p class="mb-1">Arrives by Mon, Nov 4</p>
+            <p class="mb-0" th:text="${cart.productVariant.quantity >= cart.quantity ? 'In stock' : 'Out of stock'}"
+               th:classappend="${cart.productVariant.quantity >= cart.quantity ? 'in-stock' : 'text-danger'}" id="stock-element">
+            </p>
+
+            <p class="mb-0">Free Delivery</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Summary -->
+    <div class="col-lg-4">
+      <div class="summary-card">
+        <h3 class="mb-4">Summary</h3>
+        <div class="promo-input">
+          <input type="text" class="form-control" placeholder="Promo code">
+          <button class="btn btn-outline-dark">Apply</button>
+        </div>
+        <div class="summary-row">
+          <span>Sub Total</span>
+          <span th:text="'₹'+${subtotalFormatted}" th:data-subtotal="${subtotal}" id="subtotal-element"></span>
+        </div>
+        <div class="summary-row">
+          <span>Estimated delivery charge</span>
+          <span>Free Delivery</span>
+        </div>
+        <div class="summary-row mb-4">
+          <strong>Total</strong>
+          <strong style="color:red;" th:text="'₹'+${subtotalFormatted}" id="total-amount-element"></strong>
+        </div>
+        <button class="btn btn-dark w-100" onclick="submitCheckout(this)" >Checkout</button>
+      </div>
+    </div>
+  </div>
+  <div th:unless="${carts}">
+    <h2 class="mb-4">Bags</h2>
+    <h1 style="position:relative; left:30%; margin-top:15rem;">NO PRODUCTS IN THE CART</h1>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3 mb-4">
+        <h5 class="mb-3">INFO</h5>
+        <ul>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Brands</a></li>
+        </ul>
+      </div>
+      <div class="col-md-3 mb-4">
+        <h5 class="mb-3">POLICIES</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Return & Exchange</a></li>
+          <li><a href="#">Terms & Conditions</a></li>
+          <li><a href="#">Order & Shipping</a></li>
+          <li><a href="#">Term of Service</a></li>
+        </ul>
+      </div>
+      <div class="col-md-3 mb-4">
+        <h5 class="mb-3">OUR SOCIALS</h5>
+        <div class="d-flex gap-3">
+          <a href="#"><i class="bi bi-instagram fs-5"></i></a>
+          <a href="#"><i class="bi bi-facebook fs-5"></i></a>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <h5 class="mb-3">SUBSCRIBE TO OUR NEWSLETTER</h5>
+        <form class="d-flex gap-2">
+          <input type="email" class="form-control" placeholder="Email Address">
+          <button type="submit" class="btn btn-light">Subscribe</button>
+        </form>
+      </div>
+    </div>
+    <div class="text-center mt-4">
+      <p>&copy; 2024, SNEAKER HEAD</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+<!--  let subTotal=0;-->
+<!--  document.querySelectorAll('.cart-price').forEach( cart => {-->
+<!--  console.log(parseFloat(cart.getAttribute('data-cart-price')));-->
+<!--  subTotal = subTotal+ parseFloat(cart.getAttribute('data-cart-price'));-->
+<!--  });-->
+<!--  document.getElementById('subtotal-element').textContent = subTotal;-->
+
+  // Quantity control functionality
+  document.querySelectorAll('.quantity-control').forEach(control => {
+      const minusBtn = control.querySelector('button:first-child');
+      const plusBtn = control.querySelector('button:last-child');
+      const quantitySpan = control.querySelector('span');
+
+      minusBtn.addEventListener('click', () => {
+          let quantity = parseInt(quantitySpan.textContent);
+          if (quantity > 1) {
+              quantitySpan.textContent = quantity - 1;
+          }
+      });
+
+      plusBtn.addEventListener('click', () => {
+          let quantity = parseInt(quantitySpan.textContent);
+          quantitySpan.textContent = quantity + 1;
+      });
+  });
+
+  // Wishlist button toggle
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+          const icon = btn.querySelector('i');
+          icon.classList.toggle('bi-heart');
+          icon.classList.toggle('bi-heart-fill');
+      });
+  });
+
+   document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const row = btn.closest('div');
+            const cartId = Number(btn.getAttribute('data-cart-id'));
+            row.remove();
+            fetch(`/user/cart/remove/${cartId}`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
+    .then(response => {
+        return response.json().then(data => ({
+            ok: response.ok,
+            status: response.status,
+            data,
+        }));
+    })
+    .then(result => {
+        if (result.ok) {
+            // Update the element textContent using their IDs
+            document.getElementById('subtotal-element').textContent = `Subtotal: ₹${result.data.subtotal}`;
+            document.getElementById('total-amount-element').textContent = `Total: ₹${result.data.subtotal}`;
+            console.log("Product removed successfully!");
+        } else {
+            // Show SweetAlert with error message
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Product could not be removed. Please try again.",
+                confirmButtonText: "OK",
+                allowOutsideClick: false,
+            });
+        }
+    })
+    .catch(error => {
+        console.error("Error occurred:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An unexpected error occurred.",
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+        });
+    });
+
+
+        });
+    });
+
+  //submit-checkout
+  function submitCheckout()
+  {
+    fetch('/user/cart/data/')
+    .then(response => {
+        if (response.ok) {
+            console.log("Success");
+            window.location.href = "/user/checkout";
+        } else if (response.status === 409) {
+            return response.text().then(text => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Conflict",
+                    text: text, // Resolved text from the backend
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+                const stockElement = document.getElementById("stock-element");
+            stockElement.textContent = "Out of stock";
+            stockElement.style.color = "red";
+            });
+
+
+        } else if (response.status === 404) {
+            return response.text().then(text => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Conflict",
+                    text: text, // Resolved text from the backend
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+            });
+            const stockElement = document.getElementById("stock-element");
+            stockElement.textContent = "Out of Stock";
+        }
+        else {
+            // Handle other error responses
+            throw new Error(`Unexpected response: ${response.status}`);
+        }
+    })
+    .catch(error => {
+        // Handle fetch or unexpected errors
+        console.error("Error:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An unexpected error occurred. Please try again later.",
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+        });
+    });
+
+  }
+</script>
+</body>
+</html>

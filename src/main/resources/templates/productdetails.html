@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMN'S DUNK LOW | SNEAKER HEAD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+
+        .product-image {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+            height:250px;
+            width:250px;
+        }
+        .product-image.zoomed {
+            transform: scale(1.5);
+            cursor: zoom-out;
+        }
+        .thumbnail {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+        .thumbnail:hover, .thumbnail.active {
+            opacity: 1;
+        }
+        .star-rating {
+            color: #ffc107;
+        }
+        .out-of-stock {
+            color: #dc3545;
+        }
+        .in-stock {
+            color: #198754;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            cursor: pointer;
+            border: 1px solid grey;
+        }
+        .size-option {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dee2e6;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .size-option:hover, .size-option.active {
+            border-color: #212529;
+            background-color: #f8f9fa;
+        }
+        .product-images-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .product-images-grid img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .selected-class{
+        border:2px solid black;
+        }
+    </style>
+
+</head>
+<body>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3  d-block z-3 position-fixed w-100 ">
+    <div class="container-fluid position-relative ">
+        <a class="nav-link d-lg-block  d-none" href="#">+ Contact Us</a>
+        <a class="navbar-brand position-absolute start-50 top-50 translate-middle" href="#" id="title">SNEAKER HEAD</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group input-group-sm d-none d-xl-flex">
+                <input type="search" class="form-control" placeholder="Search">
+                <span class="input-group-text" id="basic-addon1">
+                        <i class="bi bi-search"></i>
+                    </span>
+            </div>
+            <a href="#" class="text-dark position-relative d-none d-lg-flex">
+                <i class="bi bi-heart fs-4"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                        5 <!-- Replace this with dynamic count -->
+                    </span>
+            </a>
+            <a href="/user/cart" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>
+            <i class="bi bi-person fs-4" id="userIcon" data-bs-toggle="dropdown" aria-expanded="false"></i>
+            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;">
+                <li style="padding-left:0.8rem;"><a href="/user/overview"><span style="font-size:15px;">Hello,</span><h6 style="font-weight:600;">Aflah Zameen</h6></a></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/orders'">Orders</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/editprofile'">Edit profile</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/addresses'">Saved addresses</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/logout'">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+    <div class="collapse navbar-collapse  " id="navbarNav">
+        <ul class="navbar-nav mx-auto gap-lg-5">
+            <li class="nav-item">
+                <a class="nav-link" href="#">New Arrivals</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Trending</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Men</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/women">Women</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Brands</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sale" href="#">Sale</a>
+            </li><li class="nav-item">
+            <li class="nav-item">
+                <a href="#" class="text-dark d-lg-none"><i class="bi bi-person fs-4"></i></a>
+            </li>
+            <li>
+                <a href="#" class="text-dark position-relative d-lg-none mt-2">
+                    <i class="bi bi-heart fs-4"></i>
+                    <span class="position-absolute top-0  translate-middle badge rounded-pill bg-dark">
+                                5 <!-- Replace this with dynamic count -->
+                            </span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="text-dark  d-sm-none"><i class="bi bi-bag fs-4"></i></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+    <div class="container ">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" style="padding-top:8rem;">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{'/user/'+${categoryUrl}}" th:text="${details.categoryName}"></a></li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${details.name}"></li>
+            </ol>
+        </nav>
+
+        <div class="row " style="margin-top:2rem; " >
+            <!-- Product Images -->
+            <div class="col-md-7 mb-4"  >
+              <div class="row d-flex " id="image-container">
+<!--                  <div class=" col-6 mx-2 mb-3"  th:each="imageList: ${details.defaultVariantDTO.images}" style="height:250px; width:250px; " >-->
+
+<!--                      <img th:each="image : ${imageList}"  th:src="${image}" alt="WMN'S DUNK LOW - View 1"  onclick="zoomImage(this)" class="product-image" id="product-image-id" >-->
+<!--                  </div>-->
+              </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="col-md-5" >
+                <h6 class="text-muted mb-2" th:text="${details.brandName}"></h6>
+                <h1 class="mb-2" th:text="${details.name}"></h1>
+
+                <!-- Rating -->
+                <div class="mb-3">
+                    <span class="star-rating">★★★★★</span>
+                    <span class="ms-2 text-muted">(2 reviews)</span>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-3">
+                    <span class="h3 me-2" th:text="'₹'+${details.defaultVariantDTO.formattedPrice}" id="product-price" th:data-product-price="${details.defaultVariantDTO.formattedPrice}"></span>
+                </div>
+
+                <!-- Size Selection -->
+                <h3 class="h6">Size:</h3>
+                <div class="mb-3 d-flex" id="size-container" >
+
+                </div>
+                <div id="sizeError" class="text-danger d-flex">Select a size</div>
+
+                <!-- Color Selection -->
+                <h3 class="h6">Color:</h3>
+                <div class="mb-3 d-flex"  >
+
+                    <div id="colorOptions" class="color-option" th:each="variant : ${details.productVariantDTOs}" th:style="'background-color:' + ${variant.color}"  th:onclick="'changeContent(this);'"  th:data-variant-id = "${variant.id}" >
+
+                    </div>
+                </div>
+
+                <!-- Quantity Selection -->
+                <div th:if="${details.defaultVariantDTO.quantity >0}" class="quantity-check" >
+                    <h3 id="max-quantity-element"
+                        th:text="'Quantity : ( max : ' + (${details.defaultVariantDTO.maxQuantity <= details.defaultVariantDTO.quantity} ? details.defaultVariantDTO.maxQuantity : details.defaultVariantDTO.quantity) + ' )'" >
+                    </h3>
+                    <div class="mb-3 d-flex align-items-center">
+                        <!-- Decrement Button -->
+                        <button type="button" class="btn btn-outline-dark px-3" th:onclick="changeQuantity(this)" th:data-change-value ="-1" >-</button>
+
+                        <!-- Quantity Input -->
+                        <input type="number" id="quantityInput"
+                               class="form-control text-center mx-2"
+                               value="1" min="1"  style="width: 80px;" readonly>
+
+                        <!-- Increment Button -->
+                        <button type="button" class="btn btn-outline-dark px-3"  th:onclick="changeQuantity(this)" th:data-quantity-max="${details.defaultVariantDTO.maxQuantity}" th:data-change-value ="1" id="increment-button">+</button>
+                    </div>
+                </div>
+
+
+                <!-- Stock - details-->
+                <h5 th:if="${details.defaultVariantDTO.quantity >0}" th:text="'Stock left : '+${details.defaultVariantDTO.quantity}" id="stock-left-element" th:data-stock-left="${details.defaultVariantDTO.quantity}"></h5>
+                <h5 th:unless="${details.defaultVariantDTO.quantity >0}" class="text-danger" >(Out of Stock)</h5>
+
+                <!-- Add to Cart -->
+                <div class="quantity-check mb-4" th:if="${details.defaultVariantDTO.quantity >0}">
+                    <button class="btn btn-dark w-100 mb-2" th:onclick="addToCart(this)" th:data-user-id="${userId}" >Add to cart</button>
+                    <button class="btn btn-outline-dark w-100">Buy now</button>
+                </div>
+
+                <!-- Product Description -->
+                <div class="mb-4" >
+                    <h3 class="h5">ABOUT PRODUCT</h3>
+                    <pre th:text="${details.description}" style="width:25rem; white-space: pre-wrap; overflow: hidden; font:inherit;"></pre>
+                </div>
+
+                <!-- Product Details -->
+                <div class="mb-4">
+
+                    <h3 class="h5">PRODUCT DETAIL</h3>
+                    <div class="flex">
+                        <span style="font-weight:600; font-size:1rem;">Manufacturer : </span><span th:text="${details.manufacturer}" ></span>
+                    </div>
+                    <div class="flex">
+                        <span style="font-weight:600; font-size:1rem;">Country of Origin : </span><span th:text="${details.countryOfOrigin}" ></span>
+                    </div>
+                    <div class="flex">
+                        <span style="font-weight:600; font-size:1rem;">Weight : </span><span th:text="${details.weight}" ></span>
+                    </div>
+                    <div class="flex">
+                        <span style="font-weight:600; font-size:1rem;">Generic Name : </span><span th:text="${details.genericName}" ></span>
+                    </div>
+                    <div class="flex">
+                        <span style="font-weight:600; font-size:1rem;">Marketed By : </span><span th:text="${details.marketedBy}" ></span>
+                    </div>
+                    <div class="flex">
+                        <span style="font-weight:600; font-size:1rem;">Article Code : </span><span th:text="${details.defaultVariantDTO.articleCode}" id="product-articleCode"></span>
+                    </div>
+                </div>
+
+                <!-- Reviews -->
+                <div class="mb-4">
+                    <h3 class="h5">REVIEWS (2)</h3>
+                    <div class="mb-3">
+                        <span class="star-rating">★★★★★</span>
+                        <p class="mb-0"><strong>Shreya Umrao</strong></p>
+                        <p class="text-muted">Tom Chain Bracelet</p>
+                    </div>
+                    <div>
+                        <span class="star-rating">★★★★★</span>
+                        <p class="mb-0"><strong>Taro Tanvi</strong></p>
+                        <p class="text-muted">Perfect</p>
+                        <p>The bracelet is so minimal and subtle, perfection at its finest 👌</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div class="mt-5">
+            <h2 class="mb-4">You May Also Like</h2>
+            <div class="row">
+                <div class="col-6 col-md-3 mb-4">
+                    <img src="https://via.placeholder.com/300x300" alt="Related Product 1" class="img-fluid mb-2">
+                    <h3 class="h6">WMN'S DUNK LOW</h3>
+                    <p class="text-muted">¥9,895.00</p>
+                </div>
+                <div class="col-6 col-md-3 mb-4">
+                    <img src="https://via.placeholder.com/300x300" alt="Related Product 2" class="img-fluid mb-2">
+                    <h3 class="h6">WMN'S DUNK LOW</h3>
+                    <p class="text-muted">¥9,895.00</p>
+                </div>
+                <div class="col-6 col-md-3 mb-4">
+                    <img src="https://via.placeholder.com/300x300" alt="Related Product 3" class="img-fluid mb-2">
+                    <h3 class="h6">AIR FORCE 1 '07</h3>
+                    <p class="text-muted">¥9,895.00</p>
+                </div>
+                <div class="col-6 col-md-3 mb-4">
+                    <img src="https://via.placeholder.com/300x300" alt="Related Product 4" class="img-fluid mb-2">
+                    <h3 class="h6">LUNAR FORCE 1</h3>
+                    <p class="text-muted">¥9,895.00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+
+        const product = /*[[${details}]]*/ {};
+        const sizeError=document.getElementById("sizeError");
+        let variantId= Number(document.getElementById("colorOptions").getAttribute('data-variant-id'));
+
+        let productPrice;
+        sizeError.classList.add("d-none");
+        let selectedSize;
+
+           function zoomImage(img) {
+        const allImages = document.querySelectorAll(".product-image");
+        allImages.forEach(image => {
+                if(image !== img)
+                {
+                    image.classList.remove('zoomed');
+                }
+        });
+            img.classList.toggle('zoomed');
+        }
+
+        // Reference to the container where images will be added
+
+        // Function to create and render data dynamically
+        function renderData(variant) {
+
+            //render-image
+            const imageContainer = document.getElementById("image-container");
+            imageContainer.innerHTML="";
+            variant.images.forEach((imageSrc) => {
+
+                // Create the div container
+                const div = document.createElement("div");
+                div.className = "col-6 mx-2 mb-3";
+                div.style.height = "250px";
+                div.style.width = "250px";
+
+                // Create the img element
+                const img = document.createElement("img");
+                img.src = imageSrc;
+                img.alt = "Product Image";
+                img.className = "product-image";
+                img.onclick = () => zoomImage(img); // Add the onclick event
+
+                // Append the img to the div
+                div.appendChild(img);
+
+                // Append the div to the container
+                imageContainer.appendChild(div);
+            });
+
+            //render-size
+            const sizeContainer = document.getElementById("size-container");
+            sizeContainer.innerHTML="";
+            variant.size.forEach((size)=>{
+
+                // Create the div container
+                const div = document.createElement("div");
+                div.className = "size-option";
+                div.onclick = function (){selectSize(this);};
+                div.textContent = size;
+
+                // Append the div to the container
+                sizeContainer.appendChild(div);
+
+            });
+
+            //render-price
+            const priceElement = document.getElementById("product-price");
+            priceElement.textContent="₹"+variant.formattedPrice;
+            priceElement.setAttribute("data-product-price",variant.price);
+
+
+            //render-article-code
+            const articleCodeElement = document.getElementById("product-articleCode")
+            articleCodeElement.textContent=variant.articleCode;
+
+            //render-max-quantity
+            const maxElement= document.getElementById("max-quantity-element");
+            if(variant.quantity >= variant.maxQuantity)
+            {
+                maxElement.textContent = "Quantity : ( max : " + variant.maxQuantity + " )";
+            }
+            else
+            {
+                maxElement.textContent = "Quantity : ( max : " + variant.quantity + " )";
+            }
+
+
+            //render-stock-left
+            const stockLeftElement=document.getElementById("stock-left-element");
+            stockLeftElement.textContent = "Stock left : "+variant.quantity;
+
+            //update-max-quantity-in-fields
+            const incrementButton = document.getElementById("increment-button");
+            incrementButton.setAttribute("data-quantity-max",variant.maxQuantity);
+
+            //reset-quantity-input-field
+            document.getElementById("quantityInput").value=1;
+            document.getElementById("increment-button").classList.remove("d-none");
+        }
+
+        //call-function
+
+        renderData(product.defaultVariantDTO);
+
+
+        function changeContent(data)
+        {
+            const colorOptions = document.querySelectorAll(".color-option");
+
+            colorOptions.forEach(option => {option.classList.remove("selected-class");
+            });
+
+            data.classList.add("selected-class");
+
+            variantId = Number(data.getAttribute('data-variant-id'));
+
+            for(let variant of product.productVariantDTOs)
+            {
+                if(variant.id == variantId)
+                {
+                    renderData(variant);
+                }
+            }
+        }
+        function selectSize(data)
+        {
+            const sizeOptions = document.querySelectorAll(".size-option");
+            sizeOptions.forEach(option => {option.classList.remove("selected-class")
+            });
+            data.classList.add("selected-class");
+            selectedSize=parseInt(data.textContent);
+            sizeError.classList.add("d-none");
+        }
+        function changeQuantity(data) {
+
+    const quantityInput = document.getElementById("quantityInput");
+    let currentQuantity = parseInt(quantityInput.value);
+    const change = parseInt(data.getAttribute('data-change-value'));
+    const maxQuantity = parseInt(data.getAttribute('data-quantity-max'));
+    const totalQuantity = parseInt(document.getElementById('stock-left-element').getAttribute('data-stock-left'))
+    // Ensure currentQuantity is a valid number
+    if (isNaN(currentQuantity)) {
+        currentQuantity = 1;
+    }
+    const button = document.getElementById('increment-button');
+    if((currentQuantity == maxQuantity || currentQuantity == totalQuantity ) && change ==1 )
+    {
+        button.classList.add("d-none");
+    }
+    else if(currentQuantity > maxQuantity)
+    {
+    console.log("2");
+        quantityInput.value=1;
+            button.classList.remove("d-none");
+    }
+    else
+    {
+    console.log(change);
+    button.classList.remove("d-none");
+    // Update the quantity value
+    const newQuantity = currentQuantity + change;
+
+    // Prevent quantity from being less than 1
+    if (newQuantity >= 1) {
+        quantityInput.value = newQuantity;
+        console.log(newQuantity);
+    }
+    }
+
+}
+        function addToCart(data)
+        {
+            const selectedQuantity = document.getElementById("quantityInput").value;
+            const priceElement = document.getElementById("product-price");
+            const totalAmountTemp = parseFloat(priceElement.getAttribute("data-product-price"))*selectedQuantity;
+            const userIdTemp = data.getAttribute("data-user-id");
+            if(!selectedSize)
+            {
+               sizeError.classList.remove("d-none");
+            }
+            else
+            {
+                sizeError.classList.add("d-none");
+                const formData = {
+            totalAmount:totalAmountTemp,
+            quantity:selectedQuantity,
+            productVariantId:variantId,
+            userId:userIdTemp,
+            size:parseFloat(selectedSize)
+            }
+            console.log(formData);
+            fetch('/user/addcart', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(formData) // Adjust your payload as needed
+})
+    .then(response => {
+        if (response.ok) {
+            // Handle successful response
+            Swal.fire({
+                icon: "success",
+                title: "Product Added",
+                text: "Product added to cart",
+                confirmButtonText: "OK",
+                allowOutsideClick: false,
+            });
+        } else if (response.status === 409) {
+            // Handle conflict error (status 409)
+            return response.json().then(data => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: data.message, // Use the message from the backend
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+                const stockElement = document.getElementById("stock-left-element");
+                if(data.quantity <=0)
+                {
+                    stockElement.textContent ="Out of stock";
+                    stockElement.style.color ="red";
+                    const hideElements = document.querySelectorAll('.quantity-check');
+                    hideElements.forEach(element => {
+                    element.classList.add('d-none');
+                    })
+                }
+                else{
+                stockElement.textContent ="Stock left : "+data.quantity;
+                incrementButton.setAttribute("data-quantity-max",variant.maxQuantity);
+
+                }
+            });
+
+        } else {
+            // Handle other errors
+            return response.text().then(text => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: text || "Failed to add product", // Fallback message
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+            });
+        }
+    })
+    .catch(error => {
+        // Handle network errors or other unexpected issues
+        console.error('Error:');
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An unexpected error occurred. Please try again.",
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+        });
+    });
+
+            }
+
+        }
+
+    </script>
+</body>
+</html>

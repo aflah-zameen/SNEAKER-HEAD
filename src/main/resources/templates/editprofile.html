@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNEAKER HEAD - Edit Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        /* Custom CSS */
+        .nav-link.active {
+            border-bottom: 2px solid black;
+        }
+
+        .sale-link {
+            color: red !important;
+        }
+
+        .account-sidebar .nav-link {
+            color: black;
+            padding: 0.5rem 0;
+        }
+
+        .account-sidebar .nav-link.active {
+            background-color: transparent;
+            font-weight: bold;
+        }
+
+        .edit-form {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 2rem;
+        }
+
+        .form-label {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .gender-btn {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            background: white;
+            text-align: center;
+        }
+
+        .gender-btn.active {
+            background: #666;
+            color: white;
+            border-color: #666;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-container .bi-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .footer {
+            background-color: black;
+            color: white;
+            padding: 3rem 0;
+            margin-top: 5rem;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer li {
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .account-sidebar {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3  d-block z-3 position-fixed w-100 " style="top:0;">
+    <div class="container-fluid position-relative ">
+        <a class="nav-link d-lg-block  d-none" href="#">+ Contact Us</a>
+        <a class="navbar-brand position-absolute start-50 top-50 translate-middle" href="#" id="title">SNEAKER HEAD</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group input-group-sm d-none d-xl-flex">
+                <input type="search" class="form-control" placeholder="Search">
+                <span class="input-group-text" id="basic-addon1">
+                        <i class="bi bi-search"></i>
+                    </span>
+            </div>
+            <a href="/user/cart" class="text-dark position-relative d-none d-lg-flex">
+                <i class="bi bi-heart fs-4"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                        5 <!-- Replace this with dynamic count -->
+                    </span>
+            </a>
+            <a href="/user/cart" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>
+            <i class="bi bi-person fs-4" id="userIcon" data-bs-toggle="dropdown" aria-expanded="false"></i>
+            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;">
+                <li style="padding-left:0.8rem;"><a href="/user/overview"><span style="font-size:15px;">Hello,</span><h6 style="font-weight:600;">Aflah Zameen</h6></a></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/orders'">Orders</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/editprofile'">Edit profile</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/addresses'">Saved addresses</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/logout'">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+    <div class="collapse navbar-collapse  " id="navbarNav">
+        <ul class="navbar-nav mx-auto gap-lg-5">
+            <li class="nav-item">
+                <a class="nav-link" href="#">New Arrivals</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Trending</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/men">Men</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/women">Women</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Brands</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sale" href="#">Sale</a>
+            </li><li class="nav-item">
+            <li class="nav-item">
+                <a href="#" class="text-dark d-lg-none"><i class="bi bi-person fs-4"></i></a>
+            </li>
+            <li>
+                <a href="#" class="text-dark position-relative d-lg-none mt-2">
+                    <i class="bi bi-heart fs-4"></i>
+                    <span class="position-absolute top-0  translate-middle badge rounded-pill bg-dark">
+                                5 <!-- Replace this with dynamic count -->
+                            </span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="text-dark  d-sm-none"><i class="bi bi-bag fs-4"></i></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container " style="margin-top:7rem;">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <h3 class="mb-4">Account</h3>
+            <p class="mb-4" th:if="${userObject.name}" th:text="'Hello ,'+ ${userObject.name}"></p>
+            <div class="account-sidebar">
+                <div class="nav flex-column nav-pills">
+                    <a class="nav-link" href="/user/overview">Overview</a>
+                    <a class="nav-link" href="#">Wallet</a>
+                    <a class="nav-link" href="/user/orders">Orders & Returns</a>
+                    <a class="nav-link" href="/user/addresses">Addresses</a>
+                    <a class="nav-link" href="/user/editprofile">Profile</a>
+                    <a class="nav-link active" href="/user/editprofile">Edit Profile</a>
+                    <a class="nav-link" href="#">Delete Account</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-md-9">
+            <div class="edit-form">
+                <h4 class="mb-4">Edit details</h4>
+                <form th:object="${userObject}" th:action="@{/user/editprofile}" method="post" id="editProfileForm">
+                    <div class="row">
+                        <div class="mb-4 col-md-6">
+                            <label class="form-label">Full name*</label>
+                            <input type="text" class="form-control" th:field="*{name}">
+                            <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>
+                        <div class="my-4 col-md-6">
+                            <div class="row">
+                                <div class="col">
+                                    <button type="button" class="gender-btn active" value="Male">Male</button>
+                                </div>
+                                <div class="col">
+                                    <button type="button" class="gender-btn" value="Women" >Female</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4 col-md-6">
+                            <label class="form-label">Email*</label>
+                            <div class="d-flex gap-2">
+                                <input type="tel" class="form-control" name="email" th:field="*{email}">
+                                <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            </div>
+                        </div>
+                        <div class="mb-4 col-md-6">
+                            <label class="form-label">Enter the OTP*</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" class="form-control w-25" name="otpCode" >
+                                <button type="button" class="btn btn-outline-dark">Change</button>
+                            </div>
+                        </div>
+                        <div class="mb-4 col-md-6">
+                            <label class="form-label">Mobile number*</label>
+                            <input type="number" class="form-control"  th:field="*{phone}">
+                            <div class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                        </div>
+
+                        <div class="mb-4 col-md-6">
+                            <label class="form-label">Birthday(dd/mm/yy)</label>
+                            <input type="text" class="form-control" placeholder="Birthday(dd/mm/yy)">
+                        </div>
+
+                        <div class="mb-4 col-md-12">
+                            <label class="form-label">Alternative mobile number</label>
+                            <input type="tel" class="form-control w-50" placeholder="Mobile number">
+                        </div>
+
+                        <button  class="btn btn-dark w-25" id="saveButton">Save Details</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">INFO</h5>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Brands</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">POLICIES</h5>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Return & Exchange</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Order & Shipping</a></li>
+                    <li><a href="#">Term of Service</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">OUR SOCIALS</h5>
+                <div class="d-flex gap-3">
+                    <a href="#"><i class="bi bi-instagram fs-5"></i></a>
+                    <a href="#"><i class="bi bi-facebook fs-5"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-3">SUBSCRIBE TO OUR NEWSLETTER</h5>
+                <form class="d-flex gap-2">
+                    <input type="email" class="form-control" placeholder="Email Address">
+                    <button type="submit" class="btn btn-light">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <p>&copy; 2024, SNEAKER HEAD</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Gender button toggle
+    document.querySelectorAll('.gender-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+        });
+    });
+
+</script>
+</script>
+</body>
+</html>

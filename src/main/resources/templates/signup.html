@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | SNEAKER HEAD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .signup-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .signup-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label .required {
+            color: #ff0000;
+        }
+
+        .form-control {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+
+        .form-control::placeholder {
+            color: #757575;
+        }
+
+        .form-text {
+            font-size: 0.875rem;
+            color: #757575;
+            margin-top: 0.25rem;
+        }
+
+        .country-select {
+            width: auto;
+            min-width: 120px;
+            background-color: #fff;
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .register-btn {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .register-btn:hover {
+            background-color: #333;
+        }
+
+        .terms-text {
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .terms-text a {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .terms-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .signup-container {
+                padding: 1rem;
+            }
+
+            .signup-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="logo">SNEAKER HEAD</h1>
+
+    <div class="signup-container">
+        <div class="signup-card">
+            <h2 class="form-title">Create Account</h2>
+
+            <form id="signupForm" >
+                <!-- Name -->
+                <div class="mb-3">
+                    <label class="form-label">Your name<span class="required">*</span></label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="fullName"
+                            placeholder="First and last name"
+                    >
+                    <div id="nameFeedback" class="form-text text-danger"></div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label">Email<span class="required">*</span></label>
+                    <input
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            placeholder="Email"
+                    >
+                    <div id="emailFeedback" class="form-text text-danger"></div>
+                </div>
+
+                <!-- Phone -->
+                <div class="mb-3">
+                    <label class="form-label">Mobile number<span class="required">*</span></label>
+                    <input
+                            type="tel"
+                            class="form-control"
+                            id="phone"
+                            placeholder="Mobile number"
+                    >
+                    <div id="phoneFeedback" class="form-text text-danger"></div>
+                </div>
+
+                <!-- Password -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Password<span class="required">*</span></label>
+                        <input
+                                type="password"
+                                class="form-control"
+                                id="password"
+                                placeholder="At least 8 characters"
+                        >
+                        <div id="passwordFeedback" class="form-text text-danger"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Confirm Password<span class="required">*</span></label>
+                        <input
+                                type="password"
+                                class="form-control"
+                                id="confirmPassword"
+                        >
+                        <div id="confirmPasswordFeedback" class="form-text text-danger"></div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="button" class="register-btn" onclick="validateAndSubmitForm()">Register</button>
+            </form>
+
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validation rules
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for email
+        const nameRegex = /^[^\s]+( [^\s]+)*$/; // At least one non-space character
+        let EmailValid = true;
+        document.getElementById("email").addEventListener("focus", () => {
+    EmailValid = true; // Reset flag to true
+    const emailFeedback = document.getElementById("emailFeedback");
+    emailFeedback.textContent = ""; // Clear the error message
+});
+        // Validate individual fields
+        function validateName() {
+            const nameField = document.getElementById("fullName");
+            const nameFeedback = document.getElementById("nameFeedback");
+            const name = nameField.value.trim();
+            if (!name || !nameRegex.test(name)) {
+                nameFeedback.textContent = "Name cannot be empty or only spaces.";
+                return false;
+            }
+            nameFeedback.textContent = "";
+            return true;
+        }
+
+        function validateEmail() {
+            const emailField = document.getElementById("email");
+            const emailFeedback = document.getElementById("emailFeedback");
+            const email = emailField.value.trim();
+            if (!emailRegex.test(email)) {
+                emailFeedback.textContent = "Please enter a valid email.";
+                return false;
+            }
+            if (EmailValid) {
+                emailFeedback.textContent = " ";
+                return true;
+            } else {
+                emailFeedback.textContent = "Already in use";
+                return false;
+            }
+        }
+
+        function validatePhone() {
+            const phoneField = document.getElementById("phone");
+            const phoneFeedback = document.getElementById("phoneFeedback");
+            const phone = phoneField.value.trim();
+            if (!phone || isNaN(phone)) {
+                phoneFeedback.textContent = "Please enter a valid phone number.";
+                return false;
+            }
+            phoneFeedback.textContent = "";
+            return true;
+        }
+
+        function validatePassword() {
+            const passwordField = document.getElementById("password");
+            const passwordFeedback = document.getElementById("passwordFeedback");
+            const password = passwordField.value;
+            if (password.length < 8) {
+                passwordFeedback.textContent = "Password must be at least 8 characters.";
+                return false;
+            }
+            passwordFeedback.textContent = "";
+            return true;
+        }
+
+        function validateConfirmPassword() {
+            const confirmPasswordField = document.getElementById("confirmPassword");
+            const confirmPasswordFeedback = document.getElementById("confirmPasswordFeedback");
+            const password = document.getElementById("password").value;
+            const confirmPassword = confirmPasswordField.value;
+            if (password !== confirmPassword) {
+                confirmPasswordFeedback.textContent = "Passwords do not match.";
+                return false;
+            }
+            confirmPasswordFeedback.textContent = "";
+            return true;
+        }
+
+        // Validate all fields
+        function validateAndSubmitForm() {
+            const isNameValid = validateName();
+            const isEmailValid = validateEmail();
+            const isPhoneValid = validatePhone();
+            const isPasswordValid = validatePassword();
+            const isConfirmPasswordValid = validateConfirmPassword();
+
+            if (!isNameValid || !isEmailValid || !isPhoneValid || !isPasswordValid || !isConfirmPasswordValid) {
+                return; // Stop submission if any validation fails
+            }
+
+            // Submit form
+            const formData = {
+                full_name: document.getElementById("fullName").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                phone: document.getElementById("phone").value.trim(),
+                password: document.getElementById("password").value
+            };
+
+            fetch("/signup/userdata", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            EmailValid = false;
+                            const emailFeedback = document.getElementById("emailFeedback");
+                            emailFeedback.textContent = data.message;
+                            emailFeedback.classList.add("text-danger");
+                        });
+                    } else {
+                        return response.json().then(data => {
+                            window.location.href = data.redirectUrl; // Redirect after success
+                        });
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+    </script>
+</body>
+</html>

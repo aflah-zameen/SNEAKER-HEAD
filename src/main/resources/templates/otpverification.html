@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - SNEAKER HEAD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .sneaker-container{
+            height:250px;
+            width:250px;
+        }
+        .container-fluid {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .content-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem;
+        }
+
+        .verification-container {
+            max-width: 450px;
+            padding: 2rem;
+        }
+
+        .verification-title {
+            font-size: 2.5rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-description {
+            font-size: 1rem;
+            color: #000;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.25rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .otp-input:focus {
+            border-color: #000;
+        }
+
+        .timer {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .resend {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-top: 1rem;
+            min-width: 120px;
+        }
+
+        .btn-back {
+            color: #000;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-back:before {
+            content: '←';
+            margin-right: 0.5rem;
+        }
+
+        .sneaker-image {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 992px) {
+            .sneaker-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="text-center mt-3 mb-2">
+            <a href="#" class="logo">SNEAKER HEAD</a>
+        </header>
+
+        <div class="content-container">
+            <div class="verification-container">
+                <h1 class="verification-title">OTP Verification</h1>
+                
+                <p class="otp-description" th:text="'Enter the OTP sent to '+${email}">
+                </p>
+
+                <form id="otpForm">
+                    <div class="otp-inputs">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" id="otp1" required autocomplete="off">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" id="otp2" required autocomplete="off">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" id="otp3" required autocomplete="off">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" id="otp4" required autocomplete="off">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" id="otp5" required autocomplete="off">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" id="otp6" required autocomplete="off">
+                    </div>
+
+                    <!-- OTP Feedback Message -->
+                    <div id="otpFeedback" style="color: red;"></div> <!-- This will show validation messages -->
+
+                    <div class="timer">
+                        <span id="timer">00:20</span> sec
+                        <span class="ms-2">Don't receive code?</span>
+                        <a href="#" class="resend" onclick="handleResend(event)" id="resendButton">Re-send</a>
+                    </div>
+
+                    <button type="submit" class="btn-submit" onclick="submitOtp(event)">Submit</button>
+                </form>
+
+
+                <a href="/signup" class="btn-back">Back</a>
+            </div>
+
+            <div class="sneaker-container shadow">
+                <img src="/assests/images/trending1.webp" alt="Featured Sneaker" class="sneaker-image">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle OTP input fields
+const inputs = document.querySelectorAll('.otp-input');
+
+inputs.forEach((input, index) => {
+    input.addEventListener('keyup', (e) => {
+        if (e.key === "Backspace" && !input.value && index > 0) {
+            inputs[index - 1].focus();
+            return;
+        }
+
+        if (input.value && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+        }
+    });
+
+    input.addEventListener('input', (e) => {
+        if (e.inputType === "insertFromPaste") {
+            const pastedData = e.target.value;
+            if (pastedData.length === 6 && /^\d+$/.test(pastedData)) {
+                [...pastedData].forEach((digit, i) => {
+                    inputs[i].value = digit;
+                });
+            }
+        }
+    });
+});
+
+// Timer functionality
+let timeLeft = 20;
+const timerElement = document.getElementById('timer');
+const resendButton = document.getElementById('resendButton');
+
+function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    if (timeLeft === 0) {
+        clearInterval(timerInterval);
+        resendButton.style.opacity = '1';
+        resendButton.style.pointerEvents = 'auto';
+    } else {
+        timeLeft--;
+    }
+}
+
+let timerInterval = setInterval(updateTimer, 1000);
+
+// Handle OTP submission
+function submitOtp(event) {
+    event.preventDefault(); // Prevent the form from submitting traditionally
+
+    const otp =
+        document.getElementById("otp1").value +
+        document.getElementById("otp2").value +
+        document.getElementById("otp3").value +
+        document.getElementById("otp4").value +
+        document.getElementById("otp5").value +
+        document.getElementById("otp6").value;
+
+    console.log("OTP Entered:", otp);
+
+    // Send OTP to Spring Boot server for validation
+    fetch('/otpverification/data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({ userOtp: otp })  // Send OTP as a URL-encoded string
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        const otpFeedback = document.getElementById("otpFeedback");
+        if (data.verified) {
+            otpFeedback.textContent = "OTP verified successfully!";
+            otpFeedback.style.color = 'green'; // Green for success
+            if(data.forgetPassword)
+            {
+                window.location.href="/resetpassword";
+            }
+            else
+            {
+            window.location.href="/login";
+            }
+        } else {
+            otpFeedback.textContent = "OTP is wrong, please try again.";
+            otpFeedback.style.color = 'red'; // Red for error
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        const otpFeedback = document.getElementById("otpFeedback");
+        otpFeedback.textContent = "There was an error verifying the OTP.";
+        otpFeedback.style.color = 'red'; // Red for error
+    });
+}
+
+// Handle OTP resend
+function handleResend(event) {
+    event.preventDefault();
+    if (timeLeft === 0) {
+        timeLeft = 20; // Reset timer
+        timerInterval = setInterval(updateTimer, 1000);
+        resendButton.style.opacity = '0.5';
+        resendButton.style.pointerEvents = 'none';
+
+        // Send request to backend to resend OTP
+        console.log('Resending OTP...');
+        fetch('/resend-otp', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                const otpFeedback = document.getElementById("otpFeedback");
+                if (data.success) {
+                    otpFeedback.textContent = "OTP resent successfully! Please check your email.";
+                    otpFeedback.style.color = 'green'; // Green for success
+                } else {
+                    otpFeedback.textContent = "Error sending OTP.";
+                    otpFeedback.style.color = 'red'; // Red for error
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const otpFeedback = document.getElementById("otpFeedback");
+                otpFeedback.textContent = "There was an error resending the OTP.";
+                otpFeedback.style.color = 'red'; // Red for error
+            });
+
+        // Clear OTP inputs
+        inputs.forEach(input => input.value = '');
+    }
+}
+
+// Initially disable resend button
+resendButton.style.opacity = '0.5';
+resendButton.style.pointerEvents = 'none';
+
+    </script>
+</body>
+</html>
