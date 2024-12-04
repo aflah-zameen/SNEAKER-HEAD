@@ -30,6 +30,6 @@ public class ProductDto {
     private String marketedBy;
     private List<ProductVariantDTO> productVariantDTOs;
     private ProductVariantDTO defaultVariantDTO ;
-    private String status;
+    private Boolean status;
     private Integer quantity;
 }

@@ -1,0 +1,70 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3  d-block z-3 position-fixed w-100 " th:fragment="header">
+    <div class="container-fluid position-relative ">
+        <a class="nav-link d-lg-block  d-none" href="#">+ Contact Us</a>
+        <a class="navbar-brand position-absolute start-50 top-50 translate-middle" href="#" id="title">SNEAKER HEAD</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group input-group-sm d-none d-xl-flex">
+                <form method="GET" action="/user/search" class="d-flex">
+                    <input type="search" class="form-control" name="keyword" placeholder="Search">
+                    <button class="input-group-text" id="basic-addon1" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+            <a href="/user/wishlist" class="text-dark position-relative d-none d-lg-flex">
+                <i class="bi bi-heart fs-4"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                        5 <!-- Replace this with dynamic count -->
+                    </span>
+            </a>
+            <a href="/user/cart" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>
+            <i class="bi bi-person fs-4" id="userIcon" data-bs-toggle="dropdown" aria-expanded="false"></i>
+            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;">
+                <li style="padding-left:0.8rem;"><a href="/user/overview"><span style="font-size:15px;">Hello,</span><h6 style="font-weight:600;">Aflah Zameen</h6></a></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/orders'">Orders</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/editprofile'">Edit profile</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/user/addresses'">Saved addresses</button></li>
+                <li><button class="dropdown-item" onclick="window.location.href='/logout'">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+    <div class="collapse navbar-collapse  " id="navbarNav">
+        <ul class="navbar-nav mx-auto gap-lg-5">
+            <li class="nav-item">
+                <a class="nav-link" href="#">New Arrivals</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/shop">Shop</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/men">Men</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/user/women">Women</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Brands</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sale" href="#">Sale</a>
+            </li><li class="nav-item">
+            <li class="nav-item">
+                <a href="#" class="text-dark d-lg-none"><i class="bi bi-person fs-4"></i></a>
+            </li>
+            <li>
+                <a href="#" class="text-dark position-relative d-lg-none mt-2">
+                    <i class="bi bi-heart fs-4"></i>
+                    <span class="position-absolute top-0  translate-middle badge rounded-pill bg-dark">
+                                5 <!-- Replace this with dynamic count -->
+                            </span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="text-dark  d-sm-none"><i class="bi bi-bag fs-4"></i></a>
+            </li>
+        </ul>
+    </div>
+</nav>

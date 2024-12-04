@@ -1,6 +1,5 @@
 package com.e_commerce.SNEAKERHEAD.Repository;
 
-import com.e_commerce.SNEAKERHEAD.DTO.ProductRequest;
 import com.e_commerce.SNEAKERHEAD.Entity.Category;
 import com.e_commerce.SNEAKERHEAD.Entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,8 +30,8 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
     List<Product> findByCategoryAndSortByNameDesc(@Param("category") Category category);
 
     @Query("SELECT p FROM Product p WHERE "+
-            "(LOWER(p.name) LIKE LOWER(CONCAT('%',:keyword,'%')) OR "+
-            "LOWER(p.brand.name) LIKE LOWER(CONCAT('%',:keyword,'%'))) AND p.category.name = :category"
+            "LOWER(p.name) LIKE LOWER(CONCAT('%',:keyword,'%')) OR "+
+            "LOWER(p.brand.name) LIKE LOWER(CONCAT('%',:keyword,'%'))"
     )
-    List<Product> searchProducts(String keyword,String category);
+    List<Product> searchProducts(String keyword);
 }

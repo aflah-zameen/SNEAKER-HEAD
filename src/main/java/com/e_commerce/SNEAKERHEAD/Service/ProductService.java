@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -132,7 +133,6 @@ public class ProductService {
             productDto.setName(x.getName());
 
             productDto.setId(x.getId());
-            productDto.setStatus("AVAILABLE");
             productDto.setCountryOfOrigin(x.getCountryOfOrigin());
             productDto.setImportedBy(x.getImportedBy());
             productDto.setGenericName(x.getGenericName());
@@ -200,7 +200,7 @@ public class ProductService {
 //            productDto.setDefaultVariant(productVariantDTOS.get(0));
         }
         productDto.setDescription(product.getDescription());
-        productDto.setStatus(product.getStockStatus().toString());
+        productDto.setStatus(product.getStatus());
         productDto.setMarketedBy(product.getMarketedBy());
         productDto.setQuantity(productVariantRepository.getTotalQuantityByProductId(product.getId()));
 
@@ -232,51 +232,25 @@ public class ProductService {
         }
         return productDtos;
     }
-    public List<ProductDto> searchProducts(String keyword,String category)
+    public List<ProductDto> searchProducts(String keyword)
     {
-        List <Product> products= productRepository.searchProducts(keyword,category);
-        List<ProductDto> ListProducts = new ArrayList<>();
-        for (Product x : products) {
-            ProductDto productDto = new ProductDto();
-            List<ProductVariantDTO> productVariantDTOS = new ArrayList<>();
-            for (ProductVariant y : x.getProductVariants()) {
-                ProductVariantDTO productVariantDto = new ProductVariantDTO();
-                productVariantDto.setColor(y.getColor());
-                productVariantDto.setImages(y.getImages());
-                productVariantDto.setSize(y.getSize());
-                productVariantDto.setPrice(y.getPrice());
-//                productVariantDto.setFormatedPrice(formatPrice(y.getPrice()));
-                productVariantDto.setArticleCode(y.getArticleCode());
-                productVariantDto.setQuantity(y.getQuantity());
-                productVariantDto.setImages(y.getImages());
-                productVariantDto.setSize(y.getSize());
-                productVariantDTOS.add(productVariantDto);
+        List<Product> products = productRepository.searchProducts(keyword);
+        List<ProductDto> productDtos = productMapper.toDTOList(products).stream().filter(ProductDto::getStatus).peek(pd -> {
+            pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
+            pd.getProductVariantDTOs().forEach( pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+        }).collect(Collectors.toList());
 
-            }
-//            productDto.setProductVariantDTOS(productVariantDTOS);
-//            productDto.setBrand(x.getBrand());
-            if(!productVariantDTOS.isEmpty())
-            {
-//                productDto.setDefaultVariant(productVariantDTOS.get(0));
-            }
-//            productDto.setCategory(x.getCategory());
-            productDto.setDescription(x.getDescription());
-            productDto.setName(x.getName());
+        return productDtos;
+    }
 
-            productDto.setId(x.getId());
-            productDto.setStatus("AVAILABLE");
-            productDto.setCountryOfOrigin(x.getCountryOfOrigin());
-            productDto.setImportedBy(x.getImportedBy());
-            productDto.setGenericName(x.getGenericName());
-            productDto.setManufacturer(x.getManufacturer());
-            productDto.setMarketedBy(x.getMarketedBy());
-            productDto.setWeight(x.getWeight());
-            productDto.setQuantity(productVariantRepository.getTotalQuantityByProductId(x.getId()));
+    public List<ProductDto> ListAllProducts() {
+        List<Product> products = productRepository.findAll();
+        products = products.stream().filter(Product::getStatus).collect(Collectors.toList());
 
-            ListProducts.add(productDto);
-        }
-        return ListProducts;
-
+        return productMapper.toDTOList(products).stream().peek(pd -> {
+            pd.setDefaultVariantDTO(pd.getProductVariantDTOs().stream().findFirst().orElse(null));
+            pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+        }).collect(Collectors.toList());
 
     }
 }

@@ -245,7 +245,7 @@
                                        <p class="mb-0" th:text="${order.status}"></pclass>
                                    </div>
                                </div>
-                               <button class="btn btn-sm" style="background-color:#ff8000;" th:if="${order.cancellation}">Cancelled</button>
+                               <button class="btn btn-sm" style="background-color:orange;" th:if="${order.cancellation}">Cancelled</button>
                                <button class="btn btn-danger btn-sm" th:unless="${order.cancellation}" onclick="orderCancel(this)" th:data-order-id="${order.id}">Cancel</button>
                            </div>
                        </div>
@@ -373,11 +373,10 @@
                             confirmButtonText: "OK", // This sets the button text
                             allowOutsideClick: false,
                         });
-                    const orderCard=data.closest('.order-card');
-                      if (orderCard) {
-                      console.log('Order card found:', orderCard);
-                      orderCard.style.display = 'none'; // Hide the card
-                        }
+                        data.textContent="Cancelled";
+                        data.style.color="black";
+                        data.style.backgroundColor="orange";
+
             }
             else
             {

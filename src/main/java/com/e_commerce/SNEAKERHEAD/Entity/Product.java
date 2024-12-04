@@ -31,9 +31,8 @@ public class Product{
         @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<ProductVariant> productVariants;
 
-        @Enumerated(EnumType.STRING)
-        @Column(name = "stock_status",columnDefinition = "stock_status")
-        private StockStatus stockStatus;
+        @Column(name = "status")
+        private Boolean status;
 
         @Column(name = "description")
         private String description;

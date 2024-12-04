@@ -182,40 +182,40 @@
                             <i class="bi bi-person-circle fs-1"></i>
                         </div>
                         <div>
-                            <p class="mb-0" th:text="${userEmail}"></p>
+                            <p class="mb-0" th:text="${user.email}"></p>
                         </div>
                     </div>
-                    <button class="btn btn-outline-dark">Edit profile</button>
+                    <button class="btn btn-outline-dark" onclick="window.location.href='/user/editprofile'">Edit profile</button>
                 </div>
             </div>
 
             <div class="row g-4">
                 <!-- Orders Card -->
-                <div class="col-md-4">
+                <a class="col-md-4" href="/user/orders">
                     <div class="feature-card">
                         <i class="bi bi-box fs-3 mb-3"></i>
                         <h5>Orders</h5>
                         <p class="text-muted">Check your order status</p>
                     </div>
-                </div>
+                </a>
 
                 <!-- Addresses Card -->
-                <div class="col-md-4">
+                <a class="col-md-4" href="/user/addresses">
                     <div class="feature-card">
                         <i class="bi bi-geo-alt fs-3 mb-3"></i>
                         <h5>Addresses</h5>
                         <p class="text-muted">Save addresses for hassle free checkout</p>
                     </div>
-                </div>
+                </a>
 
                 <!-- Profile Details Card -->
-                <div class="col-md-4">
+                <a class="col-md-4" href="/user/editprofile">
                     <div class="feature-card">
                         <i class="bi bi-person fs-3 mb-3"></i>
                         <h5>Profile Details</h5>
                         <p class="text-muted">Edit profile</p>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </div>

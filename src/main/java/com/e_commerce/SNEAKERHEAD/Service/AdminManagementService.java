@@ -62,7 +62,7 @@ public class AdminManagementService {
             product.setManufacturer(productDto.getManufacturer());
             product.setMarketedBy(productDto.getMarketedBy());
             product.setWeight(productDto.getWeight());
-            product.setStockStatus(StockStatus.AVAILABLE);
+            product.setStatus(true);
             productRepository.save(product);
         }
     @Transactional

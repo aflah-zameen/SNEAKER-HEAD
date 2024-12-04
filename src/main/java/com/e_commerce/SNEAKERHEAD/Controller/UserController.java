@@ -22,10 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
@@ -78,12 +76,33 @@ public class UserController {
     @GetMapping("/product/filter")
     public ResponseEntity<List<ProductDto>> filterWomenProducts(@RequestParam String filterValue,@RequestParam String category,Model model)
     {
-        Category categoryObject = categoryRepository.findByName(category).orElseThrow(()->new NullPointerException());
-        List<ProductDto> productDTOs = productService.filterProduct(categoryObject,filterValue);
-        for(ProductDto productDto : productDTOs) {
-            System.out.println(productDto.getName());
+        if(category.equals("Available"))
+        {
+            List<Product> product = productRepository.findAll();
+            List<ProductDto> productDtos = productMapper.toDTOList(product).stream().filter(ProductDto::getStatus).peek(pd -> {
+                pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
+                pd.getProductVariantDTOs().forEach( pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+            }).collect(Collectors.toList());
+            switch (filterValue)
+            {
+                case "price-high-low": productDtos = productDtos.stream().sorted(Comparator.comparingDouble(pd -> pd.getDefaultVariantDTO().getPrice())).collect(Collectors.toList());
+                                        Collections.reverse(productDtos);
+                    break;
+                case "price-low-high": productDtos = productDtos.stream().sorted(Comparator.comparingDouble(pd -> pd.getDefaultVariantDTO().getPrice())).collect(Collectors.toList());
+                    break;
+                case "aA-zZ": productDtos = productDtos.stream().sorted(Comparator.comparing(ProductDto::getName)).collect(Collectors.toList());
+                    break;
+                case "zZ-aA": productDtos = productDtos.stream().sorted(Comparator.comparing(ProductDto::getName).reversed()).collect(Collectors.toList());
+                    break;
+                default: productDtos= new ArrayList<>();
+            }
+            return ResponseEntity.ok(productDtos);
         }
-        return ResponseEntity.ok(productDTOs);
+        else {
+            Category categoryObject = categoryRepository.findByName(category).orElseThrow(() -> new NullPointerException());
+            List<ProductDto> productDTOs = productService.filterProduct(categoryObject, filterValue);
+            return ResponseEntity.ok(productDTOs);
+        }
     }
 
 
@@ -119,7 +138,8 @@ public class UserController {
     {
         HttpSession session = request.getSession();
         String email =(String) session.getAttribute("userEmail");
-        model.addAttribute("userEmail",email);
+        WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
+        model.addAttribute("user",user);
         return "overview";
     }
 
@@ -134,6 +154,10 @@ public class UserController {
         {
             System.out.print(order.getUser().getFull_name());
         }
+        Collections.reverse(orders);
+        orders = orders.stream()
+                .sorted(Comparator.comparing(Order::isCancellation)) // Sort false first, true later
+                .collect(Collectors.toList());
         model.addAttribute("orders",orders);
         model.addAttribute("user",user);
         return "orders";
@@ -209,6 +233,10 @@ public class UserController {
             }
         }
         System.out.println(defaultAddressDto.getId());
+        if(userAddresses.isEmpty())
+        {
+            userAddresses=null;
+        }
         model.addAttribute("defaultAddress",defaultAddressDto);
         model.addAttribute("allAddress",userAddresses);
         model.addAttribute("user",user);
@@ -419,16 +447,23 @@ public class UserController {
     @GetMapping("/search")
     public String searchProducts(@RequestParam("keyword") String keyword, Model model)
     {
-        List <ProductDto> products=productService.searchProducts(keyword,"Women");
-
-        for(ProductDto p : products)
-            System.out.println(p.getName());
-        model.addAttribute("keyword",keyword);
-        model.addAttribute("products",products);
-        model.addAttribute("url","women");
-        model.addAttribute("category","Women");
+        List <ProductDto> productDtos=productService.searchProducts(keyword);
+        model.addAttribute("products",productDtos);
+        model.addAttribute("url","shop");
+        model.addAttribute("category","Available");
+        model.addAttribute("breadcrumb","Shop");
         return "productList";
     }
 
+    @GetMapping("/shop")
+    public String showShop(Model model)
+    {
+        List<ProductDto>productDtos = productService.ListAllProducts();
+        model.addAttribute("products",productDtos);
+        model.addAttribute("url","shop");
+        model.addAttribute("category","Available");
+        model.addAttribute("breadcrumb","Shop");
+        return "productList";
+    }
 
 }

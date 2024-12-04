@@ -224,10 +224,10 @@
                     <a th:href="@{/user/addresses/remove/{id}(id=${defaultAddress.id})}" class="text-danger">Remove</a>
                 </div>
             </div>
-            <div th:unless="${defaultAddress.id != null}">(empty)</div>
+            <div th:unless="${defaultAddress.id != null}" class="fs-2 mb-3">(empty)</div>
 
-            <h5 class="mb-3" >Other addresses</h5>
-            <div class="row " th:if="${allAddress}">
+            <h5 class="mb-3" th:if="${allAddress}" >Other addresses</h5>
+            <div class="row " th:if="${allAddress}" >
                 <div class="address-card col-md-4 mx-1 " th:each="address : ${allAddress}" th:if="${address.defaultAddressStatus == false}">
                     <span class="address-type" th:text="${address.type}"></span>
                     <h6 th:text="${address.name}"></h6>
@@ -238,7 +238,7 @@
                     <p class="mb-3" th:text="'Mobile: '+${address.phone}"></p>
                     <div class="address-actions">
                         <a href="/user/addresses/edit">Edit</a>
-                        <a href="/user/addresses/remove" class="text-danger">Remove</a>
+                        <a th:href="@{/user/addresses/remove/{id}(id=${address.id})}" class="text-danger">Remove</a>
                         <a th:href="@{/user/addresses/default/{id}(id=${address.id})}">Set default</a>
                     </div>
                 </div>
