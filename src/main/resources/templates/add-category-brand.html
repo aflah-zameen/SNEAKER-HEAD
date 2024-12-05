@@ -123,8 +123,10 @@ font-family: 'Trirong',serif;
                 <a class="nav-link" href="/admin/orders">Orders</a>
                 <a class="nav-link " href="/admin/product">Products</a>
                 <a class="nav-link" href="/admin/users">Users</a>
-                <a class="nav-link active" href="/admin/category">Categories</a>
-                <a class="nav-link" href="/admin/brands">Brands</a>
+                <a class="nav-link active" href="/admin/category" th:if="${pageContent.formHeader == 'Category'}">Categories</a>
+                <a class="nav-link " href="/admin/category" th:unless="${pageContent.formHeader == 'Category'}">Categories</a>
+                <a class="nav-link " href="/admin/brands" th:if="${pageContent.formHeader == 'Category'}">Brands</a>
+                <a class="nav-link active" th:unless="${pageContent.formHeader == 'Category'}" href="/admin/brands">Brands</a>
                 <a class="nav-link" href="#coupons">Coupons</a>
                 <a class="nav-link" href="#banners">Banners</a>
                 <a class="nav-link" href="#payments">Payments</a>
@@ -141,21 +143,21 @@ font-family: 'Trirong',serif;
     <!-- Main Content -->
     <main class="main-content col-md-11 col-lg-10">
         <div class="content-wrapper">
-            <h2 class="mb-4">Add Category</h2>
+            <h2 class="mb-4" th:text="${pageContent.header}"></h2>
             
             <div class="add-category-form">
                 <form id="categoryForm" novalidate>
                     <div class="mb-4">
-                        <label for="categoryName" class="form-label">Category Name</label>
+                        <label for="categoryName" class="form-label" th:text="${pageContent.formHeader}" id="attribute-type" th:data-attribute-type="${pageContent.formHeader}"></label>
                         <input
                                 type="text"
                                 class="form-control"
                                 id="categoryName"
                                 name="categoryName"
-                                placeholder="Category Name"
+                                th:placeholder="${pageContent.formHeader}"
 
                         >
-                        <div class="invalid-feedback">Category Name cannot be blank.</div>
+                        <div class="invalid-feedback">Name cannot be blank.</div>
                     </div>
 
                     <div class="mb-4">
@@ -172,7 +174,7 @@ font-family: 'Trirong',serif;
                     </div>
 
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary">Add Category</button>
+                        <button type="submit" class="btn btn-primary" th:text="${pageContent.addButton}"></button>
                     </div>
                 </form>
 
@@ -195,11 +197,11 @@ font-family: 'Trirong',serif;
                 // Validate the form
                 const categoryName = document.getElementById("categoryName").value.trim();
                 const description = document.getElementById("description").value.trim();
-
+                let type = document.getElementById("attribute-type").getAttribute('data-attribute-type');
                 let isValid = true;
 
                 if (!categoryName) {
-                    markInvalid(document.getElementById("categoryName"), "Category Name cannot be blank.");
+                    markInvalid(document.getElementById("categoryName"), "Name cannot be blank.");
                     isValid = false;
                 } else {
                     clearInvalid(document.getElementById("categoryName"));
@@ -222,7 +224,7 @@ font-family: 'Trirong',serif;
 
                 try {
                     // Send POST request using fetch
-                    const response = await fetch("/admin/category/add/data", {
+                    const response = await fetch(`/admin/attribute/add/data?type=${type}`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -235,12 +237,13 @@ font-family: 'Trirong',serif;
                     if (response.ok) {
                         Swal.fire({
                             icon: "success",
-                            title: "Category Added",
-                            text: `Category "${result.name}" added successfully!`,
+                            title: "Added",
+                            text: `"${result.name}" added successfully!`,
                             confirmButtonText: "OK", // This sets the button text
                             allowOutsideClick: false,
                         }).then(()=>{
-                          window.location.href="/admin/category";
+                          type=type.toLowerCase();
+                          window.location.href=`/admin/${type}`;
                         });
 
                         // Reset the form
@@ -250,7 +253,7 @@ font-family: 'Trirong',serif;
                         Swal.fire({
                             icon: "error",
                             title: "Error",
-                            text: result.message || "An error occurred while adding the category.",
+                            text: result.message || "An error occurred while adding .",
                             confirmButtonText: "OK", // This sets the button text
                             allowOutsideClick: false,
                         });

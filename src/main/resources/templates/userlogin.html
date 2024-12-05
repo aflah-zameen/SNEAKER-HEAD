@@ -165,7 +165,7 @@
             <div class="sign-in-form">
                 <h1 class="sign-in-title text-center">Sign in</h1>
                 
-                <button class="btn-social btn-google mb-2" onclick="window.location.href='/oauth2/authorization/google'">
+                <button class="btn-social btn-google mb-2" onclick="loginWithGoogle()">
                     <i class="fab fa-google"></i> Sign in with Google
                 </button>
 
@@ -185,7 +185,7 @@
                         <input type="password" class="form-control" id="password" name="password" required>
                         <small id="passwordError" class="text-danger" style="display: none;">Password must be at least 8 characters long and not only spaces.</small>
                     </div>
-                    <small id="credentialError" class="text-danger" style="display: none;">Invalid Email or Password</small>
+                    <small id="credentialError" class="text-danger" style="display: none;"></small>
                     <button type="button" class="btn-sign-in" onclick="submitForm()">Sign in</button>
 
                     <a href="/forgetpassword" class="forgot-password">Forget password?</a>
@@ -225,7 +225,7 @@
     const emailPhoneError = document.getElementById('emailPhoneError');
     const passwordError = document.getElementById('passwordError');
     const responseMessage = document.getElementById('responseMessage');
-    const credentialError = document.getElementById('credentialError')
+    const credentialError = document.getElementById('credentialError');
     credentialError.style.display = 'none';
     // Reset error messages
     emailPhoneError.style.display = 'none';
@@ -259,26 +259,45 @@
     };
     console.log(formData);
     try {
-        // Send POST request
-        const response = await fetch('/logindata', {
-            method: 'POST',
-            headers: {
-        'Content-Type': 'application/x-www-form-urlencoded', // Use form-urlencoded for Spring Security
-            },
-    body: new URLSearchParams(formData).toString(), // Format as form-urlencoded
-        });
+    const response = await fetch('/logindata', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded', // Use form-urlencoded for Spring Security
+        },
+        body: new URLSearchParams(formData).toString(), // Format as form-urlencoded
+    });
 
-        // Handle response
-        if (response.ok) {
-            credentialError.style.display = 'none';
-            window.location.href="/";
-        } else {
-                        credentialError.style.display = 'block';
-        }
+    // Handle response
+    if (response.ok) {
+        credentialError.style.display = 'none'; // Hide error message on successful login
+        window.location.href = "/";
+    } else {
+        // Parse the error response
+        const errorData = await response.json();
+
+        // Display error message
+        credentialError.style.display = 'block'; // Show the error message
+        credentialError.textContent = errorData.message; // Update the message text
+    }
+} catch (error) {
+    // Handle unexpected errors
+    credentialError.style.display = 'block';
+    credentialError.textContent = `An error occurred: ${error.message}`;
+}
+
+}
+async function loginWithGoogle() {
+    try {
+        // Trigger the Google OAuth2 login flow
+        window.location.href = '/oauth2/authorization/google';
     } catch (error) {
-        responseMessage.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+        // Handle any errors
+        const credentialError = document.getElementById('credentialError');
+        credentialError.style.display = 'block';
+        credentialError.textContent = `An error occurred: ${error.message}`;
     }
 }
+
 
 
 

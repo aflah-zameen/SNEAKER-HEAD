@@ -59,6 +59,7 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             WebUser user=new WebUser();
             user.setFull_name(name);
             user.setEmail(email);
+            user.setStatus(true);
             adminManagementService.addUser(user);
             HttpSession session = request.getSession();
             session.setAttribute("role","USER");

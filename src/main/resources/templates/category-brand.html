@@ -7,6 +7,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
     <style>
+        .status-badge {
+         padding: 0.25rem 0.5rem;
+         border-radius: 4px;
+         font-size: 0.875rem;
+     }
+
+     .status-badge.list {
+         background-color: #28a745;
+         color: white;
+     }
+
+     .status-badge.unlist {
+         background-color: #dc3545;
+         color: white;
+     }
         .navbar-brand {
  font-weight: 600;
  color: black;
@@ -112,8 +127,10 @@ font-family: 'Trirong',serif;
                 <a class="nav-link" href="/admin/orders">Orders</a>
                 <a class="nav-link " href="/admin/product">Products</a>
                 <a class="nav-link" href="/admin/users">Users</a>
-                <a class="nav-link active" href="/admin/category">Categories</a>
-                <a class="nav-link" href="/admin/brands">Brands</a>
+                <a class="nav-link active" href="/admin/category" th:if="${pageContent.formHeader == 'Category'}">Categories</a>
+                <a class="nav-link " href="/admin/category" th:unless="${pageContent.formHeader == 'Category'}">Categories</a>
+                <a class="nav-link " href="/admin/brands" th:if="${pageContent.formHeader == 'Category'}">Brands</a>
+                <a class="nav-link active" th:unless="${pageContent.formHeader == 'Category'}" href="/admin/brands">Brands</a>
                 <a class="nav-link" href="#coupons">Coupons</a>
                 <a class="nav-link" href="#banners">Banners</a>
                 <a class="nav-link" href="#payments">Payments</a>
@@ -152,7 +169,14 @@ font-family: 'Trirong',serif;
                                 <tr th:each="attribute : ${attributes}">
                                     <td th:text="${attribute.name}"></td>
                                     <td class="text-end">
-                                        <span class="list-badge me-2">LIST</span>
+                                        <button class="bg-danger me-2 border-0 " style="color:white; border-radius:5px" onclick="deleteAttribute(this)" th:data-attribute-type="${pageContent.formHeader}" th:data-attribute-id="${attribute.id}" >Remove</button>
+                                        <button onclick="updateStatus(this)"  class="status-badge border-0 w-25"
+                                                th:text="${attribute.status} ? 'Unlist' : 'List'"
+                                                th:classappend="${attribute.status} ? 'unlist' : 'list'"
+                                                th:data-current-status="${attribute.status}"
+                                                th:data-attribute-type="${pageContent.formHeader}"
+                                                th:data-attribute-id="${attribute.id}"  >
+                                        </button>
                                         <button class="btn btn-sm btn-link" onclick="editAttribute()" th:data-attribute-id="${attribute.id}" th:data-attribute-type="${pageContent.formHeader}">
                                             <i class="bi bi-pencil"></i>
                                         </button>
@@ -170,6 +194,8 @@ font-family: 'Trirong',serif;
 </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         function editAttribute() {
     // Get the button element that triggered this function
@@ -193,6 +219,97 @@ font-family: 'Trirong',serif;
             let type = data.getAttribute('data-attribute-type');
             window.location.href = `/admin/attribute/add?type=${type}`;
         }
+        function updateStatus(data)
+    {
+        const status= data.getAttribute("data-current-status") == "true" ? true : false;
+        const attributeId = parseInt(data.getAttribute("data-attribute-id"));
+        let type = data.getAttribute("data-attribute-type");
+        console.log(attributeId);
+        fetch(`/admin/attribute/status?status=${status}&attributeId=${attributeId}&type=${type}`,{
+            method : 'PUT',
+        })
+        .then(response => {
+            if(response.ok)
+            {
+                 Swal.fire({
+                                icon: "success",
+                                title: "Success",
+                                text: "Status updated!",
+                                confirmButtonText: "OK",
+                                allowOutsideClick: false,
+                            });
+                  data.textContent = status ? "List" : "Unlist";
+                  data.classList.remove( status ? "unlist" : "list");
+                  data.classList.add(status ? "list" : "unlist");
+                  data.setAttribute("data-current-status", status ? false : true);
+            }
+            else
+            {
+                 Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Some issues while updating status",
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+
+            }
+        })
+        .catch(error => {
+        // Handle network errors or other unexpected issues
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An unexpected error occurred. Please try again.",
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+        });
+    });
+    }
+        function deleteAttribute(data)
+        {
+            const attributeId = Number(data.getAttribute("data-attribute-id"));
+            let type = data.getAttribute("data-attribute-type");
+            fetch(`/admin/attribute/remove?type=${type}&attributeId=${attributeId}`,{
+                method:'GET',
+
+            })
+            .then(response => {
+            if(response.ok)
+            {
+                 Swal.fire({
+                                icon: "success",
+                                title: "Removed",
+                                text: "Removed successfuly",
+                                confirmButtonText: "OK",
+                                allowOutsideClick: false,
+                            });
+                  data.closest('tr').remove();
+            }
+            else
+            {
+                 Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Some issues while removing ",
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+
+            }
+        })
+        .catch(error => {
+        // Handle network errors or other unexpected issues
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An unexpected error occurred. Please try again.",
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+        });
+    });
+        }
+
     </script>
 </body>
 </html>

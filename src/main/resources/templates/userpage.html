@@ -7,6 +7,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
 
+        .block{
+        width:5rem;
+        background-color:red;
+        color:white;
+        border-radius:5px;
+        }
+        .unblock{
+        width:5rem;
+        background-color:green;
+        color:white;
+        border-radius:5px;
+        }
         .sidebar {
             min-height: 100vh;
             border-right: 1px solid #dee2e6;
@@ -130,134 +142,76 @@
                             <td th:text="${user.phone}"></td>
                             <td th:text="${user.email}"></td>
                             <td th:text="${user.date}"></td>
-                            <td><button class="btn btn-sm btn-danger">Block</button></td>
+                            <td>
+                                <button onclick="blockUser(this)"  class="border-0"
+                                        th:text="${user.status} ? 'Block' : 'Unblock'"
+                                        th:classappend="${user.status} ? 'block' : 'unblock'"
+                                        th:data-current-status="${user.status}"
+                                        th:data-user-id="${user.id}"  >
+                                </button>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <nav aria-label="Page navigation" class="mt-4">
-                    <ul class="pagination justify-content-center" id="pagination">
-                        <!-- Pagination will be inserted here by JavaScript -->
-                    </ul>
-                </nav>
+<!--                <nav aria-label="Page navigation" class="mt-4">-->
+<!--                    <ul class="pagination justify-content-center" id="pagination">-->
+<!--                        &lt;!&ndash; Pagination will be inserted here by JavaScript &ndash;&gt;-->
+<!--                    </ul>-->
+<!--                </nav>-->
             </main>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Sample user data
+        function blockUser(data)
+        {
+            let userId = Number(data.getAttribute('data-user-id'));
+             const status = data.getAttribute("data-current-status") == "true" ? true : false;
+            fetch(`/admin/users/block?userId=${userId}&status=${status}`,{
+                method : 'PUT',
+            })
+            .then(response => {
+            if(response.ok)
+            {
+                 Swal.fire({
+                                icon: "success",
+                                title: "Blocked",
+                                text: "User is blocked",
+                                confirmButtonText: "OK",
+                                allowOutsideClick: false,
+                            });
+                  data.textContent = status ? "Unblock" : "block";
+                  data.classList.remove( status ? "block" : "unblock");
+                  data.classList.add(status ? "unblock" : "block");
+                  data.setAttribute("data-current-status", status ? false : true);
+            }
+            else
+            {
+                 Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Some issues while updating status",
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
 
-        let currentPage = 1;
-        const usersPerPage = 10;
-        let currentSort = 'Date Joined';
-
-        function renderUsers() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            const filteredUsers = users.filter(user =>
-                user.name.toLowerCase().includes(searchTerm) ||
-                user.email.toLowerCase().includes(searchTerm) ||
-                user.mobile.includes(searchTerm)
-            );
-
-            const sortedUsers = [...filteredUsers].sort((a, b) => {
-                switch (currentSort) {
-                    case 'Date Joined':
-                        return new Date(b.joinedOn.split('/').reverse().join('-')) - new Date(a.joinedOn.split('/').reverse().join('-'));
-                    case 'No of orders':
-                        return b.orders - a.orders;
-                    case 'Alphabetically, A-Z':
-                        return a.name.localeCompare(b.name);
-                    case 'Alphabetically, Z-A':
-                        return b.name.localeCompare(a.name);
-                    case 'Recent orders':
-                        return b.orders - a.orders;
-                    default:
-                        return 0;
-                }
-            });
-
-            const startIndex = (currentPage - 1) * usersPerPage;
-            const endIndex = startIndex + usersPerPage;
-            const currentUsers = sortedUsers.slice(startIndex, endIndex);
-
-            const tableBody = document.getElementById('userTableBody');
-            tableBody.innerHTML = '';
-
-            currentUsers.forEach(user => {
-                const row = `
-                    <tr>
-                        <td>${user.id}</td>
-                        <td>${user.name}</td>
-                        <td>${user.mobile}</td>
-                        <td>${user.email}</td>
-                        <td>${user.joinedOn}</td>
-                        <td><button class="btn btn-sm btn-danger">Block</button></td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-
-            renderPagination(sortedUsers.length);
+            }
+        })
+        .catch(error => {
+        // Handle network errors or other unexpected issues
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An unexpected error occurred. Please try again.",
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+        });
+    });
         }
-
-        function renderPagination(totalUsers) {
-            const totalPages = Math.ceil(totalUsers / usersPerPage);
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-
-            if (totalPages > 1) {
-                let paginationHTML = `
-                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                        <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
-                    </li>
-                `;
-
-                for (let i = 1; i <= totalPages; i++) {
-                    paginationHTML += `
-                        <li class="page-item ${currentPage === i ? 'active' : ''}">
-                            <a class="page-link" href="#" data-page="${i}">${i}</a>
-                        </li>
-                    `;
-                }
-
-                paginationHTML += `
-                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                        <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
-                    </li>
-                `;
-
-                pagination.innerHTML = paginationHTML;
-            }
-        }
-
-        // Event Listeners
-        document.getElementById('searchInput').addEventListener('input', () => {
-            currentPage = 1;
-            renderUsers();
-        });
-
-        document.querySelector('.dropdown-menu').addEventListener('click', (e) => {
-            if (e.target.classList.contains('dropdown-item')) {
-                currentSort = e.target.getAttribute('data-sort');
-                document.getElementById('currentSort').textContent = currentSort;
-                currentPage = 1;
-                renderUsers();
-            }
-        });
-
-        document.getElementById('pagination').addEventListener('click', (e) => {
-            e.preventDefault();
-            if (e.target.tagName === 'A' && e.target.hasAttribute('data-page')) {
-                currentPage = parseInt(e.target.getAttribute('data-page'));
-                renderUsers();
-            }
-        });
-
-        // Initial render
-        renderUsers();
     </script>
 </body>
 </html>

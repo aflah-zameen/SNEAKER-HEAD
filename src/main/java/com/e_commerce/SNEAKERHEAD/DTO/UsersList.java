@@ -15,4 +15,5 @@ public class UsersList {
     private String email;
     private String date;
     private Long phone;
+    private Boolean status;
 }

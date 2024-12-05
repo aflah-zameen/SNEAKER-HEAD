@@ -73,7 +73,6 @@ public class AdminManagementService {
         {
             return "Already Exist";
         }
-        category.setCategoryStatus(CategoryStatus.ACTIVE);
         categoryRepository.save(category);
         return "Successfully added";
     }
@@ -87,9 +86,7 @@ public class AdminManagementService {
             return "Already Exist";
         }
         user.setJoin_date(LocalDate.now());
-        user.setIs_blocked(false);
         user.setRole(UserRole.USER);
-        user.setStatus(UserStatus.ACTIVE);
         if(user.getPassword() != null) {
             String hashedPassword = passwordEncoder.encode(user.getPassword());
             user.setPassword(hashedPassword);

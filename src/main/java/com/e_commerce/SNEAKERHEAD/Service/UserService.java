@@ -37,6 +37,7 @@ public class UserService {
             usersList.setDate(x.getJoin_date().toString());
             usersList.setPhone(x.getPhone());
             usersList.setEmail(x.getEmail());
+            usersList.setStatus(x.getStatus());
             users.add(usersList);
         }
         return users;

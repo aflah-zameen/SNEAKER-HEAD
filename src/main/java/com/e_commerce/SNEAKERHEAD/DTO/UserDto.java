@@ -25,6 +25,6 @@ public class UserDto {
     private Long phone;
     private LocalDate joinDate;
     private String gender;
-    private String Status;
+    private boolean status;
     private AddressDto defaultAddress;
 }

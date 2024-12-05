@@ -1,6 +1,7 @@
 package com.e_commerce.SNEAKERHEAD.Security;
 
 import com.e_commerce.SNEAKERHEAD.Service.CustomOAuth2UserService;
+import com.e_commerce.SNEAKERHEAD.Service.CustomOidcUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,9 @@ public class SecurityConfiguration {
 
     @Autowired
     CustomFailureHandler customFailureHandler;
+
+    @Autowired
+    CustomOidcUserService customOidcUserService;
 
     @Bean
     public GrantedAuthorityDefaults grantedAuthorityDefaults() {
@@ -78,9 +82,10 @@ public class SecurityConfiguration {
                 .oauth2Login(oauth -> oauth
                         .loginPage("/userlogin")
                         .successHandler(customSuccessHandler)
-                        .failureUrl("/error")
+                        .failureHandler(customFailureHandler)
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userAuthoritiesMapper(grantedAuthoritiesMapper()))
+                                .userAuthoritiesMapper(grantedAuthoritiesMapper())
+                                .oidcUserService(customOidcUserService))
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(withDefaults());
@@ -94,4 +99,5 @@ public class SecurityConfiguration {
         provider.setUserDetailsService(userDetailsService);
         return provider;
     }
+
 }

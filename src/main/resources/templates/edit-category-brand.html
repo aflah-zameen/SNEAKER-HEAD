@@ -41,7 +41,7 @@
 
   .nav-link.active {
       background-color: #f8f9fa;
-      font-weight: bold;
+
   }
 
   .header {
@@ -90,9 +90,6 @@
           transform: translateX(0);
       }
 
-      .main-content {
-          margin-left: 0;
-      }
 
       .header {
           left: 0;
@@ -119,8 +116,10 @@
                 <a class="nav-link" href="#orders">Orders</a>
                 <a class="nav-link active" href="#products">Products</a>
                 <a class="nav-link" href="/admin/users">Users</a>
-                <a class="nav-link" href="/admin/category">Categories</a>
-                <a class="nav-link" href="/admin/brands">Brands</a>
+                <a class="nav-link active" href="/admin/category" th:if="${pageContent.formHeader == 'Category'}">Categories</a>
+                <a class="nav-link " href="/admin/category" th:unless="${pageContent.formHeader == 'Category'}">Categories</a>
+                <a class="nav-link " href="/admin/brands" th:if="${pageContent.formHeader == 'Category'}">Brands</a>
+                <a class="nav-link active" th:unless="${pageContent.formHeader == 'Category'}" href="/admin/brands">Brands</a>
                 <a class="nav-link" href="#coupons">Coupons</a>
                 <a class="nav-link" href="#banners">Banners</a>
                 <a class="nav-link" href="#payments">Payments</a>
@@ -247,8 +246,8 @@
                    if (response.ok) {
                        Swal.fire({
                            icon: "success",
-                           title: "attribute Added",
-                           text: `attribute "${result.name}" updated successfully!`,
+                           title: "Updated",
+                           text: `"${result.name}" updated successfully!`,
                            confirmButtonText: "OK", // This sets the button text
                            allowOutsideClick: false,
                        }).then(()=>{
@@ -263,7 +262,7 @@
                        Swal.fire({
                            icon: "error",
                            title: "Error",
-                           text: result.message || "An error occurred while adding the attribute.",
+                           text: result.message || "An error occurred while updating",
                            confirmButtonText: "OK", // This sets the button text
                            allowOutsideClick: false,
                        });

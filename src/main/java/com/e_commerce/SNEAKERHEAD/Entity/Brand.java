@@ -26,9 +26,8 @@ public class Brand {
     @Column(name = "description")
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "brand_status")
-    private BrandStatus brandStatus;
+    @Column(name = "status")
+    private Boolean status;
 
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL , orphanRemoval = true)
     private List<Product> products;

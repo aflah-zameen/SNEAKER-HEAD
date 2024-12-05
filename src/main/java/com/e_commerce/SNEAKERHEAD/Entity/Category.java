@@ -25,9 +25,8 @@ public class Category {
     @Column(name = "name")
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category_status")
-    private CategoryStatus categoryStatus;
+    @Column(name = "status")
+    private Boolean status;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL , orphanRemoval = true)
     private List<Product> products;

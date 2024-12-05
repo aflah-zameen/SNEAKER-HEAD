@@ -34,8 +34,8 @@ public class WebUser{
     @Column(name = "password")
     private String password;
 
-    @Column(name = "is_blocked")
-    private Boolean is_blocked;
+    @Column(name = "status")
+    private Boolean status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
@@ -47,9 +47,6 @@ public class WebUser{
     @Column(name="gender")
     private String gender;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private UserStatus status;
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<UserAddress> addresses;
