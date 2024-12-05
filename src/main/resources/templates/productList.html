@@ -25,6 +25,9 @@
          border: 2px solid #000;
      }
 
+    .in-stock {
+        color: green;
+    }
      .product-price {
          font-size: 18px;
          margin-top: 10px;
@@ -109,7 +112,7 @@ z
         <h1 class="mb-4" th:if="${category}" th:text="${category} +' Collections'" id="collection-type" th:data-category="${category}"></h1>
 
         <!-- Filters -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 " id="all-filter">
             <div class="d-flex">
                 <div class="dropdown me-2">
                     <button class="filter-button dropdown-toggle" type="button" id="shoeSizeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -186,7 +189,7 @@ z
         <!-- Products Grid -->
         <div class="row" id="productsGrid" th:if="${products}">
             <div class="col-md-2" id="product-card"  th:each="product : ${products}">
-                <div class="product-card" th:id="${product.id}">
+                <div class="product-card" th:id="${product.id}" style=" height:23rem;">
                     <a th:href="@{/user/product/detail/{id}(id=${product.id})}">     <img th:src="${product.defaultVariantDTO.images.get(0)}" alt="WMN'S DUNK LOW" class="product-image">
                     </a>
                         <div class="product-brand" th:text="${product.brandName}"></div>
@@ -198,11 +201,15 @@ z
                                   th:data-product-id ="${product.id}"
                                   th:data-product-color = "${entry.color}"
                                   th:data-product-image = "${entry.images.get(0)}"
+                                  th:data-product-quantity="${entry.quantity}"
                                   th:data-product-price = "${entry.price}"
                                   th:onclick="'changeContent(this);'">
                             </span>
                         </div>
                         <div class="product-name" th:text="${product.name}"></div>
+                    <p class="mb-0" th:text="${product.DefaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}"
+                       th:classappend="${product.DefaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}" id="stock-element">
+                    </p>
                         <div class="product-price" th:text="'₹'+${product.DefaultVariantDTO.price}"></div>
 
                 </div>
@@ -246,7 +253,8 @@ z
     return formatter.format(price);
 }
         // Filter functionality
-        document.querySelectorAll('.dropdown-menu a').forEach(item => {
+        const allFilter = document.getElementById("all-filter");
+        allFilter.querySelectorAll('.dropdown-menu a').forEach(item => {
             item.addEventListener('click', event => {
                 event.preventDefault();
                 const filterType = event.target.closest('.dropdown').querySelector('.filter-button').textContent.trim();
@@ -285,12 +293,17 @@ z
                                             data-product-id="${product.id}"
                                             data-product-color="${variant.color || 'N/A'}"
                                             data-product-image="${variant.images?.[0] || imageSrc}"
+                                            data-product-quantity="${variant.quantity || 'N/A'}"
                                             data-product-price="${variant.formattedPrice || 'N/A'}"
                                             onclick="changeContent(this);">
                                         </span>
                                     `).join('') || ''}
                                 </div>
                                 <div class="product-name">${product.name || 'Unnamed Product'}</div>
+                               <p id="stock-element"
+                       class="${product.defaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}">
+                        ${product.defaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}
+                    </p>
                                 <div class="product-price">${formattedPrice || 'N/A'}</div>
                             </div>
                           </div>`;
@@ -322,6 +335,7 @@ z
             const productCard = document.getElementById(productId);
             const newPrice = data.getAttribute('data-product-price');
             const image = data.getAttribute('data-product-image');
+            const quantity=data.getAttribute('data-product-quantity');
             console.log(image);
 
             if(productCard)
@@ -337,6 +351,9 @@ z
                 {
                     priceElement.textContent = '₹'+newPrice;
                 }
+                const stockStatus = document.getElementById("stock-element");
+                stockStatus.textContent = quantity > 0 ? "In stock" : "Out of stock";
+                stockStatus.style.color = quantity > 0 ? "green" : "red";
             }
         }
     </script>

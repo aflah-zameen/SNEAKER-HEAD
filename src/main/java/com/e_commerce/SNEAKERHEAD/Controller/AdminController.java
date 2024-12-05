@@ -1,9 +1,11 @@
 package com.e_commerce.SNEAKERHEAD.Controller;
 
 import com.e_commerce.SNEAKERHEAD.DTO.*;
+import com.e_commerce.SNEAKERHEAD.Entity.Brand;
 import com.e_commerce.SNEAKERHEAD.Entity.Category;
 import com.e_commerce.SNEAKERHEAD.Entity.Order;
 import com.e_commerce.SNEAKERHEAD.Entity.Product;
+import com.e_commerce.SNEAKERHEAD.Enums.BrandStatus;
 import com.e_commerce.SNEAKERHEAD.Enums.CategoryStatus;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
 import com.e_commerce.SNEAKERHEAD.Service.*;
@@ -19,10 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 @RequestMapping("/admin")
@@ -152,32 +151,75 @@ AdminManagementService adminManagementService;
 
 
     @GetMapping("/category")
-    public String AdminCategory(Model model)
+    public String showCategory(Model model)
     {
         List<Category> categoryList = categoryRepository.findAll();
-        Set<Category> finallist= new HashSet<>();
-        for(Category x : categoryList )
+        Map<String,String> pageContent = new HashMap<>();
+        pageContent.put("header","Categories");
+        pageContent.put("addButton","+ Add Category");
+        pageContent.put("formHeader","Category");
+        model.addAttribute("attributes", categoryList);
+        model.addAttribute("pageContent",pageContent);
+        return "category-brand.html";
+    }
+    @GetMapping("/brands")
+    public String showBrand(Model model)
+    {
+        List<Brand> brandList = brandRepository.findAll();
+        Map<String,String> pageContent = new HashMap<>();
+        pageContent.put("header","Brands");
+        pageContent.put("addButton","+ Add Brand");
+        pageContent.put("formHeader","Brand");
+        model.addAttribute("attributes", brandList);
+        model.addAttribute("pageContent",pageContent);
+        return "category-brand.html";
+    }
+
+    @GetMapping("/attribute/edit")
+    public String EditCategory(Model model,@RequestParam Long id,@RequestParam String type)
+    {
+        Map<String,String> pageContent = new HashMap<>();
+        if(type.equals("Category"))
         {
-            finallist.add(x);
+            Category category = categoryRepository.findById(id).orElseThrow(()->new NullPointerException());
+            model.addAttribute("attribute",category);
+            pageContent.put("header","Edit Category");
+            pageContent.put("addButton","Save Category");
+            pageContent.put("formHeader","Category");
         }
+        else
+        {
+            Brand brand = brandRepository.findById(id).orElseThrow(()->new NullPointerException());
+            model.addAttribute("attribute",brand);
+            pageContent.put("header","Edit Brands");
+            pageContent.put("addButton","Save Brand");
+            pageContent.put("formHeader","Brands");
+        }
+        model.addAttribute("pageContent",pageContent);
 
-        model.addAttribute("categories", finallist);
-        return "category";
+        return "edit-category-brand.html";
     }
 
-    @GetMapping("/category/edit")
-    public String EditCategory(Model model,@RequestParam Long id)
+    @GetMapping("/attribute/add")
+    public String AddCategory(@RequestParam String type,Model model)
     {
-        Category category = categoryRepository.findById(id).orElseThrow(()->new NullPointerException());
-        model.addAttribute("category",category);
-        return "editcategory";
-    }
-
-    @GetMapping("/category/add")
-    public String AddCategory(Model model)
-    {
-        model.addAttribute("category",new Category());
-        return "addcategory";
+        Map<String,String> pageContent = new HashMap<>();
+        System.out.println(type.equals("Category"));
+        if(type.equals("Category"))
+        {
+            pageContent.put("header","Add Category");
+            pageContent.put("addButton","+ Add Category");
+            pageContent.put("formHeader","Category");
+        }
+        if(type.equals("Brand"))
+        {
+            pageContent.put("header","Add Brand");
+            pageContent.put("addButton","+ Add Brand");
+            pageContent.put("formHeader","Brand");
+        }
+        model.addAttribute("pageContent",pageContent);
+        model.addAttribute("attribute",new Attribute());
+        return "add-category-brand";
     }
 
     @PostMapping(value = "/category/add/data")
@@ -195,21 +237,39 @@ AdminManagementService adminManagementService;
         return ResponseEntity.ok(Map.of("name", category.getName(), "message", "Category added successfully."));
     }
 
-    @PostMapping(value = "/category/edit/data")
-    public ResponseEntity<?> UpdateCategory(@Valid @RequestBody Category category)
+    @PostMapping(value = "/attribute/edit/data")
+    public ResponseEntity<?> UpdateCategory(@RequestBody Attribute attribute)
     {
-        Category temp = categoryRepository.findById(category.getId()).orElseThrow(()-> new NullPointerException());
+        if(attribute.getType().equals("Category"))
+        {
+            Category temp = categoryRepository.findById(attribute.getId()).orElseThrow(()-> new NullPointerException());
 
-        if ((temp.getName().equals(category.getName()) && temp.getDescription().equals(category.getDescription())) || (!temp.getName().equals(category.getName()) && categoryRepository.existsByName(category.getName())) ) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "Category already exists."));
+            if ((temp.getName().equals(attribute.getName()) && temp.getDescription().equals(attribute.getDescription())) || (!temp.getName().equals(attribute.getName()) && categoryRepository.existsByName(attribute.getName())) ) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "Category already exists."));
+            }
+            temp.setName(attribute.getName());
+            temp.setDescription(attribute.getDescription());
+            temp.setId(attribute.getId());
+            temp.setCategoryStatus(CategoryStatus.ACTIVE);
+            categoryRepository.save(temp);
         }
-        temp.setName(category.getName());
-        temp.setDescription(category.getDescription());
-        temp.setId(category.getId());
-        temp.setCategoryStatus(CategoryStatus.ACTIVE);
-        categoryRepository.save(temp);
-        return ResponseEntity.ok(Map.of("name", category.getName(), "message", "Category updated successfully."));
+        else
+        {
+            Brand temp = brandRepository.findById(attribute.getId()).orElseThrow(()-> new NullPointerException());
+
+            if ((temp.getName().equals(attribute.getName()) && temp.getDescription().equals(attribute.getDescription())) || (!temp.getName().equals(attribute.getName()) && categoryRepository.existsByName(attribute.getName())) ) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "Brand already exists."));
+            }
+            temp.setName(attribute.getName());
+            temp.setDescription(attribute.getDescription());
+            temp.setId(attribute.getId());
+            temp.setBrandStatus(BrandStatus.ACTIVE);
+            brandRepository.save(temp);
+        }
+
+        return ResponseEntity.ok(Map.of("name", attribute.getName(), "message", "Updated successfully."));
     }
 
     @GetMapping("/users")
@@ -246,5 +306,18 @@ AdminManagementService adminManagementService;
         return ResponseEntity.status(HttpStatus.OK).body("Confirmed cancellation");
     }
 
+    @ResponseBody
+    @PutMapping("/product/status")
+    public ResponseEntity<?> updateStatus(@RequestParam Boolean status ,@RequestParam Long productId )
+    {
+        Product product = productRepository.findById(productId).orElse(new Product());
+        if (product == null)
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
+        }
+        product.setStatus(status ? false : true);
+        productRepository.save(product);
+        return ResponseEntity.status(HttpStatus.OK).body("success");
+    }
 
 }

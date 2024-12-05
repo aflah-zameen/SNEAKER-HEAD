@@ -23,8 +23,8 @@ public class Brand {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "image")
-    private String image;
+    @Column(name = "description")
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "brand_status")

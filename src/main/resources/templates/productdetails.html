@@ -337,7 +337,25 @@
 
             //render-stock-left
             const stockLeftElement=document.getElementById("stock-left-element");
-            stockLeftElement.textContent = "Stock left : "+variant.quantity;
+            if(variant.quantity > 0)
+            {
+                stockLeftElement.textContent = "Stock left : "+variant.quantity;
+                 stockLeftElement.style.color = "black";
+                    const hideElements = document.querySelectorAll('.quantity-check');
+                    hideElements.forEach(element => {
+                    element.classList.remove('d-none');
+                    })
+            }
+            else
+                {
+                    stockLeftElement.textContent = "Out of stock";
+                    stockLeftElement.style.color = "red";
+                    const hideElements = document.querySelectorAll('.quantity-check');
+                    hideElements.forEach(element => {
+                    element.classList.add('d-none');
+                    })
+                }
+
 
             //update-max-quantity-in-fields
             const incrementButton = document.getElementById("increment-button");

@@ -45,49 +45,12 @@ public class ProductService {
 
     public List<ProductDto> categoryProduct(Category category)
     {
-        List<Product> tempProduct = productRepository.findByCategory(category);
-        List<ProductDto> categoryProductDtos = productMapper.toDTOList(tempProduct);
-//        for (Product x : tempProduct)
-//        {
-//            ProductDto productDto = new ProductDto();
-//            List<ProductVariantDTO> productVariantDtos = new ArrayList<>();
-//            for(ProductVariant y : x.getProductVariants())
-//            {
-//                ProductVariantDTO productVariantDto = new ProductVariantDTO();
-//                productVariantDto.setColor(y.getColor());
-//                productVariantDto.setImages(y.getImages());
-//                productVariantDto.setSize(y.getSize());
-//                productVariantDto.setPrice(y.getPrice());
-//                productVariantDto.setFormatedPrice(formatPrice(y.getPrice()));
-//                productVariantDto.setArticleCode(y.getArticleCode());
-//                productVariantDto.setQuantity(y.getQuantity());
-//                productVariantDto.setImages(y.getImages());
-//                productVariantDto.setSize(y.getSize());
-//                productVariantDtos.add(productVariantDto);
-//
-//            }
-//            productDto.setProductVariantDTOS(productVariantDtos);
-//            productDto.setBrand(x.getBrand());
-//            if(!productVariantDtos.isEmpty())
-//            {
-//                productDto.setDefaultVariant(productVariantDtos.get(0));
-//            }            productDto.setCategory(x.getCategory());
-//            productDto.setDescription(x.getDescription());
-//            productDto.setName(x.getName());
-//            productDto.setQuantity(productVariantRepository.getTotalQuantityByProductId(x.getId()));
-//            productDto.setId(x.getId());
-//            productDto.setStatus("AVAILABLE");
-//            productDto.setCountryOfOrigin(x.getCountryOfOrigin());
-//            productDto.setImportedBy(x.getImportedBy());
-//            productDto.setGenericName(x.getGenericName());
-//            productDto.setManufacturer(x.getManufacturer());
-//            productDto.setMarketedBy(x.getMarketedBy());
-//            productDto.setWeight(x.getWeight());
-//
-//            SortedProducts.add(productDto);
-//        }
+        List<Product> products = productRepository.findByCategory(category);
 
-        return  categoryProductDtos;
+        return  productMapper.toDTOList(products).stream().filter(ProductDto::getStatus).peek(pd -> {
+            pd.setDefaultVariantDTO(pd.getProductVariantDTOs().stream().findFirst().orElse(null));
+            pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+        } ).collect(Collectors.toList());
     }
     public ProductDto FindProduct(Long id)
     {
@@ -103,47 +66,10 @@ public class ProductService {
     }
 
     public List<ProductDto> ListProduct() {
-        List<ProductDto> ListProducts = new ArrayList<>();
         List<Product> products = productRepository.findAll();
-        for (Product x : products) {
-            ProductDto productDto = new ProductDto();
-            List<ProductVariantDTO> productVariantDTOS = new ArrayList<>();
-            for (ProductVariant y : x.getProductVariants()) {
-                ProductVariantDTO productVariantDto = new ProductVariantDTO();
-                productVariantDto.setColor(y.getColor());
-                productVariantDto.setImages(y.getImages());
-                productVariantDto.setSize(y.getSize());
-                productVariantDto.setPrice(y.getPrice());
-//                productVariantDto.setFormatedPrice(formatPrice(y.getPrice()));
-                productVariantDto.setArticleCode(y.getArticleCode());
-                productVariantDto.setQuantity(y.getQuantity());
-                productVariantDto.setImages(y.getImages());
-                productVariantDto.setSize(y.getSize());
-                productVariantDTOS.add(productVariantDto);
-
-            }
-//            productDto.setProductVariantDTOS(productVariantDTOS);
-//            productDto.setBrand(x.getBrand());
-            if(!productVariantDTOS.isEmpty())
-            {
-//                productDto.setDefaultVariant(productVariantDTOS.get(0));
-            }
-//            productDto.setCategory(x.getCategory());
-            productDto.setDescription(x.getDescription());
-            productDto.setName(x.getName());
-
-            productDto.setId(x.getId());
-            productDto.setCountryOfOrigin(x.getCountryOfOrigin());
-            productDto.setImportedBy(x.getImportedBy());
-            productDto.setGenericName(x.getGenericName());
-            productDto.setManufacturer(x.getManufacturer());
-            productDto.setMarketedBy(x.getMarketedBy());
-            productDto.setWeight(x.getWeight());
-            productDto.setQuantity(productVariantRepository.getTotalQuantityByProductId(x.getId()));
-
-            ListProducts.add(productDto);
-        }
-        return ListProducts;
+        return productMapper.toDTOList(products).stream().peek(pd -> {pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
+            pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+        pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(ProductVariantDTO::getQuantity).sum());}).collect(Collectors.toList());
     }
 
     public AddProduct addProduct()

@@ -17,16 +17,22 @@ font-family: 'Trirong',serif;
 }
 
 .sidebar {
-    width: var(--sidebar-width);
-    position: fixed;
-    height: 100vh;
-    border-right: 1px solid #dee2e6;
-    background: white;
-    z-index: 1000;
-}
+         min-height: 100vh;
+         border-right: 1px solid #dee2e6;
+     }
+
+     .sidebar .nav-link {
+         color: #333;
+         padding: 0.8rem 1rem;
+         border-bottom: 1px solid #dee2e6;
+     }
+
+     .sidebar .nav-link:hover,
+     .sidebar .nav-link.active {
+         background-color: #f8f9fa;
+     }
 
 .main-content {
-    margin-left: var(--sidebar-width);
     padding: 2rem;
 }
 
@@ -42,7 +48,7 @@ font-family: 'Trirong',serif;
 
 .nav-link.active {
     background-color: #f8f9fa;
-    font-weight: bold;
+
 }
 
 .list-badge {
@@ -82,9 +88,6 @@ font-family: 'Trirong',serif;
         transform: translateX(0);
     }
 
-    .main-content {
-        margin-left: 0;
-    }
 
     .header {
         left: 0;
@@ -106,10 +109,10 @@ font-family: 'Trirong',serif;
         <div class="col-md-3 col-lg-2 px-0 sidebar">
             <nav class="nav flex-column">
                 <a class="nav-link" href="#dashboard">Dashboard</a>
-                <a class="nav-link" href="#orders">Orders</a>
-                <a class="nav-link active" href="#products">Products</a>
+                <a class="nav-link" href="/admin/orders">Orders</a>
+                <a class="nav-link " href="/admin/product">Products</a>
                 <a class="nav-link" href="/admin/users">Users</a>
-                <a class="nav-link" href="/admin/category">Categories</a>
+                <a class="nav-link active" href="/admin/category">Categories</a>
                 <a class="nav-link" href="/admin/brands">Brands</a>
                 <a class="nav-link" href="#coupons">Coupons</a>
                 <a class="nav-link" href="#banners">Banners</a>
@@ -124,33 +127,33 @@ font-family: 'Trirong',serif;
             </nav>
         </div>
     <!-- Main Content -->
-    <main class="main-content">
+    <main class=" col-md-9 col-lg-10 main-content">
         <div class="content-wrapper">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Categories</h2>
+                <h2 th:text="${pageContent.header}"></h2>
             </div>
 
             <div class="card" style="width:500px;">
                 <div class="card-body" >
                     <div class="d-flex justify-content-between mb-4">
 <!--                        <button class="btn btn-outline-secondary" onclick="window.location.href='/admin/category/edit'">Edit Category</button>-->
-                        <button class="btn btn-outline-primary" onclick="window.location.href='/admin/category/add'">+ Add Category</button>
+                        <button class="btn btn-outline-primary" onclick="addAttribute(this)" th:data-attribute-type="${pageContent.formHeader}" th:text="${pageContent.addButton}"></button>
                     </div>
 
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>CATEGORY</th>
+                                    <th th:text="${pageContent.formHeader}"></th>
                                     <th class="text-end">ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="category : ${categories}">
-                                    <td th:text="${category.name}"></td>
+                                <tr th:each="attribute : ${attributes}">
+                                    <td th:text="${attribute.name}"></td>
                                     <td class="text-end">
                                         <span class="list-badge me-2">LIST</span>
-                                        <button class="btn btn-sm btn-link" onclick="editCategory()" th:data-category-id="${category.id}">
+                                        <button class="btn btn-sm btn-link" onclick="editAttribute()" th:data-attribute-id="${attribute.id}" th:data-attribute-type="${pageContent.formHeader}">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                     </td>
@@ -168,21 +171,28 @@ font-family: 'Trirong',serif;
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
     <script>
-        function editCategory() {
+        function editAttribute() {
     // Get the button element that triggered this function
     const button = event.currentTarget;
 
     // Retrieve the `data-category-id` value
-    const categoryId = button.getAttribute("data-category-id");
-
-    if (categoryId) {
+    const attributeId = button.getAttribute("data-attribute-id");
+    const attributeType = button.getAttribute("data-attribute-type");
+    if (attributeId) {
         // Navigate to the specified URL with the `id` parameter
-        window.location.href = `/admin/category/edit?id=${categoryId}`;
+        window.location.href = `/admin/attribute/edit?id=${attributeId}&type=${attributeType}`;
     } else {
-        console.error("Category ID is missing!");
+        console.error("Attribute ID is missing!");
     }
 }
 
+        //add-attribute
+        function addAttribute(data)
+        {
+
+            let type = data.getAttribute('data-attribute-type');
+            window.location.href = `/admin/attribute/add?type=${type}`;
+        }
     </script>
 </body>
 </html>

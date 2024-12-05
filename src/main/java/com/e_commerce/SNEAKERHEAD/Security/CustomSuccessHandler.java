@@ -1,6 +1,7 @@
 package com.e_commerce.SNEAKERHEAD.Security;
 
 import com.e_commerce.SNEAKERHEAD.Entity.WebUser;
+import com.e_commerce.SNEAKERHEAD.Repository.UserRepository;
 import com.e_commerce.SNEAKERHEAD.Service.AdminManagementService;
 import com.e_commerce.SNEAKERHEAD.Service.UserManagementService;
 import com.e_commerce.SNEAKERHEAD.Service.UserPrincipal;
@@ -26,6 +27,8 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
 
     @Autowired
     AdminManagementService adminManagementService;
+    @Autowired
+    UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -34,7 +37,6 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
         Map<String, String> responseData = new HashMap<>();
         responseData.put("message", "Login successful!");
         responseData.put("user", authentication.getName());
-        System.out.println("hii");
         response.getWriter().write(new ObjectMapper().writeValueAsString(responseData));
         Object principal = authentication.getPrincipal();
         if(principal instanceof UserPrincipal) {
@@ -43,6 +45,9 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             HttpSession session = request.getSession();
             session.setAttribute("role", role);
             session.setAttribute("userEmail",email);
+            WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
+            String userName = user.getFull_name();
+            session.setAttribute("userName",userName);
             String redirectUrl = "/";
             new DefaultRedirectStrategy().sendRedirect(request, response, redirectUrl);
         }
@@ -58,6 +63,7 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             HttpSession session = request.getSession();
             session.setAttribute("role","USER");
             session.setAttribute("userEmail",email);
+            session.setAttribute("userName",name);
             String redirectUrl = "/";
             new DefaultRedirectStrategy().sendRedirect(request, response, redirectUrl);
         }
