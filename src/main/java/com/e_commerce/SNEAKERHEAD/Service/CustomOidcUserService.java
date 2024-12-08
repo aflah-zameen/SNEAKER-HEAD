@@ -17,10 +17,13 @@ public class CustomOidcUserService extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest)throws OAuth2AuthenticationException
     {
-        System.out.println("hii from custom");
         OidcUser oidcUser = super.loadUser(userRequest);
         String email = oidcUser.getEmail();
         WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
+        if(user.getStatus() == null)
+        {
+            user.setStatus(true);
+        }
         if(!user.getStatus() )
         {
             throw new OAuth2AuthenticationException("Access denied for the user");

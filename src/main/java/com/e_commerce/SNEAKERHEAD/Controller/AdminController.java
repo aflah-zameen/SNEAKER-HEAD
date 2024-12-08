@@ -54,6 +54,9 @@ AdminManagementService adminManagementService;
     @Autowired
     OrderRepository orderRepository;
 
+    @Autowired
+    AddressRepository addressRepository;
+
 
     @GetMapping("/product")
     public String AdminProduct(Model model)
@@ -88,19 +91,22 @@ AdminManagementService adminManagementService;
         }
 
         String name = productDto.getName().trim();
-        String brand = productDto.getBrandName().trim();
-        boolean status= productRepository.existsByName(name) && brandRepository.existsByName(brand);
-        if(status)
-        {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Product details already exists.");
-        }
+        String brandName = productDto.getBrandName().trim();
+        Brand brand = brandRepository.findByName(brandName).orElse(new Brand());
+        Category category =categoryRepository.findByName(productDto.getCategoryName()).orElse(new Category());
+//        boolean status= productRepository.existsByName(name) && brandRepository.existsByName(brand);
+//        if(status)
+//        {
+//            return ResponseEntity.status(HttpStatus.CONFLICT)
+//                    .body("Product details already exists.");
+//        }
 
         try {
 
             HttpSession session = request.getSession();
             session.setAttribute("productName",name);
-            adminManagementService.addProduct(productDto);
+            Product product =adminManagementService.addProduct(productDto,brand,category);
+            session.setAttribute("productId",product.getId());
             return ResponseEntity.status(HttpStatus.OK)
                     .body("Product details successfully added, now add your product variant.");
         } catch (Exception ex) {
@@ -120,7 +126,6 @@ AdminManagementService adminManagementService;
         {
           Product product=productRepository.findByName(productName).orElseThrow(() ->new NullPointerException());
           ProductDto productDto = productService.productToProductDto(product);
-          session.setAttribute("productId",product.getId());
           model.addAttribute("product",productDto);
           return "addProductVariant";
         }
@@ -141,7 +146,7 @@ AdminManagementService adminManagementService;
         }
         HttpSession session = request.getSession();
         Long productId =(Long) session.getAttribute("productId");
-
+        System.out.println(productId+">>>>");
         adminManagementService.addProductVariant(productVariantDto,productId);
         return ResponseEntity.ok("Product successfully added");
     }
@@ -351,15 +356,23 @@ AdminManagementService adminManagementService;
     public String ListOrders(Model model)
     {
         List<Order> orders = orderRepository.findAll();
+        for(Order order : orders)
+        {
+            System.out.println(order);
+        }
         model.addAttribute("orders",orders);
         return "admin_order";
     }
     @ResponseBody
-    @PostMapping("/orders/confirm/{id}")
-    public ResponseEntity<?> confirmOrder(@PathVariable Long id)
+    @PutMapping("/orders/edit")
+    public ResponseEntity<?> EditOrder(@RequestBody EditOrder editOrder)
     {
-        Order order = orderRepository.findById(id).orElseThrow(()-> new NullPointerException());
-        order.setStatus("CONFIRMED");
+        Order order = orderRepository.findById(editOrder.getOrderId()).orElseThrow(()-> new NullPointerException());
+        order.setStatus(editOrder.getOrderStatus());
+        order.setPaymentMethod(editOrder.getPaymentMethod());
+        UserAddress address = addressRepository.findById(order.getAddress().getId()).orElse(new UserAddress());
+        address.setName(editOrder.getUserName());
+        addressRepository.save(address);
         orderRepository.save(order);
         return ResponseEntity.status(HttpStatus.OK).body("Confirmed order");
     }

@@ -156,7 +156,7 @@
                 <p class="mb-1" th:text="${defaultAddress.state}">Kerala</p>
                 <p class="mb-3" th:text="'Mobile: '+${defaultAddress.phone}">Mobile: 9846015843</p>
                 <div class="address-actions">
-                    <a href="/user/addresses/edit">Edit</a>
+                    <a th:href="@{/user/addresses/edit/{id}(id=${defaultAddress.id})}">Edit</a>
                     <a th:href="@{/user/addresses/remove/{id}(id=${defaultAddress.id})}" class="text-danger">Remove</a>
                 </div>
             </div>
@@ -173,7 +173,7 @@
                     <p class="mb-1" th:text="${address.state}"></p>
                     <p class="mb-3" th:text="'Mobile: '+${address.phone}"></p>
                     <div class="address-actions">
-                        <a href="/user/addresses/edit">Edit</a>
+                        <a th:href="@{/user/addresses/edit/{id}(id=${address.id})}">Edit</a>
                         <a th:href="@{/user/addresses/remove/{id}(id=${address.id})}" class="text-danger">Remove</a>
                         <a th:href="@{/user/addresses/default/{id}(id=${address.id})}">Set default</a>
                     </div>

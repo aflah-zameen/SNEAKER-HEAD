@@ -2,10 +2,7 @@ package com.e_commerce.SNEAKERHEAD.Service;
 
 import com.e_commerce.SNEAKERHEAD.DTO.ProductDto;
 import com.e_commerce.SNEAKERHEAD.DTO.ProductVariantDTO;
-import com.e_commerce.SNEAKERHEAD.Entity.Category;
-import com.e_commerce.SNEAKERHEAD.Entity.Product;
-import com.e_commerce.SNEAKERHEAD.Entity.ProductVariant;
-import com.e_commerce.SNEAKERHEAD.Entity.WebUser;
+import com.e_commerce.SNEAKERHEAD.Entity.*;
 import com.e_commerce.SNEAKERHEAD.Enums.CategoryStatus;
 import com.e_commerce.SNEAKERHEAD.Enums.StockStatus;
 import com.e_commerce.SNEAKERHEAD.Enums.UserRole;
@@ -47,7 +44,7 @@ public class AdminManagementService {
     UserRepository userRepository;
 
     @Transactional
-    public void addProduct(ProductDto productDto)
+    public Product addProduct(ProductDto productDto, Brand brand, Category category)
     {
         Product product = new Product();
         System.out.println(">>>>>>>>"+productDto.getManufacturer()+">>>>>>>>>>>>>>>");
@@ -63,7 +60,9 @@ public class AdminManagementService {
             product.setMarketedBy(productDto.getMarketedBy());
             product.setWeight(productDto.getWeight());
             product.setStatus(true);
-            productRepository.save(product);
+            product.setBrand(brand);
+            product.setCategory(category);
+            return productRepository.save(product);
         }
     @Transactional
     public String addCategory(Category category)
@@ -87,6 +86,7 @@ public class AdminManagementService {
         }
         user.setJoin_date(LocalDate.now());
         user.setRole(UserRole.USER);
+        user.setStatus(true);
         if(user.getPassword() != null) {
             String hashedPassword = passwordEncoder.encode(user.getPassword());
             user.setPassword(hashedPassword);
@@ -97,7 +97,7 @@ public class AdminManagementService {
 
 
     public void addProductVariant(@Valid ProductVariantDTO productVariantDto, Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(()-> new NullPointerException());
+        Product product = productRepository.findById(productId).orElse(new Product());
         ProductVariant productVariant = new ProductVariant();
         productVariant.setProduct(product);
         productVariant.setColor(productVariantDto.getColor());

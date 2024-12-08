@@ -8,7 +8,7 @@
         <div class="d-flex align-items-center gap-3">
             <div class="input-group input-group-sm d-none d-xl-flex">
                 <form method="GET" action="/user/search" class="d-flex">
-                    <input type="search" class="form-control" name="keyword" placeholder="Search">
+                    <input type="search" class="form-control" name="keyword" placeholder="Search" th:value="${keyword}">
                     <button class="input-group-text" id="basic-addon1" type="submit">
                         <i class="bi bi-search"></i>
                     </button>

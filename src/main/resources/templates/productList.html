@@ -112,74 +112,75 @@ z
         <h1 class="mb-4" th:if="${category}" th:text="${category} +' Collections'" id="collection-type" th:data-category="${category}"></h1>
 
         <!-- Filters -->
-        <div class="d-flex justify-content-between align-items-center mb-4 " id="all-filter">
+        <div class="d-flex justify-content-between align-items-center mb-4 " id="all-filter" th:if="${category == 'Available' or category== 'Search'}">
             <div class="d-flex">
-                <div class="dropdown me-2">
+                <div class="dropdown me-4">
+                    <span>Shoe Size (UK)</span>
                     <button class="filter-button dropdown-toggle" type="button" id="shoeSizeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Shoe Size (UK)
+                        Select
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="shoeSizeDropdown">
-                        <li><a class="dropdown-item" href="#">3</a></li>
-                        <li><a class="dropdown-item" href="#">4</a></li>
-                        <li><a class="dropdown-item" href="#">5</a></li>
-                        <li><a class="dropdown-item" href="#">6</a></li>
-                        <li><a class="dropdown-item" href="#">7</a></li>
+                        <li><a class="dropdown-item" href="#" data-sort="3">3</a></li>
+                        <li><a class="dropdown-item" href="#" data-sort="4">4</a></li>
+                        <li><a class="dropdown-item" href="#" data-sort="5">5</a></li>
+                        <li><a class="dropdown-item" href="#" data-sort="6">6</a></li>
+                        <li><a class="dropdown-item" href="#" data-sort="7">7</a></li>
                     </ul>
                 </div>
-                <div class="dropdown me-2">
+                <div class="dropdown me-4">
+                    <span>Price</span>
                     <button class="filter-button dropdown-toggle" type="button" id="priceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Price
+                        Select
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="priceDropdown">
-                        <li><a class="dropdown-item" href="#">Under 5,000</a></li>
-                        <li><a class="dropdown-item" href="#">5,000 - 10,000</a></li>
-                        <li><a class="dropdown-item" href="#">10,000 - 15,000</a></li>
-                        <li><a class="dropdown-item" href="#">Over 15,000</a></li>
+                        <li><a class="dropdown-item" data-sort="<5000" href="#">Under 5,000</a></li>
+                        <li><a class="dropdown-item" data-sort="5000-10000" href="#">5,000 - 10,000</a></li>
+                        <li><a class="dropdown-item" data-sort="10000-15000" href="#">10,000 - 15,000</a></li>
+                        <li><a class="dropdown-item" data-sort=">15000" href="#">Over 15,000</a></li>
                     </ul>
                 </div>
-                <div class="dropdown me-2">
+                <div class="dropdown me-4">
+                    <span>Brand</span>
                     <button class="filter-button dropdown-toggle" type="button" id="brandDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Brand
+                        Select
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="brandDropdown">
-                        <li><a class="dropdown-item" href="#">Nike</a></li>
-                        <li><a class="dropdown-item" href="#">Adidas</a></li>
-                        <li><a class="dropdown-item" href="#">Puma</a></li>
-                        <li><a class="dropdown-item" href="#">Reebok</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="brandDropdown" th:if="${brands}" >
+                        <li><a class="dropdown-item" href="#" th:each="brand : ${brands}" th:data-sort="${brand.name}" th:text="${brand.name}"></a></li>
                     </ul>
                 </div>
-                <div class="dropdown me-2">
-                    <button class="filter-button dropdown-toggle" type="button" id="colorDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Color
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="colorDropdown">
-                        <li><a class="dropdown-item" href="#">Black</a></li>
-                        <li><a class="dropdown-item" href="#">White</a></li>
-                        <li><a class="dropdown-item" href="#">Red</a></li>
-                        <li><a class="dropdown-item" href="#">Blue</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown me-2">
+<!--                <div class="dropdown me-4">-->
+<!--                    <span>Color</span>-->
+<!--                    <button class="filter-button dropdown-toggle" type="button" id="colorDropdown" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                        Select-->
+<!--                    </button>-->
+<!--                    <ul class="dropdown-menu" aria-labelledby="colorDropdown">-->
+<!--                        <li><a class="dropdown-item" href="#">Black</a></li>-->
+<!--                        <li><a class="dropdown-item" href="#">White</a></li>-->
+<!--                        <li><a class="dropdown-item" href="#">Red</a></li>-->
+<!--                        <li><a class="dropdown-item" href="#">Blue</a></li>-->
+<!--                    </ul>-->
+<!--                </div>-->
+                <div class="dropdown me-4" >
+                    <span>Gender</span>
                     <button class="filter-button dropdown-toggle" type="button" id="genderDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Gender
+                        Select
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="genderDropdown">
-                        <li><a class="dropdown-item" href="#">Women</a></li>
-                        <li><a class="dropdown-item" href="#">Men</a></li>
-                        <li><a class="dropdown-item" href="#">Unisex</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="genderDropdown" >
+                        <li><a class="dropdown-item" data-sort="Women" href="#">Women</a></li>
+                        <li><a class="dropdown-item" data-sort="Men" href="#">Men</a></li>
+<!--                        <li><a class="dropdown-item" href="#">Unisex</a></li>-->
                     </ul>
                 </div>
             </div>
 
             <div class="dropdown">
-                Sort by:
-                <button class="filter-button dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">Featured
+                <span>Sort by</span>
+                <button class="filter-button dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">Select
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="sortDropdown">
 <!--                <li><a class="dropdown-item" href="#" data-sort="featured">Featured</a></li>-->
                     <li><a class="dropdown-item" href="#" data-sort="price-low-high">Price: Low to High</a></li>
                     <li><a class="dropdown-item" href="#" data-sort="price-high-low">Price: High to Low</a></li>
-                    <li><a class="dropdown-item" href="#" data-sort="newest">Newest</a></li>
                     <li><a class="dropdown-item" href="#" data-sort="aA-zZ">aA - zZ</a></li>
                     <li><a class="dropdown-item" href="#" data-sort="zZ-aA">zZ - aA</a></li>
                 </ul>
@@ -207,8 +208,8 @@ z
                             </span>
                         </div>
                         <div class="product-name" th:text="${product.name}"></div>
-                    <p class="mb-0" th:text="${product.DefaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}"
-                       th:classappend="${product.DefaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}" id="stock-element">
+                    <p  th:text="${product.DefaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}"
+                       th:classappend="${product.DefaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}" class="product-stock-status">
                     </p>
                         <div class="product-price" th:text="'₹'+${product.DefaultVariantDTO.price}"></div>
 
@@ -252,18 +253,54 @@ z
     });
     return formatter.format(price);
 }
+
+
+ //change content
+        function changeContent(data)
+        {
+            const productId = data.getAttribute('data-product-id');
+            const color =data.getAttribute('data-product-color');
+            const productCard = data.closest('.product-card');
+            const newPrice = data.getAttribute('data-product-price');
+            const image = data.getAttribute('data-product-image');
+            const quantity=data.getAttribute('data-product-quantity');
+
+            if(productCard)
+            {
+                const coverImage = productCard.querySelector(".product-image");
+                if(coverImage)
+                {
+                    coverImage.src = image;
+                }
+                const priceElement = productCard.querySelector(".product-price");
+                if(priceElement)
+                {
+                    priceElement.textContent = '₹'+newPrice;
+                }
+                const stockStatus = productCard.querySelector(".product-stock-status");
+                stockStatus.textContent = quantity > 0 ? "In stock" : "Out of stock";
+                stockStatus.classList.remove(quantity > 0 ? "text-danger" : "in-stock");
+                stockStatus.classList.add(quantity > 0 ? "in-stock" : "text-danger");
+                console.log(stockStatus.style.color);
+            }
+        }
         // Filter functionality
         const allFilter = document.getElementById("all-filter");
         allFilter.querySelectorAll('.dropdown-menu a').forEach(item => {
             item.addEventListener('click', event => {
                 event.preventDefault();
-                const filterType = event.target.closest('.dropdown').querySelector('.filter-button').textContent.trim();
+                const allFilterButton = document.querySelectorAll('.filter-button');
+                allFilterButton.forEach(element => {
+                    element.textContent = "Select";
+                });
+                const filterButton =event.target.closest('.dropdown').querySelector('.filter-button');
+                const filterType = event.target.closest('.dropdown').querySelector('span').textContent.trim();
                 const filterValue = event.target.getAttribute('data-sort');
-                const sortElement = document.getElementById("sortDropdown");
+                filterButton.textContent = event.target.textContent;
                 const categoryElement = document.getElementById("collection-type");
                 const category = categoryElement.getAttribute('data-category');
-                sortElement.textContent=event.target.textContent;
-                fetch(`/user/product/filter?filterValue=${filterValue}&category=${category}`, {
+                console.log(filterType);
+                fetch(`/user/product/filter?filterType=${filterType}&filterValue=${filterValue}&category=${category}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -301,7 +338,7 @@ z
                                 </div>
                                 <div class="product-name">${product.name || 'Unnamed Product'}</div>
                                <p id="stock-element"
-                       class="${product.defaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}">
+                       class="product-stock-status ${product.defaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}">
                         ${product.defaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}
                     </p>
                                 <div class="product-price">${formattedPrice || 'N/A'}</div>
@@ -326,36 +363,6 @@ z
             });
         });
 
-
-        //change content
-        function changeContent(data)
-        {
-            const productId = data.getAttribute('data-product-id');
-            const color =data.getAttribute('data-product-color');
-            const productCard = document.getElementById(productId);
-            const newPrice = data.getAttribute('data-product-price');
-            const image = data.getAttribute('data-product-image');
-            const quantity=data.getAttribute('data-product-quantity');
-            console.log(image);
-
-            if(productCard)
-               console.log(color);
-            {
-                const coverImage = productCard.querySelector(".product-image");
-                if(coverImage)
-                {
-                    coverImage.src = image;
-                }
-                const priceElement = productCard.querySelector(".product-price");
-                if(priceElement)
-                {
-                    priceElement.textContent = '₹'+newPrice;
-                }
-                const stockStatus = document.getElementById("stock-element");
-                stockStatus.textContent = quantity > 0 ? "In stock" : "Out of stock";
-                stockStatus.style.color = quantity > 0 ? "green" : "red";
-            }
-        }
     </script>
 </body>
 </html>

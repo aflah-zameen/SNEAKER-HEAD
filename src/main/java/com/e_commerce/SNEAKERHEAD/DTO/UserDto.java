@@ -8,7 +8,6 @@ import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Component
 @Getter
@@ -26,5 +25,5 @@ public class UserDto {
     private LocalDate joinDate;
     private String gender;
     private boolean status;
-    private AddressDto defaultAddress;
+    private AddressDTO defaultAddress;
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 @ToString
-public class AddressDto {
+public class AddressDTO {
     private Long id;
     private WebUser user;
 
@@ -43,8 +43,8 @@ public class AddressDto {
     @NotBlank(message = "Country is required")
     private String country;
 
-    private String instructions;
-    private boolean defaultAddress;
+    private String instruction;
+    private boolean defaultAddressStatus;
 
     @NotBlank(message = "Type is required")
     private String type;

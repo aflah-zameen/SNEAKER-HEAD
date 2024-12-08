@@ -11,7 +11,6 @@ public class GlobalControllerAdvice {
     @ModelAttribute("userName")
     public String addUserToModel(HttpSession session)
     {
-        System.out.println((String) session.getAttribute("userName"));
         return (String) session.getAttribute("userName");
     }
 }

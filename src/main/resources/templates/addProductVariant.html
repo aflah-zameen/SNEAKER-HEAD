@@ -127,11 +127,11 @@ font-family: 'Trirong',serif;
             <h2 class="mb-4">Add Product Variant</h2>
             <div class="row w-50 ">
                 <h5 class="col-md-6" th:text="'Name : '+${product.name}"></h5>
-                <h5 class="col-md-6" th:text="'Brand : '+${product.brand}"></h5>
+                <h5 class="col-md-6" th:text="'Brand : '+${product.brandName}"></h5>
 
                 <div class="col-md-6 d-flex"  >
                     <h5>Available color:</h5>
-                    <div id="colorOptions" class="color-option" th:each="colors : ${product.productVariantDTOS}" th:style="'background-color:' + ${colors.color}"  >
+                    <div id="colorOptions" class="color-option" th:each="colors : ${product.productVariantDTOs}" th:style="'background-color:' + ${colors.color}"  >
 
                 </div>
             </div>
@@ -470,7 +470,7 @@ if (!price.value.trim() || parseFloat(price.value) <= 0) {
 
          // Validate images
          const image = document.getElementById('productImageHeader')
-         if (imageNames.length < 7) {
+         if (imageNames.length < 1) {
              isValid = false;
              image.classList.add('is-invalid');
          }

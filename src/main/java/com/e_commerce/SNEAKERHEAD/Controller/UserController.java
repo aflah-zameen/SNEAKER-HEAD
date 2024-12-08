@@ -2,6 +2,7 @@ package com.e_commerce.SNEAKERHEAD.Controller;
 
 import com.e_commerce.SNEAKERHEAD.DTO.*;
 import com.e_commerce.SNEAKERHEAD.Entity.*;
+import com.e_commerce.SNEAKERHEAD.Mappers.AddressMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.CartMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
@@ -56,6 +57,12 @@ public class UserController {
     @Autowired
     CartMapper cartMapper;
 
+    @Autowired
+    AddressMapper addressMapper;
+
+    @Autowired
+    BrandRepository brandRepository;
+
 
     @GetMapping("/home")
     public String AdminProduct()
@@ -67,42 +74,33 @@ public class UserController {
     {
         Category category = categoryRepository.findByName("Women").orElseThrow(()->new NullPointerException());
         List<ProductDto> products = productService.categoryProduct(category);
+        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
         model.addAttribute("products",products);
         model.addAttribute("url","women");
         model.addAttribute("category","Women");
+        model.addAttribute("brands",brands);
+        model.addAttribute("breadcrumb","Women");
         return "productList";
     }
 
     @GetMapping("/product/filter")
-    public ResponseEntity<List<ProductDto>> filterWomenProducts(@RequestParam String filterValue,@RequestParam String category,Model model)
+    public ResponseEntity<List<ProductDto>> filterWomenProducts(@RequestParam String filterType,@RequestParam String filterValue,@RequestParam String category,Model model)
     {
-        if(category.equals("Available"))
-        {
-            List<Product> product = productRepository.findAll();
-            List<ProductDto> productDtos = productMapper.toDTOList(product).stream().filter(ProductDto::getStatus).peek(pd -> {
-                pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
-                pd.getProductVariantDTOs().forEach( pv -> pv.setFormattedPrice(pv.FormattedPrice()));
-            }).collect(Collectors.toList());
-            switch (filterValue)
-            {
-                case "price-high-low": productDtos = productDtos.stream().sorted(Comparator.comparingDouble(pd -> pd.getDefaultVariantDTO().getPrice())).collect(Collectors.toList());
-                                        Collections.reverse(productDtos);
-                    break;
-                case "price-low-high": productDtos = productDtos.stream().sorted(Comparator.comparingDouble(pd -> pd.getDefaultVariantDTO().getPrice())).collect(Collectors.toList());
-                    break;
-                case "aA-zZ": productDtos = productDtos.stream().sorted(Comparator.comparing(ProductDto::getName)).collect(Collectors.toList());
-                    break;
-                case "zZ-aA": productDtos = productDtos.stream().sorted(Comparator.comparing(ProductDto::getName).reversed()).collect(Collectors.toList());
-                    break;
-                default: productDtos= new ArrayList<>();
-            }
-            return ResponseEntity.ok(productDtos);
-        }
-        else {
-            Category categoryObject = categoryRepository.findByName(category).orElseThrow(() -> new NullPointerException());
-            List<ProductDto> productDTOs = productService.filterProduct(categoryObject, filterValue);
-            return ResponseEntity.ok(productDTOs);
-        }
+//        if(category.equals("Available") || category.equals("Search"))
+//        {
+//
+//            return ResponseEntity.ok(productDtos);
+//        }
+//        else {
+//            Category categoryObject = categoryRepository.findByName(category).orElseThrow(() -> new NullPointerException());
+//            List<ProductDto> productDTOs = productService.filterProduct(categoryObject, filterValue);
+//            return ResponseEntity.ok(productDTOs);
+//        }
+        List<ProductDto> productDtos=productService.filterProduct(filterType,filterValue);
+        if(productDtos.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(productDtos);
+        else
+        return ResponseEntity.ok(productDtos);
     }
 
 
@@ -111,10 +109,12 @@ public class UserController {
     {
         Category category = categoryRepository.findByName("Men").orElseThrow(()->new NullPointerException());
         List<ProductDto> products = productService.categoryProduct(category);
+        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
         model.addAttribute("products",products);
         model.addAttribute("url","men");
         model.addAttribute("category","Men");
-
+        model.addAttribute("brands",brands);
+        model.addAttribute("breadcrumb","Men");
         return "productList";
     }
 
@@ -123,14 +123,59 @@ public class UserController {
     {
         HttpSession session = request.getSession();
         String email =(String)session.getAttribute("userEmail");
-        System.out.println(email);
         WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         ProductDto details = productService.FindProduct(id);
-        System.out.println(details.getDefaultVariantDTO().getQuantity());
         model.addAttribute("userId",user.getId());
         model.addAttribute("details",details);
         model.addAttribute("categoryUrl",details.getCategoryName().toLowerCase());
         return "productdetails";
+    }
+
+    @GetMapping("product/buyNow")
+    public String buyProduct(@RequestParam int selectedQuantity,
+                             @RequestParam double price,
+                             @RequestParam Long variantId,
+                             @RequestParam String selectedSize, HttpServletRequest request,Model model)
+    {
+
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String) session.getAttribute("userEmail")).orElse(new WebUser());
+        UserAddress address = addressRepository.findAllByUser_idAndStatus(user.getId(),"AVAILABLE").stream().filter(a->a.getDefaultAddressStatus()).findFirst().orElse(new UserAddress());
+        Double totalPrice = price*selectedQuantity;
+        DecimalFormat formatter = new DecimalFormat("#,##0.00");
+        String FormattedSubTotal = formatter.format(totalPrice);
+        model.addAttribute("addressObject",new AddressDTO());
+        model.addAttribute("defaultAddress",address);
+        model.addAttribute("subtotalFormatted",FormattedSubTotal);
+        model.addAttribute("subtotal",totalPrice);
+        model.addAttribute("variantId",variantId);
+        model.addAttribute("quantity",selectedQuantity);
+        model.addAttribute("selectedSize",selectedSize);
+        return "direct-checkout";
+    }
+
+    @PostMapping("/product/buy")
+    public ResponseEntity<?>  buyProduct( @RequestBody OrderDto orderDto,HttpServletRequest request)
+    {
+
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String) session.getAttribute("userEmail")).orElse(new WebUser());
+        Order order = new Order();
+        UserAddress address = addressRepository.findById(orderDto.getAddressId()).orElse(new UserAddress());
+        ProductVariant productVariant = productVariantRepository.findById(orderDto.getVariantId()).orElse(new ProductVariant());
+        order.setUser(user);
+        order.setAddress(address);
+        order.setOrderDate(LocalDate.now());
+        order.setPaymentMethod(orderDto.getPaymentMethod());
+        order.setStatus("PENDING");
+        order.setOrderTotal(productVariant.getPrice()*orderDto.getQuantity());
+        OrderItems orderItems = new OrderItems();
+        orderItems.setPrice(productVariant.getPrice());
+        orderItems.setProductVariant(productVariant);
+        orderItems.setQuantity(orderDto.getQuantity());
+        orderItems.setOrder(orderRepository.save(order));
+        orderItemsRepository.save(orderItems);
+        return ResponseEntity.ok("Success");
     }
 
     @GetMapping("/overview")
@@ -150,10 +195,6 @@ public class UserController {
         List<ProductVariant> productVariants = new ArrayList<>();
         WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
         List<Order> orders = orderRepository.findAllByUser_id(user.getId());
-        for(Order order : orders)
-        {
-            System.out.print(order.getUser().getFull_name());
-        }
         Collections.reverse(orders);
         orders = orders.stream()
                 .sorted(Comparator.comparing(Order::isCancellation)) // Sort false first, true later
@@ -201,6 +242,7 @@ public class UserController {
         user.setFull_name(userDto.getName());
         userRepository.save(user);
         session.setAttribute("userEmail",userDto.getEmail());
+        session.setAttribute("userName",userDto.getName());
         return "redirect:/user/overview";
     }
 
@@ -211,33 +253,31 @@ public class UserController {
         String email =(String) session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         List<UserAddress> userAddresses = addressRepository.findAllByUser_idAndStatus(user.getId(),"AVAILABLE" );
-        AddressDto defaultAddressDto = new AddressDto();
+        AddressDTO defaultAddressDTO = new AddressDTO();
         for(UserAddress y : userAddresses)
         {
-            System.out.println(y.getDefaultAddressStatus());
             if(y.getDefaultAddressStatus()==true)
             {
-                defaultAddressDto.setId(y.getId());
-                defaultAddressDto.setUser(user);
-                defaultAddressDto.setName(y.getName());
-                defaultAddressDto.setPhone(y.getPhone());
-                defaultAddressDto.setBuilding(y.getBuilding());
-                defaultAddressDto.setCity(y.getCity());
-                defaultAddressDto.setCountry(y.getCountry());
-                defaultAddressDto.setState(y.getState());
-                defaultAddressDto.setLandmark(y.getLandmark());
-                defaultAddressDto.setInstructions(y.getInstruction());
-                defaultAddressDto.setZipCode(y.getZipCode());
-                defaultAddressDto.setType(y.getType());
-                defaultAddressDto.setStreet(y.getStreet());
+                defaultAddressDTO.setId(y.getId());
+                defaultAddressDTO.setUser(user);
+                defaultAddressDTO.setName(y.getName());
+                defaultAddressDTO.setPhone(y.getPhone());
+                defaultAddressDTO.setBuilding(y.getBuilding());
+                defaultAddressDTO.setCity(y.getCity());
+                defaultAddressDTO.setCountry(y.getCountry());
+                defaultAddressDTO.setState(y.getState());
+                defaultAddressDTO.setLandmark(y.getLandmark());
+                defaultAddressDTO.setInstruction(y.getInstruction());
+                defaultAddressDTO.setZipCode(y.getZipCode());
+                defaultAddressDTO.setType(y.getType());
+                defaultAddressDTO.setStreet(y.getStreet());
             }
         }
-        System.out.println(defaultAddressDto.getId());
         if(userAddresses.isEmpty())
         {
             userAddresses=null;
         }
-        model.addAttribute("defaultAddress",defaultAddressDto);
+        model.addAttribute("defaultAddress", defaultAddressDTO);
         model.addAttribute("allAddress",userAddresses);
         model.addAttribute("user",user);
         return "addresses";
@@ -245,20 +285,55 @@ public class UserController {
     @GetMapping("/addresses/add")
     public String showAddAddresses(Model model)
     {
-        model.addAttribute("addressObject",new AddressDto());
+        model.addAttribute("addressObject",new AddressDTO());
         return "editaddresses";
     }
-    @PostMapping("/address/data")
-    public String addAddress(@Valid @ModelAttribute("addressObject") AddressDto addressDto,BindingResult result,HttpServletRequest request,Model model)
+    @GetMapping("/addresses/edit/{id}")
+    public String editAddress(@PathVariable Long id,Model model)
     {
-        System.out.println(addressDto.getPhone());
+        UserAddress address = addressRepository.findById(id).orElse(new UserAddress());
+        AddressDTO addressDTO = addressMapper.toDTO(address);
+        model.addAttribute("addressObject",addressDTO);
+        return "editaddresses";
+    }
+
+    @PostMapping("/address/data")
+    public String addAddress(@Valid @ModelAttribute("addressObject") AddressDTO addressDto, BindingResult result, HttpServletRequest request, Model model)
+    {
+        System.out.println(addressDto.getId()+">>>>>>");
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
         if(result.hasErrors())
         {
             return "editaddresses";
         }
-        HttpSession session = request.getSession();
-        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
-        userService.addAddress(addressDto,user);
+        if(addressDto.getId()==null)
+        {
+            System.out.println("heyyy from addAddress");
+            userService.addAddress(addressDto,user);
+        }
+        else
+        {
+            UserAddress address = addressMapper.toEntity(addressDto);
+            List<UserAddress> addresses =addressRepository.findAllByUser_idAndStatus(user.getId(),"AVAILABLE").stream().filter(a -> a.getDefaultAddressStatus()).collect(Collectors.toList());
+            if(addresses.isEmpty())
+            {
+                address.setDefaultAddressStatus(true);
+            }
+            for(UserAddress add : addresses)
+            {
+                if(add.getId() == address.getId())
+                {
+                    if(add.getDefaultAddressStatus())
+                    {
+                        address.setDefaultAddressStatus(true);
+                    }
+                }
+            }
+            address.setStatus("AVAILABLE");
+            address.setUser(user);
+            addressRepository.save(address);
+        }
         return "redirect:/user/addresses";
     }
 
@@ -272,7 +347,6 @@ public class UserController {
         List<UserAddress> userAddresses = addressRepository.findAllByUser_idAndStatus(user.getId(),"AVAILABLE" );
         for(UserAddress y : userAddresses)
         {
-            System.out.println(y.getDefaultAddressStatus());
             if(y.getDefaultAddressStatus()==true)
             {
                y.setDefaultAddressStatus(false);
@@ -393,17 +467,31 @@ public class UserController {
         String email = (String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
         UserAddress address = addressRepository.findByUser_idAndDefaultAddressStatusAndStatus(user.getId(), true,"AVAILABLE").orElse(new UserAddress());
-        model.addAttribute("defaultAddress",address);
         String FormattedSubTotal = (String) session.getAttribute("subtotalFormatted");
-        System.out.println(FormattedSubTotal);
-        model.addAttribute("subtotalFormatted",FormattedSubTotal);
+
 
         OrderDto orderDto = new OrderDto();
         orderDto.setVariantId((Long)session.getAttribute("productVariantId"));
         orderDto.setQuantity((Integer)session.getAttribute("productQuantity"));
         model.addAttribute("subtotal",FormattedSubTotal);
-
+        model.addAttribute("addressObject",new AddressDTO());
+        model.addAttribute("defaultAddress",address);
+        model.addAttribute("subtotalFormatted",FormattedSubTotal);
         return "checkout";
+    }
+
+    @PostMapping("/checkout/address/data")
+    public ResponseEntity<?> addCheckoutAddress(@RequestBody @Valid AddressDTO addressDto, BindingResult result, HttpServletRequest request)
+    {
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
+        if(result.hasErrors())
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Some thing gone wrong");
+        }
+        userService.addAddress(addressDto,user);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Created");
     }
 
     @ResponseBody
@@ -448,21 +536,29 @@ public class UserController {
     public String searchProducts(@RequestParam("keyword") String keyword, Model model)
     {
         List <ProductDto> productDtos=productService.searchProducts(keyword);
+        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
         model.addAttribute("products",productDtos);
-        model.addAttribute("url","shop");
-        model.addAttribute("category","Available");
-        model.addAttribute("breadcrumb","Shop");
+        model.addAttribute("url","search");
+        model.addAttribute("category","Search");
+        model.addAttribute("breadcrumb","Search");
+        model.addAttribute("keyword",keyword);
+        model.addAttribute("brands",brands);
+        model.addAttribute("breadcrumb","Men");
+
         return "productList";
     }
 
     @GetMapping("/shop")
     public String showShop(Model model)
     {
+        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
         List<ProductDto>productDtos = productService.ListAllProducts();
         model.addAttribute("products",productDtos);
         model.addAttribute("url","shop");
         model.addAttribute("category","Available");
         model.addAttribute("breadcrumb","Shop");
+        model.addAttribute("brands",brands);
+
         return "productList";
     }
 

@@ -82,7 +82,7 @@ public class LoginController {
             HttpSession session = request.getSession();
             session.setAttribute("userdata", user);
             session.setAttribute("otp", otp);
-
+            session.setAttribute("forgetPassword",false);
             response.put("message", "User registered successfully.");
             response.put("redirectUrl", "/otpverification");
             return ResponseEntity.ok(response);

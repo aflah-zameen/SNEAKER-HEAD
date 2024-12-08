@@ -189,6 +189,9 @@
                     <input type="text" class="form-control"  th:field="*{name}">
                     <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
                 </div>
+                <div class="col-md-6 d-none">
+                    <input type="number" class="form-control"  th:field="*{id}">
+                </div>
                 <div class="col-md-6">
                     <label class="form-label">Mobile number</label>
                     <input type="tel" class="form-control"  th:field="*{phone}">
@@ -232,9 +235,9 @@
                     <div class="text-danger" th:if="${#fields.hasErrors('state')}" th:errors="*{state}"></div>
                 </div>
 
-            <div class="mb-3" th:if="*{defaultAddress == false}">
+            <div class="mb-3" th:if="*{id == null}">
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="defaultAddress" th:field="*{defaultAddress}">
+                    <input type="checkbox" class="form-check-input" id="defaultAddress" th:field="*{defaultAddressStatus}">
                     <label class="form-check-label" for="defaultAddress">Make this is my default address</label>
                 </div>
             </div>
@@ -242,10 +245,10 @@
             <div class="mb-4">
                 <label class="form-label">Delivery instructions (optional)</label>
                 <div class="preferences-link d-block mb-2">Add preferences, notes, access codes and more</div>
-                <textarea class="form-control" rows="3"  th:field="*{instructions}"></textarea>
+                <textarea class="form-control" rows="3"  th:field="*{instruction}"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-dark px-4 w-25">Add</button>
+            <button type="submit" class="btn btn-dark px-4 w-25" >Add</button>
             </div>
         </form>
 

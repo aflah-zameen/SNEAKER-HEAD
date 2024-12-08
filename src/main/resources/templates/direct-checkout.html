@@ -151,7 +151,7 @@
                 </div>
                 <div class="d-flex gap-3">
                     <a href="/user/addresses" class="text-primary text-decoration-none" th:if="${defaultAddress.id}">Change</a>
-<!--                    <a href="#" class="text-primary text-decoration-none">Add Delivery Instructions</a>-->
+                    <!--                    <a href="#" class="text-primary text-decoration-none">Add Delivery Instructions</a>-->
                     <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addAddressModal" th:if="${defaultAddress.id}" >Add address</button>
                 </div>
             </div>
@@ -331,7 +331,7 @@
                     <span>Total</span>
                     <span class="text-danger" th:text="'₹'+${subtotalFormatted}"></span>
                 </div>
-                <button class="btn btn-dark w-100 mb-4" th:onclick="submitOrder(this)" th:data-address-id="${defaultAddress.id}">Place Order</button>
+                <button class="btn btn-dark w-100 mb-4" th:onclick="submitOrder(this)" th:data-address-id="${defaultAddress.id}" th:data-variant-id="${variantId}" th:data-product-quantity="${quantity}" th:data-product-size="${selectedSize}">Place Order</button>
             </div>
         </div>
     </div>
@@ -380,13 +380,16 @@ document.querySelectorAll('input[name="payment"]').forEach(input => {
     }
     else
     {
-    console.log(selectedMethod+">>>>>>>>");
         const bodyData = {
+        selectedSize : data.getAttribute('data-product-size'),
+        quantity : Number(data.getAttribute('data-product-quantity')),
+        variantId : Number(data.getAttribute('data-variant-id')),
         paymentMethod:selectedMethod,
-        addressId: addressIdTemp
+        addressId: Number(addressIdTemp)
         }
+        console.log(bodyData);
 
-        fetch('/user/checkout',{
+        fetch('/user/product/buy',{
            method:'POST',
            headers:{'Content-type':'application/json'},
            body:JSON.stringify(bodyData)

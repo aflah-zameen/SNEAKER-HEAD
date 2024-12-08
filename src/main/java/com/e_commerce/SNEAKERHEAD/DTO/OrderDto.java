@@ -18,4 +18,5 @@ public class OrderDto {
     private Double orderTotal;
     private String paymentMethod;
     private Integer quantity;
+    private String selectedSize;
 }

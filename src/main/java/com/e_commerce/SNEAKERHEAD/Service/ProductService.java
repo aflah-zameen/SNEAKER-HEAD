@@ -133,31 +133,135 @@ public class ProductService {
         return productDto;
     }
 
-    public List<ProductDto> filterProduct(Category category, String filterValue) {
-        List<Product> products;
-        switch (filterValue)
+//    public List<ProductDto> filterProduct(Category category, String filterValue) {
+//        List<Product> products;
+//        switch (filterValue)
+//        {
+//            case "price-high-low": products = productRepository.findByCategoryAndSortByPriceDesc(category);
+//                                    break;
+//            case "price-low-high": products = productRepository.findByCategoryAndSortByPriceAsc(category);
+//                                    break;
+//            case "aA-zZ": products = productRepository.findByCategoryAndSortByNameAsc(category);
+//                break;
+//            case "zZ-aA": products = productRepository.findByCategoryAndSortByNameDesc(category);
+//                break;
+//            default: products= new ArrayList<>();
+//        }
+//        List<ProductDto> productDtos= productMapper.toDTOList(products).stream().filter(ProductDto::getStatus).collect(Collectors.toList());
+//        for(ProductDto p : productDtos)
+//        {
+//            p.setDefaultVariantDTO(p.getProductVariantDTOs().getFirst());
+//            for(ProductVariantDTO pv : p.getProductVariantDTOs())
+//            {
+//                pv.setFormattedPrice(pv.FormattedPrice());
+//            }
+//        }
+//        return productDtos;
+//    }
+
+    public List<ProductDto> filterProduct(String filterType, String filterValue)
+    {
+        List<Product> product = productRepository.findAll();
+        List<ProductDto> productDtos = productMapper.toDTOList(product).stream().filter(ProductDto::getStatus).peek(pd -> {
+            pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
+            pd.getProductVariantDTOs().forEach( pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+        }).collect(Collectors.toList());
+        List<Brand> brands=brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
+        List<Category> categories=categoryRepository.findAll().stream().filter(Category::getStatus).collect(Collectors.toList());
+        System.out.println(filterType.equals("Shoe Size (UK)")+">>>>>>");
+        if(filterType.equals("Shoe Size (UK)"))
         {
-            case "price-high-low": products = productRepository.findByCategoryAndSortByPriceDesc(category);
-                                    break;
-            case "price-low-high": products = productRepository.findByCategoryAndSortByPriceAsc(category);
-                                    break;
-            case "aA-zZ": products = productRepository.findByCategoryAndSortByNameAsc(category);
-                break;
-            case "zZ-aA": products = productRepository.findByCategoryAndSortByNameDesc(category);
-                break;
-            default: products= new ArrayList<>();
-        }
-        List<ProductDto> productDtos= productMapper.toDTOList(products);
-        for(ProductDto p : productDtos)
-        {
-            p.setDefaultVariantDTO(p.getProductVariantDTOs().getFirst());
-            for(ProductVariantDTO pv : p.getProductVariantDTOs())
+            System.out.println(filterValue);
+            switch (filterValue)
             {
-                pv.setFormattedPrice(pv.FormattedPrice());
+                case "6" : productDtos = productDtos.stream()
+                        .filter(pd -> pd.getProductVariantDTOs().stream()
+                                .anyMatch(variant -> variant.getSize().stream().anyMatch(size -> size.equals("6")))) // Filter ProductDtos
+                        .collect(Collectors.toList());
+                    System.out.println("hiii");
+                    break;
+                case "7" :productDtos = productDtos.stream()
+                        .filter(pd -> pd.getProductVariantDTOs().stream()
+                                .anyMatch(variant -> variant.getSize().stream().anyMatch(size -> size.equals("7")))) // Filter ProductDtos
+                        .collect(Collectors.toList());
+                    break;
+                default: productDtos = new ArrayList<>();
+            }
+        }
+        else if(filterType.equals("Price"))
+        {
+            switch (filterValue)
+            {
+                case "<5000" : productDtos = productDtos.stream()
+                        .filter(pd -> pd.getProductVariantDTOs().stream()
+                                .anyMatch(variant -> variant.getPrice() < 5000)) // Filter ProductDtos
+                        .collect(Collectors.toList());
+                    break;
+                case "5000-10000" :productDtos = productDtos.stream()
+                        .filter(pd -> pd.getProductVariantDTOs().stream()
+                                .anyMatch(variant -> variant.getPrice() >=5000 && variant.getPrice() <=10000)) // Filter ProductDtos
+                        .collect(Collectors.toList());
+                    break;
+
+                case "10000-15000" :productDtos = productDtos.stream()
+                        .filter(pd -> pd.getProductVariantDTOs().stream()
+                                .anyMatch(variant -> variant.getPrice() >=10000 && variant.getPrice() <=15000)) // Filter ProductDtos
+                        .collect(Collectors.toList());
+                    break;
+
+                case ">15000" :productDtos = productDtos.stream()
+                        .filter(pd -> pd.getProductVariantDTOs().stream()
+                                .anyMatch(variant -> variant.getPrice() >15000 )) // Filter ProductDtos
+                        .collect(Collectors.toList());
+                    break;
+
+                default: productDtos = new ArrayList<>();
+            }
+        }
+        else if(filterType.equals("Brand"))
+        {
+           for(Brand brand : brands)
+           {
+               if(brand.getName().contains(filterValue))
+               {
+                   productDtos = productDtos.stream()
+                           .filter(pd -> pd.getBrandName().equals(filterValue)) // Filter ProductDtos
+                           .collect(Collectors.toList());
+               }
+           }
+        }
+        else if(filterType.equals("Gender"))
+        {
+            for(Category category : categories)
+            {
+                if(category.getName().equals(filterValue))
+                {
+                    productDtos = productDtos.stream()
+                            .filter(pd -> pd.getCategoryName().equals(filterValue)) // Filter ProductDtos
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+        else if(filterType.equals("Sort by"))
+        {
+            switch (filterValue)
+            {
+                case "price-high-low": productDtos = productDtos.stream().sorted(Comparator.comparingDouble(pd -> pd.getDefaultVariantDTO().getPrice())).collect(Collectors.toList());
+                    Collections.reverse(productDtos);
+                    break;
+                case "price-low-high": productDtos = productDtos.stream().sorted(Comparator.comparingDouble(pd -> pd.getDefaultVariantDTO().getPrice())).collect(Collectors.toList());
+                    break;
+                case "aA-zZ": productDtos = productDtos.stream().sorted(Comparator.comparing(ProductDto::getName)).collect(Collectors.toList());
+                    break;
+                case "zZ-aA": productDtos = productDtos.stream().sorted(Comparator.comparing(ProductDto::getName).reversed()).collect(Collectors.toList());
+                    break;
+                default: productDtos= new ArrayList<>();
             }
         }
         return productDtos;
+
     }
+
     public List<ProductDto> searchProducts(String keyword)
     {
         List<Product> products = productRepository.searchProducts(keyword);

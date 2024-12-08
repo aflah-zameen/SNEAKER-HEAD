@@ -105,7 +105,7 @@
             <!-- Product Details -->
             <div class="col-md-5" >
                 <h6 class="text-muted mb-2" th:text="${details.brandName}"></h6>
-                <h1 class="mb-2" th:text="${details.name}"></h1>
+                <h1 class="mb-2" id="product-name" th:text="${details.name}"></h1>
 
                 <!-- Rating -->
                 <div class="mb-3">
@@ -161,7 +161,7 @@
                 <!-- Add to Cart -->
                 <div class="quantity-check mb-4" th:if="${details.defaultVariantDTO.quantity >0}">
                     <button class="btn btn-dark w-100 mb-2" th:onclick="addToCart(this)" th:data-user-id="${userId}" >Add to cart</button>
-                    <button class="btn btn-outline-dark w-100">Buy now</button>
+                    <button class="btn btn-outline-dark w-100" th:onclick="buyNow()" >Buy now</button>
                 </div>
 
                 <!-- Product Description -->
@@ -528,6 +528,23 @@
 
             }
 
+        }
+
+        function buyNow()
+        {
+            const selectedQuantity = document.getElementById("quantityInput").value;
+            const priceElement = document.getElementById("product-price");
+            const price = priceElement.getAttribute("data-product-price");
+
+            if(!selectedSize)
+            {
+               sizeError.classList.remove("d-none");
+            }
+            else
+            {
+                sizeError.classList.add("d-none");
+                window.location.href = `/user/product/buyNow?variantId=${variantId}&price=${price}&selectedQuantity=${selectedQuantity}&selectedSize=${selectedSize}`;
+            }
         }
 
     </script>

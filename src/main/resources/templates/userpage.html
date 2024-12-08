@@ -179,12 +179,12 @@
             {
                  Swal.fire({
                                 icon: "success",
-                                title: "Blocked",
-                                text: "User is blocked",
+                                title: "Success",
+                                text: "User is status updated",
                                 confirmButtonText: "OK",
                                 allowOutsideClick: false,
                             });
-                  data.textContent = status ? "Unblock" : "block";
+                  data.textContent = status ? "Unblock" : "Block";
                   data.classList.remove( status ? "block" : "unblock");
                   data.classList.add(status ? "unblock" : "block");
                   data.setAttribute("data-current-status", status ? false : true);
@@ -194,7 +194,7 @@
                  Swal.fire({
                     icon: "error",
                     title: "Error",
-                    text: "Some issues while updating status",
+                    text: "Some issues while blocking or unblocking",
                     confirmButtonText: "OK",
                     allowOutsideClick: false,
                 });
