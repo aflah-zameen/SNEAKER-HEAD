@@ -63,6 +63,9 @@ public class UserController {
     @Autowired
     BrandRepository brandRepository;
 
+    @Autowired
+    WishlistRepository wishlistRepository;
+
 
     @GetMapping("/home")
     public String AdminProduct()
@@ -216,19 +219,19 @@ public class UserController {
     public String editProfile(Model  model,HttpServletRequest request)
     {
         HttpSession session = request.getSession();
-        UserDto userDto = new UserDto();
+        UserDTO userDto = new UserDTO();
         WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
         userDto.setId(user.getId());
-        userDto.setName(user.getFull_name());
+        userDto.setFullName(user.getFullName());
         userDto.setPhone(user.getPhone());
         userDto.setGender(user.getGender());
         userDto.setEmail(user.getEmail());
-        userDto.setJoinDate(user.getJoin_date());
+        userDto.setJoinDate(user.getJoinDate());
         model.addAttribute("userObject",userDto);
         return "editprofile";
     }
     @PostMapping("/editprofile")
-    public String dataProfile(@Valid @ModelAttribute("userObject") UserDto userDto, BindingResult result,HttpServletRequest request)
+    public String dataProfile(@Valid @ModelAttribute("userObject") UserDTO userDto, BindingResult result, HttpServletRequest request)
     {
         if(result.hasErrors())
         {
@@ -239,10 +242,10 @@ public class UserController {
         WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
         user.setPhone(userDto.getPhone());
         user.setEmail(userDto.getEmail());
-        user.setFull_name(userDto.getName());
+        user.setFullName(userDto.getFullName());
         userRepository.save(user);
         session.setAttribute("userEmail",userDto.getEmail());
-        session.setAttribute("userName",userDto.getName());
+        session.setAttribute("userName",userDto.getFullName());
         return "redirect:/user/overview";
     }
 
@@ -560,6 +563,32 @@ public class UserController {
         model.addAttribute("brands",brands);
 
         return "productList";
+    }
+
+    //wishlist
+    @PostMapping("/wishlist/add")
+    public ResponseEntity<?> addToWishList(@RequestParam(name = "productId") Long id,HttpServletRequest request)
+    {
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
+        Product product = productRepository.findById(id).orElse(new Product());
+        Wishlist wishlist  = new Wishlist();
+        wishlist.setUser(user);
+        wishlist.setProduct(product);
+        wishlist.setAddedDate(LocalDate.now());
+        wishlistRepository.save(wishlist);
+        return ResponseEntity.ok("completed");
+    }
+
+    @Transactional
+    @DeleteMapping("/wishlist/remove")
+    public ResponseEntity<?> deleteFromWishlist(@RequestParam(name="productId") Long id,HttpServletRequest request)
+    {
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
+        Long wishlistId = wishlistRepository.findByUser_idAndProduct_id(user.getId(),id).orElse(new Wishlist()).getId();
+        wishlistRepository.deleteById(wishlistId);
+        return ResponseEntity.ok("completed");
     }
 
 }

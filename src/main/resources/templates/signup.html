@@ -275,6 +275,7 @@
 
         // Validate all fields
         function validateAndSubmitForm() {
+            console.log(document.getElementById("fullName").value.trim());
             const isNameValid = validateName();
             const isEmailValid = validateEmail();
             const isPhoneValid = validatePhone();
@@ -287,12 +288,12 @@
 
             // Submit form
             const formData = {
-                full_name: document.getElementById("fullName").value.trim(),
+                fullName: document.getElementById("fullName").value.trim(),
                 email: document.getElementById("email").value.trim(),
-                phone: document.getElementById("phone").value.trim(),
+                phone: Number(document.getElementById("phone").value.trim()),
                 password: document.getElementById("password").value
             };
-
+            console.log(formData);
             fetch("/signup/userdata", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

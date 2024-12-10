@@ -191,9 +191,16 @@ z
         <div class="row" id="productsGrid" th:if="${products}">
             <div class="col-md-2" id="product-card"  th:each="product : ${products}">
                 <div class="product-card" th:id="${product.id}" style=" height:23rem;">
+
                     <a th:href="@{/user/product/detail/{id}(id=${product.id})}">     <img th:src="${product.defaultVariantDTO.images.get(0)}" alt="WMN'S DUNK LOW" class="product-image">
                     </a>
-                        <div class="product-brand" th:text="${product.brandName}"></div>
+                        <div class="d-flex position-relative">
+                            <div class="product-brand" th:text="${product.brandName}"></div>
+                            <div class="wishlist-icon" th:data-product-id="${product.id}" onclick="toggleWishlist(this)">
+                                <i th:class="${product.wishlisted} ? 'bi bi-heart-fill' : 'bi bi-heart'"
+                                   th:style="${product.wishlisted} ? 'color: red;' : 'color: grey;'"></i>
+                            </div>
+                        </div>
                         <div class="color-options">
                             <span th:each="entry : ${product.productVariantDTOs}"
                                   th:style="'background-color:' + ${entry.color}"
@@ -362,6 +369,39 @@ z
                 // Add your sort logic here
             });
         });
+
+        //adding to wishlist
+        function toggleWishlist(element) {
+    const productId = Number(element.getAttribute('data-product-id'));
+    const icon = element.querySelector('i');
+    const isWishlisted = icon.classList.contains('bi-heart-fill');
+
+    // Toggle wishlist status
+    if (isWishlisted) {
+        removeFromWishlist(productId);
+        icon.classList.remove('bi-heart-fill');
+        icon.classList.add('bi-heart');
+        icon.style.color = 'grey';
+    } else {
+        addToWishlist(productId);
+        icon.classList.remove('bi-heart');
+        icon.classList.add('bi-heart-fill');
+        icon.style.color = 'red';
+    }
+}
+
+function addToWishlist(productId) {
+    fetch(`/user/wishlist/add?productId=${productId}`, {
+        method: 'POST'
+    }).then(response => console.log("Added to wishlist"));
+}
+
+function removeFromWishlist(productId) {
+    fetch(`/user/wishlist/remove?productId=${productId}`, {
+        method: 'DELETE'
+    }).then(response => console.log("Removed from wishlist"));
+}
+
 
     </script>
 </body>

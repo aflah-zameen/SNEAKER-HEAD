@@ -4,6 +4,7 @@ import com.e_commerce.SNEAKERHEAD.DTO.*;
 import com.e_commerce.SNEAKERHEAD.Entity.*;
 import com.e_commerce.SNEAKERHEAD.Enums.BrandStatus;
 import com.e_commerce.SNEAKERHEAD.Enums.CategoryStatus;
+import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
 import com.e_commerce.SNEAKERHEAD.Service.*;
 import com.e_commerce.SNEAKERHEAD.Service.AdminManagementService;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,6 +22,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -57,12 +60,26 @@ AdminManagementService adminManagementService;
     @Autowired
     AddressRepository addressRepository;
 
+    @Autowired
+    ProductMapper productMapper;
+
+    @Autowired
+    CriteriaProductRepository criteriaProductRepository;
 
     @GetMapping("/product")
     public String AdminProduct(Model model)
     {
-        List<ProductDto> products = productService.ListProduct();
-        model.addAttribute("products",products);
+        SortProductDTO sortProductDTO = new SortProductDTO();
+        Page<Product> productPage = productService.ListProduct(sortProductDTO.getPageablePage());
+        List<ProductDto> productDtos = productMapper.toDTOList(productPage.getContent()).stream().peek(pd->pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(pv -> pv.getQuantity()).sum())).peek(pd -> {
+            pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
+            pd.getProductVariantDTOs().forEach( pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+        }).collect(Collectors.toList());
+        model.addAttribute("products",productDtos);
+        model.addAttribute("totalPages",productPage.getTotalPages());
+        model.addAttribute("currentPage",0);
+        model.addAttribute("pageSize",10);
+
         return "product";
     }
     @GetMapping("/product/addproduct")
@@ -73,8 +90,8 @@ AdminManagementService adminManagementService;
         model.addAttribute("product", new ProductRequest());
         return "addproduct";
     }
-    @GetMapping("/product/editproduct")
-    public String EditProduct()
+    @GetMapping("/product/editproduct/{id}")
+    public String EditProduct(@PathVariable Long id)
     {
         return "editproduct";
     }
@@ -398,6 +415,29 @@ AdminManagementService adminManagementService;
         product.setStatus(status ? false : true);
         productRepository.save(product);
         return ResponseEntity.status(HttpStatus.OK).body("success");
+    }
+
+    @ResponseBody
+    @PostMapping("/product/sorting")
+    public ResponseEntity<List<ProductDto>> sortProduct(@RequestBody SortProductDTO sortProductDTO)
+    {
+            Page<Product> productPage = productService.ListProduct(sortProductDTO.getPageablePage());
+            List<ProductDto> productDtos = productMapper.toDTOList(productPage.getContent());
+            productDtos.stream().peek(pd -> pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(pv -> pv.getQuantity()).sum())).collect(Collectors.toList());
+            return ResponseEntity.ok(productDtos);
+    }
+
+    @ResponseBody
+    @GetMapping("/product/search")
+    public ResponseEntity<List<ProductDto>> saerchProductAdmin(@RequestParam(name = "keyword") String keyword) throws NullPointerException
+    {
+        if(keyword.isEmpty() || keyword.isBlank())
+        {
+            throw new NullPointerException();
+        }
+        List<Product> products = criteriaProductRepository.searchAllProducts(keyword);
+        List<ProductDto> productDtos = productMapper.toDTOList(products).stream().peek(pd-> pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(pv -> pv.getQuantity()).sum())).collect(Collectors.toList());
+        return ResponseEntity.ok(productDtos);
     }
 
 }

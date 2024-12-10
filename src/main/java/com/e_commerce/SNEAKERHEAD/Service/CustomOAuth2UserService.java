@@ -34,7 +34,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         if (existingUser.isEmpty()) {
             // New user - create and save
             WebUser newUser = new WebUser();
-            newUser.setFull_name(name);
+            newUser.setFullName(name);
             newUser.setEmail(email);
 
             userRepository.save(newUser);

@@ -1,16 +1,17 @@
 package com.e_commerce.SNEAKERHEAD.Controller;
 
+import com.e_commerce.SNEAKERHEAD.DTO.UserDTO;
 import com.e_commerce.SNEAKERHEAD.Entity.WebUser;
+import com.e_commerce.SNEAKERHEAD.Mappers.UserMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.UserRepository;
 import com.e_commerce.SNEAKERHEAD.Service.AdminManagementService;
 import com.e_commerce.SNEAKERHEAD.Service.OtpService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.hibernate.Session;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -29,6 +30,9 @@ public class LoginController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    UserMapper userMapper;
 
     @GetMapping("/")
     public String HomePage(HttpSession session)
@@ -63,10 +67,12 @@ public class LoginController {
         return "signup";
     }
 
+    @ResponseBody
     @PostMapping(value = "/signup/userdata", consumes = "application/json")
-    public ResponseEntity<?> registerUser(@RequestBody WebUser user, HttpServletRequest request) {
+    public ResponseEntity<?> registerUser(@Valid  @RequestBody WebUser user,HttpServletRequest request) {
+        System.out.println(user.getFullName());
         Map<String, String> response = new HashMap<>();
-
+        UserDTO userDTO = userMapper.toDTO(user);
         try {
             // Check if email is already registered (assuming userService handles this check)
             if (userRepository.existsByEmail(user.getEmail())) {
@@ -80,7 +86,9 @@ public class LoginController {
 
             // Save user details and OTP in session
             HttpSession session = request.getSession();
-            session.setAttribute("userdata", user);
+            System.out.println(userDTO);
+            session.setAttribute("userdata", userDTO);
+            session.setAttribute("password",user.getPassword());
             session.setAttribute("otp", otp);
             session.setAttribute("forgetPassword",false);
             response.put("message", "User registered successfully.");
@@ -96,7 +104,7 @@ public class LoginController {
     @GetMapping("/otpverification")
     public String Verification(HttpServletRequest request,Model model){
         HttpSession session = request.getSession();
-        WebUser user = (WebUser) session.getAttribute("userdata");
+        UserDTO user = (UserDTO) session.getAttribute("userdata");
         String email = user.getEmail();
         model.addAttribute("email",email);
         return "otpverification";
@@ -125,8 +133,8 @@ public class LoginController {
         }
         if(Otp.equals(userOtp))
         {
-            WebUser user=(WebUser) session.getAttribute("userdata");
-            adminManagementService.addUser(user);
+            UserDTO userDTO =(UserDTO) session.getAttribute("userdata");
+            adminManagementService.addUser(userDTO,session);
             response.put("verified", true);
         }
         else
@@ -141,7 +149,7 @@ public class LoginController {
         Map<String, Object> response = new HashMap<>();
         String otp = otpService.generateOtp();
         HttpSession session =request.getSession();
-        WebUser user=(WebUser) session.getAttribute("userdata");
+        UserDTO user =(UserDTO) session.getAttribute("userdata");
         otpService.sendOtpEmail(user.getEmail(), otp);
         session.setAttribute("otp", otp);
         response.put("success", true);
@@ -173,7 +181,7 @@ public class LoginController {
     public String showResetPassword(HttpServletRequest request,Model model)
     {
         HttpSession session = request.getSession();
-        WebUser user=(WebUser) session.getAttribute("userdata");
+        UserDTO user =(UserDTO) session.getAttribute("userdata");
         String email = user.getEmail();
         model.addAttribute("email",email);
         return "reset_password";

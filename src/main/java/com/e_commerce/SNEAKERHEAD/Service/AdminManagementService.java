@@ -2,12 +2,15 @@ package com.e_commerce.SNEAKERHEAD.Service;
 
 import com.e_commerce.SNEAKERHEAD.DTO.ProductDto;
 import com.e_commerce.SNEAKERHEAD.DTO.ProductVariantDTO;
+import com.e_commerce.SNEAKERHEAD.DTO.UserDTO;
 import com.e_commerce.SNEAKERHEAD.Entity.*;
 import com.e_commerce.SNEAKERHEAD.Enums.CategoryStatus;
 import com.e_commerce.SNEAKERHEAD.Enums.StockStatus;
 import com.e_commerce.SNEAKERHEAD.Enums.UserRole;
 import com.e_commerce.SNEAKERHEAD.Enums.UserStatus;
+import com.e_commerce.SNEAKERHEAD.Mappers.UserMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,8 @@ public class AdminManagementService {
     BrandRepository brandRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    UserMapper userMapper;
 
     @Transactional
     public Product addProduct(ProductDto productDto, Brand brand, Category category)
@@ -77,18 +82,21 @@ public class AdminManagementService {
     }
 
     @Transactional
-    public String addUser(WebUser user)
+    public String addUser(UserDTO userDTO, HttpSession session)
     {
-        Optional<WebUser> temp = userRepository.findByEmail(user.getEmail());
+        Optional<WebUser> temp = userRepository.findByEmail(userDTO.getEmail());
+        String password = (String)session.getAttribute("password");
+        session.setAttribute("password",null);
         if(temp.isPresent())
         {
             return "Already Exist";
         }
-        user.setJoin_date(LocalDate.now());
+        WebUser user = userMapper.toEntity(userDTO);
+        user.setJoinDate(LocalDate.now());
         user.setRole(UserRole.USER);
         user.setStatus(true);
-        if(user.getPassword() != null) {
-            String hashedPassword = passwordEncoder.encode(user.getPassword());
+        if(password != null) {
+            String hashedPassword = passwordEncoder.encode(password);
             user.setPassword(hashedPassword);
         }
         userRepository.save(user);

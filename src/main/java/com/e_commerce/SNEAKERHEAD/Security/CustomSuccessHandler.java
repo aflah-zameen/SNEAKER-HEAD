@@ -3,7 +3,6 @@ package com.e_commerce.SNEAKERHEAD.Security;
 import com.e_commerce.SNEAKERHEAD.Entity.WebUser;
 import com.e_commerce.SNEAKERHEAD.Repository.UserRepository;
 import com.e_commerce.SNEAKERHEAD.Service.AdminManagementService;
-import com.e_commerce.SNEAKERHEAD.Service.UserManagementService;
 import com.e_commerce.SNEAKERHEAD.Service.UserPrincipal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -46,7 +45,7 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             session.setAttribute("role", role);
             session.setAttribute("userEmail",email);
             WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
-            String userName = user.getFull_name();
+            String userName = user.getFullName();
             session.setAttribute("userName",userName);
             String redirectUrl = "/";
             new DefaultRedirectStrategy().sendRedirect(request, response, redirectUrl);
@@ -57,10 +56,13 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             String email = defaultOidcUser.getEmail();
             String name = defaultOidcUser.getFullName();
             WebUser user=new WebUser();
-            user.setFull_name(name);
+            user.setFullName(name);
             user.setEmail(email);
             user.setStatus(true);
-            adminManagementService.addUser(user);
+            if(!userRepository.existsByEmail(email))
+            {
+                userRepository.save(user);
+            }
             HttpSession session = request.getSession();
             session.setAttribute("role","USER");
             session.setAttribute("userEmail",email);

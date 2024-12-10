@@ -78,7 +78,10 @@ public class SecurityConfiguration {
                         .failureHandler(customFailureHandler)
                         .permitAll()
                 )
-                .logout(logout -> logout.permitAll())
+                .logout(logout -> logout.permitAll()
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        )
                 .oauth2Login(oauth -> oauth
                         .loginPage("/userlogin")
                         .successHandler(customSuccessHandler)

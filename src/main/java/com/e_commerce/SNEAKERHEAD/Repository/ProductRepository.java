@@ -1,7 +1,10 @@
 package com.e_commerce.SNEAKERHEAD.Repository;
 
+import com.e_commerce.SNEAKERHEAD.DTO.ProductDto;
 import com.e_commerce.SNEAKERHEAD.Entity.Category;
 import com.e_commerce.SNEAKERHEAD.Entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,4 +37,8 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
             "LOWER(p.brand.name) LIKE LOWER(CONCAT('%',:keyword,'%'))"
     )
     List<Product> searchProducts(String keyword);
+
+    Page<Product> findAll(Pageable pageable);
+
+
 }

@@ -1,7 +1,6 @@
 package com.e_commerce.SNEAKERHEAD.DTO;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.e_commerce.SNEAKERHEAD.Enums.UserRole;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,17 +12,14 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString
-public class UserDto {
+public class UserDTO {
     private Long id;
-
-    @NotBlank(message = "Name cannot be blank.")
-    private String name;
-    @NotBlank(message = "Email cannot be blank.")
+    private String fullName;
     private String email;
-    @NotNull(message = "Phone cannot be blank.")
     private Long phone;
     private LocalDate joinDate;
     private String gender;
     private boolean status;
     private AddressDTO defaultAddress;
+    private UserRole role;
 }

@@ -105,7 +105,7 @@
         <!-- Sidebar -->
         <div class="col-md-3">
             <h3 class="mb-4">Account</h3>
-            <p class="mb-4" th:if="${userObject.name}" th:text="'Hello ,'+ ${userObject.name}"></p>
+            <p class="mb-4" th:if="${userObject.fullName}" th:text="'Hello ,'+ ${userObject.fullName}"></p>
             <div class="account-sidebar">
                 <div class="nav flex-column nav-pills">
                     <a class="nav-link" href="/user/overview">Overview</a>
@@ -126,9 +126,9 @@
                 <form th:object="${userObject}" th:action="@{/user/editprofile}" method="post" id="editProfileForm">
                     <div class="row">
                         <div class="mb-4 col-md-6">
-                            <label class="form-label">Full name*</label>
-                            <input type="text" class="form-control" th:field="*{name}">
-                            <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                            <label class="form-label">Full Name*</label>
+                            <input type="text" class="form-control" th:field="*{fullName}">
+                            <div class="text-danger" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
                         </div>
                         <div class="my-4 col-md-6">
                             <div class="row">

@@ -1,16 +1,14 @@
 package com.e_commerce.SNEAKERHEAD.Service;
 
 import com.e_commerce.SNEAKERHEAD.DTO.*;
-import com.e_commerce.SNEAKERHEAD.Entity.Brand;
-import com.e_commerce.SNEAKERHEAD.Entity.Category;
-import com.e_commerce.SNEAKERHEAD.Entity.Product;
-import com.e_commerce.SNEAKERHEAD.Entity.ProductVariant;
+import com.e_commerce.SNEAKERHEAD.Entity.*;
 import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
-import com.e_commerce.SNEAKERHEAD.Repository.BrandRepository;
-import com.e_commerce.SNEAKERHEAD.Repository.CategoryRepository;
-import com.e_commerce.SNEAKERHEAD.Repository.ProductRepository;
-import com.e_commerce.SNEAKERHEAD.Repository.ProductVariantRepository;
+import com.e_commerce.SNEAKERHEAD.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
@@ -36,6 +34,9 @@ public class ProductService {
 
     @Autowired
     ProductMapper productMapper;
+
+    @Autowired
+    WishlistRepository wishlistRepository;
 
     public static String formatPrice(double price) {
         DecimalFormat decimalFormat = new DecimalFormat("##,##,##0.00"); // Indian-style formatting
@@ -65,11 +66,13 @@ public class ProductService {
         return productDto;
     }
 
-    public List<ProductDto> ListProduct() {
-        List<Product> products = productRepository.findAll();
-        return productMapper.toDTOList(products).stream().peek(pd -> {pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
-            pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
-        pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(ProductVariantDTO::getQuantity).sum());}).collect(Collectors.toList());
+    public Page<Product> ListProduct(Pageable pageable) {
+        Page<Product>productPage = productRepository.findAll(pageable);
+        return productPage;
+
+//        return productMapper.toDTOList(products).stream().peek(pd -> {pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
+//            pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+//        pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(ProductVariantDTO::getQuantity).sum());}).collect(Collectors.toList());
     }
 
     public AddProduct addProduct()
@@ -276,11 +279,18 @@ public class ProductService {
     public List<ProductDto> ListAllProducts() {
         List<Product> products = productRepository.findAll();
         products = products.stream().filter(Product::getStatus).collect(Collectors.toList());
-
+        List<Wishlist> wishlists = wishlistRepository.findAll();
         return productMapper.toDTOList(products).stream().peek(pd -> {
             pd.setDefaultVariantDTO(pd.getProductVariantDTOs().stream().findFirst().orElse(null));
             pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+            pd.setWishlisted(wishlists.contains(pd.getId()));
         }).collect(Collectors.toList());
 
     }
+
+//    public List<ProductDto> adminProductSorting(SortProductDTO sortProductDTO)
+//    {
+//        productRepository.
+//    }
+
 }

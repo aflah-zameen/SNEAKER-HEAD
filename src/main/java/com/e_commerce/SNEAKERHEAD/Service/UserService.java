@@ -36,8 +36,8 @@ public class UserService {
         {
             UsersList usersList = new UsersList();
             usersList.setId(x.getId());
-            usersList.setName(x.getFull_name());
-            usersList.setDate(x.getJoin_date().toString());
+            usersList.setName(x.getFullName());
+            usersList.setDate(x.getJoinDate().toString());
             usersList.setPhone(x.getPhone());
             usersList.setEmail(x.getEmail());
             usersList.setStatus(x.getStatus());

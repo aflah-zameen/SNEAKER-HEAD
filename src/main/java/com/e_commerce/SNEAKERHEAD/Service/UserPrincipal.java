@@ -21,7 +21,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        System.out.println(user.getRole().name());
         return Collections.singleton(new SimpleGrantedAuthority(user.getRole().name()))   ;
     }
 
@@ -32,7 +31,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
-        System.out.println(user.getEmail());
         return user.getEmail();
     }
 

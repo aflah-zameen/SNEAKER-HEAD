@@ -32,4 +32,5 @@ public class ProductDto {
     private ProductVariantDTO defaultVariantDTO ;
     private Boolean status;
     private Integer quantity;
+    private Boolean wishlisted;
 }
