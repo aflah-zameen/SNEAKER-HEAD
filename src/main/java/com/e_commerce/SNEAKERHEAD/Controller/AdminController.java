@@ -21,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,16 @@ AdminManagementService adminManagementService;
 
     @Autowired
     CriteriaProductRepository criteriaProductRepository;
+
+    @Autowired
+    CouponRepository couponRepository;
+
+    @Autowired
+    CouponService couponService;
+
+    @Autowired
+    CriteriaCouponRepository criteriaCouponRepository;
+
 
     @GetMapping("/product")
     public String AdminProduct(Model model)
@@ -439,5 +450,74 @@ AdminManagementService adminManagementService;
         List<ProductDto> productDtos = productMapper.toDTOList(products).stream().peek(pd-> pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(pv -> pv.getQuantity()).sum())).collect(Collectors.toList());
         return ResponseEntity.ok(productDtos);
     }
+
+    //coupon
+    @GetMapping("/coupons")
+    public String showCoupons(Model model)
+    {
+        Page couponPage = couponRepository.findAll(new SortProductDTO().getPageablePage());
+        model.addAttribute("coupons",couponPage.getContent());
+        model.addAttribute("totalPages",couponPage.getTotalPages());
+        model.addAttribute("currentPage",0);
+        model.addAttribute("pageSize",10);
+        return "couponAdmin";
+    }
+
+
+    @GetMapping("/coupon/addcoupon")
+    public String showAddCoupon(Model model)
+    {
+        model.addAttribute("couponObject",new Coupon());
+        return "add_coupon";
+    }
+
+    @PostMapping("/coupon/data")
+    public String addCoupon(@Valid @ModelAttribute("couponObject") Coupon coupon,BindingResult result,Model model)
+    {
+        if(!(coupon.getStartDate() == null) && !(coupon.getEndDate() == null))
+        {
+            if (!coupon.getStartDate().isBefore(coupon.getEndDate())) {
+                result.rejectValue("startDate", "error.coupon", "Start date must be before end date");
+            }
+         }
+        if(!(coupon.getStartDate() == null) || !(coupon.getEndDate() == null))
+        {
+            if (coupon.getStartDate().isBefore(LocalDate.now())) {
+                result.rejectValue("startDate", "error.coupon", "Please select a date from today onwards");
+            }
+            if (coupon.getEndDate().isBefore(LocalDate.now())) {
+                result.rejectValue("endDate", "error.coupon", "Please select a date from today onwards");
+            }
+        }
+        if(result.hasErrors()) {
+            System.out.println(result.getAllErrors().toString());
+            model.addAttribute("couponObject",coupon);
+            return "add_coupon";
+        }
+
+        couponService.addCoupon(coupon);
+        return "redirect:/admin/coupons";
+    }
+
+    @ResponseBody
+    @PostMapping("/coupons/sorting")
+    public ResponseEntity<List<Coupon>> sortCoupons(@RequestBody SortProductDTO sortProductDTO)
+    {
+        Page<Coupon> couponPage = couponRepository.findAll(sortProductDTO.getPageablePage());
+        return ResponseEntity.ok(couponPage.getContent());
+    }
+
+    @ResponseBody
+    @GetMapping("/coupons/search")
+    public ResponseEntity<List<Coupon>> saerchCouponAdmin(@RequestParam(name = "keyword") String keyword) throws NullPointerException
+    {
+        if(keyword.isEmpty() || keyword.isBlank())
+        {
+            throw new NullPointerException();
+        }
+        List<Coupon> coupons = criteriaCouponRepository.searchAllCoupons(keyword);
+        return ResponseEntity.ok(coupons);
+    }
+
 
 }

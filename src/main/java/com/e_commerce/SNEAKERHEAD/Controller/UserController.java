@@ -66,6 +66,9 @@ public class UserController {
     @Autowired
     WishlistRepository wishlistRepository;
 
+    @Autowired
+    CouponRepository couponRepository;
+
 
     @GetMapping("/home")
     public String AdminProduct()
@@ -73,10 +76,13 @@ public class UserController {
         return "index";
     }
     @GetMapping("/women")
-    public String WomenProduct(Model model)
+    public String WomenProduct(Model model,HttpServletRequest request)
     {
+        HttpSession session = request.getSession();
+        String email =(String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         Category category = categoryRepository.findByName("Women").orElseThrow(()->new NullPointerException());
-        List<ProductDto> products = productService.categoryProduct(category);
+        List<ProductDto> products = productService.categoryProduct(category,user.getId());
         List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
         model.addAttribute("products",products);
         model.addAttribute("url","women");
@@ -108,10 +114,13 @@ public class UserController {
 
 
     @GetMapping("/men")
-    public String MenProduct(Model model)
+    public String MenProduct(Model model,HttpServletRequest request)
     {
+        HttpSession session = request.getSession();
+        String email =(String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         Category category = categoryRepository.findByName("Men").orElseThrow(()->new NullPointerException());
-        List<ProductDto> products = productService.categoryProduct(category);
+        List<ProductDto> products = productService.categoryProduct(category,user.getId());
         List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
         model.addAttribute("products",products);
         model.addAttribute("url","men");
@@ -367,11 +376,27 @@ public class UserController {
         addressRepository.save(address);
         return "redirect:/user/addresses";
     }
+
     @GetMapping("/wishlist")
-    public String showWhishlist()
+    public String showWhishlist(Model model,HttpServletRequest request)
     {
+        HttpSession session = request.getSession();
+        String email =(String) session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
+        List<Wishlist> wishlists = wishlistRepository.findAllByUser_id(user.getId());
+        List<Product> products = productRepository.findAllByStatus(true).stream().filter(pd -> wishlists.stream().anyMatch(wi-> wi.getProduct().getId().equals(pd.getId()))).collect(Collectors.toList());
+        List<ProductDto> productDtos = productMapper.toDTOList(products).stream().peek(pd -> { pd.getProductVariantDTOs().stream().peek(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+                                                                                                        pd.setDefaultVariantDTO(pd.getProductVariantDTOs().stream().findFirst().orElse(new ProductVariantDTO()));
+                                                                                                        }).collect(Collectors.toList());
+        for(ProductDto p : productDtos)
+        {
+            System.out.println(p.getName());
+        }
+        model.addAttribute("products",productDtos);
         return "wishlist";
     }
+
+
     @GetMapping("/cart")
     public String showCart(HttpServletRequest request,Model model)
     {
@@ -476,7 +501,7 @@ public class UserController {
         OrderDto orderDto = new OrderDto();
         orderDto.setVariantId((Long)session.getAttribute("productVariantId"));
         orderDto.setQuantity((Integer)session.getAttribute("productQuantity"));
-        model.addAttribute("subtotal",FormattedSubTotal);
+        model.addAttribute("subtotal",(Double) session.getAttribute("subtotal"));
         model.addAttribute("addressObject",new AddressDTO());
         model.addAttribute("defaultAddress",address);
         model.addAttribute("subtotalFormatted",FormattedSubTotal);
@@ -535,6 +560,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body("order placed");
 
     }
+
+    @ResponseBody
+    @PostMapping("/checkout/applyCoupon")
+    public ResponseEntity<?> addCoupon(@RequestParam("couponCode") String couponCode,@RequestParam("subtotal") Double subtotal)
+    {
+        Map<String,String> response = new HashMap<>();
+        Map<String,Double> opertaion = new HashMap<>();
+        opertaion = couponRepository.findAllByIsActive(true).stream().filter(cp -> cp.getCouponCode().equalsIgnoreCase(couponCode)).collect(Collectors.toMap( cp -> cp.getDiscountType(),cp-> cp.getDiscountValue() ));
+        if(!opertaion.isEmpty())
+        {
+            response.put()
+            return ResponseEntity.ok()
+        }
+    }
+
+
     @GetMapping("/search")
     public String searchProducts(@RequestParam("keyword") String keyword, Model model)
     {
@@ -552,10 +593,18 @@ public class UserController {
     }
 
     @GetMapping("/shop")
-    public String showShop(Model model)
+    public String showShop(Model model,HttpServletRequest request)
     {
+
+        HttpSession session = request.getSession();
+        String email =(String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
-        List<ProductDto>productDtos = productService.ListAllProducts();
+        List<ProductDto>productDtos = productService.ListAllProducts(user.getId());
+        for(ProductDto p : productDtos )
+        {
+            System.out.println(p.getWishlisted());
+        }
         model.addAttribute("products",productDtos);
         model.addAttribute("url","shop");
         model.addAttribute("category","Available");
@@ -577,6 +626,7 @@ public class UserController {
         wishlist.setProduct(product);
         wishlist.setAddedDate(LocalDate.now());
         wishlistRepository.save(wishlist);
+        session.setAttribute("wishlistCount",((Integer) session.getAttribute("wishlistCount"))+1);
         return ResponseEntity.ok("completed");
     }
 
@@ -588,6 +638,7 @@ public class UserController {
         WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
         Long wishlistId = wishlistRepository.findByUser_idAndProduct_id(user.getId(),id).orElse(new Wishlist()).getId();
         wishlistRepository.deleteById(wishlistId);
+        session.setAttribute("wishlistCount",((Integer) session.getAttribute("wishlistCount"))-1);
         return ResponseEntity.ok("completed");
     }
 

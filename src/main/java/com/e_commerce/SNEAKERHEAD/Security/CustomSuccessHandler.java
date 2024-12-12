@@ -1,7 +1,9 @@
 package com.e_commerce.SNEAKERHEAD.Security;
 
 import com.e_commerce.SNEAKERHEAD.Entity.WebUser;
+import com.e_commerce.SNEAKERHEAD.Entity.Wishlist;
 import com.e_commerce.SNEAKERHEAD.Repository.UserRepository;
+import com.e_commerce.SNEAKERHEAD.Repository.WishlistRepository;
 import com.e_commerce.SNEAKERHEAD.Service.AdminManagementService;
 import com.e_commerce.SNEAKERHEAD.Service.UserPrincipal;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +20,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +31,9 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
     AdminManagementService adminManagementService;
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    WishlistRepository wishlistRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -45,8 +51,19 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             session.setAttribute("role", role);
             session.setAttribute("userEmail",email);
             WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
+            if(user == null)
+            {
+                session.setAttribute("wishlistCount",0);
+            }
+            else
+            {
+                Integer wishlistCount = wishlistRepository.findAllByUser_id(user.getId()).size();
+                session.setAttribute("wishlistCount",wishlistCount);
+            }
+
             String userName = user.getFullName();
             session.setAttribute("userName",userName);
+
             String redirectUrl = "/";
             new DefaultRedirectStrategy().sendRedirect(request, response, redirectUrl);
         }
@@ -55,15 +72,25 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             DefaultOidcUser defaultOidcUser = (DefaultOidcUser) principal;
             String email = defaultOidcUser.getEmail();
             String name = defaultOidcUser.getFullName();
-            WebUser user=new WebUser();
-            user.setFullName(name);
-            user.setEmail(email);
-            user.setStatus(true);
+            HttpSession session = request.getSession();
             if(!userRepository.existsByEmail(email))
             {
+                WebUser user=new WebUser();
+                user.setFullName(name);
+                user.setEmail(email);
+                user.setStatus(true);
                 userRepository.save(user);
+                session.setAttribute("wishlistCount",0);
+
             }
-            HttpSession session = request.getSession();
+            else
+            {
+                WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
+                Integer wishlistCount = wishlistRepository.findAllByUser_id(user.getId()).size();
+                session.setAttribute("wishlistCount",wishlistCount);
+
+            }
+            System.out.println();
             session.setAttribute("role","USER");
             session.setAttribute("userEmail",email);
             session.setAttribute("userName",name);

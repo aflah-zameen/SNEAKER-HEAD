@@ -131,16 +131,16 @@
         <!-- Sidebar -->
         <div class="col-md-3 col-lg-2 px-0 sidebar">
             <nav class="nav flex-column">
-                <a class="nav-link" href="#dashboard">Dashboard</a>
+                <a class="nav-link" href="/admin/dashboard">Dashboard</a>
                 <a class="nav-link" href="/admin/orders">Orders</a>
                 <a class="nav-link active" href="/admin/product">Products</a>
                 <a class="nav-link" href="/admin/users">Users</a>
                 <a class="nav-link" href="/admin/category">Categories</a>
                 <a class="nav-link" href="/admin/brands">Brands</a>
-                <a class="nav-link" href="#coupons">Coupons</a>
-                <a class="nav-link" href="#banners">Banners</a>
-                <a class="nav-link" href="#payments">Payments</a>
-                <a class="nav-link" href="/offers">Offers</a>
+                <a class="nav-link" href="/admin/coupons">Coupons</a>
+                <a class="nav-link" href="/admin/banners">Banners</a>
+                <a class="nav-link" href="/admin/payments">Payments</a>
+                <a class="nav-link" href="/admin/offers">Offers</a>
                 <button
                         class="btn btn-danger mt-3"
                         onclick="window.location.href='/logout'"
@@ -151,7 +151,7 @@
         </div>
         <div class="col-md-9 col-lg-10">
             <div class="d-flex justify-content-between align-items-center my-4">
-                <h2 class="mb-0">Products</h2>
+                <h2 class="mb-0">Coupons</h2>
 
                 <!-- Search Bar -->
                 <div class="input-group" style="max-width: 400px;">
@@ -160,13 +160,13 @@
                     <button class="btn btn-secondary btn-sm" type="button" onclick="clearSearch()">Clear</button>
                 </div>
 
-                <!-- Add Product Button -->
-                <button class="btn btn-primary btn-sm" onclick="window.location.href='/admin/product/addproduct'">
-                    + Add Product
+                <!-- Add Coupon Button -->
+                <button class="btn btn-primary btn-sm" onclick="window.location.href='/admin/coupon/addcoupon'">
+                    + Add Coupon
                 </button>
             </div>
 
-            <!-- Product Table -->
+            <!-- Coupon Table -->
             <div class="table-responsive ps-5 pe-5">
                 <table class="table table-striped table-hover">
                     <thead>
@@ -181,53 +181,68 @@
                             </button>
                         </th>
                         <th class="sortable">
-                            Name
-                            <button class="btn  p-0" onclick="sort(this,'name', 'ASC')">
+                            Coupon name
+                            <button class="btn  p-0" onclick="sort(this,'couponName', 'ASC')">
                                 <i class="bi bi-arrow-up"></i>
                             </button>
-                            <button class="btn  p-0" onclick="sort(this,'name', 'DESC')">
+                            <button class="btn  p-0" onclick="sort(this,'couponName', 'DESC')">
                                 <i class="bi bi-arrow-down"></i>
                             </button>
                         </th>
                         <th class="sortable">
-                            Category
-                            <button class="btn  p-0" onclick="sort(this,'category.name', 'ASC')">
+                            Coupon Code
+                            <button class="btn  p-0" onclick="sort(this,'couponCode', 'ASC')">
                                 <i class="bi bi-arrow-up"></i>
                             </button>
-                            <button class="btn  p-0" onclick="sort(this,'category.name', 'DESC')">
+                            <button class="btn  p-0" onclick="sort(this,'couponCode', 'DESC')">
                                 <i class="bi bi-arrow-down"></i>
                             </button>
                         </th>
                         <th class="sortable">
-                            Brand
-                            <button class="btn  p-0" onclick="sort(this,'brand.name', 'ASC')">
+                            Discount Value
+                            <button class="btn  p-0" onclick="sort(this,'discountValue', 'ASC')">
                                 <i class="bi bi-arrow-up"></i>
                             </button>
-                            <button class="btn  p-0" onclick="sort(this,'brand.name', 'DESC')">
+                            <button class="btn  p-0" onclick="sort(this,'discountValue', 'DESC')">
                                 <i class="bi bi-arrow-down"></i>
                             </button>
                         </th>
-                        <th>Quantity</th>
+                        <th class="sortable">
+                            Usage Limit
+                            <button class="btn  p-0" onclick="sort(this,'usageLimit', 'ASC')">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button class="btn  p-0" onclick="sort(this,'usageLimit', 'DESC')">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </th>
+                        <th class="sortable">
+                            Expiry Date
+                            <button class="btn  p-0" onclick="sort(this,'endDate', 'ASC')">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button class="btn  p-0" onclick="sort(this,'endDate', 'DESC')">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </th>
                         <th>Actions</th>
                     </tr>
                     </thead>
-                    <tbody th:if="${products}" id="product-table-body">
-                    <tr th:each="product : ${products}">
-                        <td th:text="${product.id}"></td>
-                        <td th:text="${product.name}"></td>
-                        <td th:text="${product.categoryName}"></td>
-                        <td th:text="${product.brandName}"></td>
-                        <td th:text="${product.quantity}"></td>
+                    <tbody th:if="${coupons}" id="coupon-table-body">
+                    <tr th:each="coupon : ${coupons}">
+                        <td th:text="${coupon.id}"></td>
+                        <td th:text="${coupon.couponName}"></td>
+                        <td th:text="${coupon.couponCode}"></td>
+                        <td th:text="${coupon.discountValue}"></td>
+                        <td th:text="${coupon.usageLimit}"></td>
+                        <td th:text="${coupon.endDate}"></td>
                         <td>
-                            <button class="btn btn-sm "
-                                    th:classappend="${product.status} ? 'btn-danger' : 'btn-success'"
-                                    th:text="${product.status} ? 'Unlist' : 'List'"
-                                    onclick="updateStatus(this)"
-                                    th:data-product-id="${product.id}"
-                                    th:data-current-status="${product.status}">
+                            <button class="btn btn-sm btn-danger"
+                                    th:onclick="window.location.href='/admin/coupon/remove/' + '${coupon.id}' ">
+                                Remove
                             </button>
                             <button class="btn btn-sm "
-                                    th:onclick="'window.location.href=\'/admin/product/editproduct/' + ${product.id} + '\''">
+                                    th:onclick="window.location.href='/admin/coupon/edit/' + '${coupon.id}' ">
                                 <i class="bi bi-pencil"></i>
                             </button>
                         </td>
@@ -254,18 +269,18 @@
     </div>
 </div>
 
-<!-- Add Product Modal -->
-<!--<div class="modal fade" id="addProductModal" tabindex="-1">-->
+<!-- Add Coupon Modal -->
+<!--<div class="modal fade" id="addCouponModal" tabindex="-1">-->
 <!--    <div class="modal-dialog modal-lg">-->
 <!--        <div class="modal-content">-->
 <!--            <div class="modal-header">-->
-<!--                <h5 class="modal-title">Add Product</h5>-->
+<!--                <h5 class="modal-title">Add Coupon</h5>-->
 <!--                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>-->
 <!--            </div>-->
 <!--            <div class="modal-body">-->
-<!--                <form id="addProductForm">-->
+<!--                <form id="addCouponForm">-->
 <!--                    <div class="mb-3">-->
-<!--                        <label class="form-label">Product Name</label>-->
+<!--                        <label class="form-label">Coupon Name</label>-->
 <!--                        <input type="text" class="form-control" required>-->
 <!--                    </div>-->
 <!--                    <div class="mb-3">-->
@@ -297,7 +312,7 @@
 <!--                        </div>-->
 <!--                    </div>-->
 <!--                    <div class="mb-3">-->
-<!--                        <label class="form-label">Product Images</label>-->
+<!--                        <label class="form-label">Coupon Images</label>-->
 <!--                        <div class="file-upload">-->
 <!--                            <input type="file" class="d-none" id="productImages" multiple accept="image/*">-->
 <!--                            <label for="productImages" class="mb-0">-->
@@ -312,7 +327,7 @@
 <!--            </div>-->
 <!--            <div class="modal-footer">-->
 <!--                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>-->
-<!--                <button type="button" class="btn btn-primary">Add Product</button>-->
+<!--                <button type="button" class="btn btn-primary">Add Coupon</button>-->
 <!--            </div>-->
 <!--        </div>-->
 <!--    </div>-->
@@ -324,51 +339,51 @@
 <script>
 
 
-    function updateStatus(data)
-    {
-        const status= data.getAttribute("data-current-status") == "true" ? true : false;
-        const productId = parseInt(data.getAttribute("data-product-id"));
-        fetch(`/admin/product/status?status=${status}&productId=${productId}`,{
-            method : 'PUT',
-        })
-        .then(response => {
-            if(response.ok)
-            {
-                 Swal.fire({
-                                icon: "success",
-                                title: "Success",
-                                text: "Product status updated!",
-                                confirmButtonText: "OK",
-                                allowOutsideClick: false,
-                            });
-                  data.textContent = status ? "List" : "Unlist";
-                  data.classList.remove( status ? "btn-danger" : "btn-success");
-                  data.classList.add(status ? "btn-success" : "btn-danger");
-                  data.setAttribute("data-current-status", status ? false : true);
-            }
-            else
-            {
-                 Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Some issues while updating status",
-                    confirmButtonText: "OK",
-                    allowOutsideClick: false,
-                });
+<!--    function updateStatus(data)-->
+<!--    {-->
+<!--        const status= data.getAttribute("data-current-status") == "true" ? true : false;-->
+<!--        const productId = parseInt(data.getAttribute("data-product-id"));-->
+<!--        fetch(`/admin/product/status?status=${status}&productId=${productId}`,{-->
+<!--            method : 'PUT',-->
+<!--        })-->
+<!--        .then(response => {-->
+<!--            if(response.ok)-->
+<!--            {-->
+<!--                 Swal.fire({-->
+<!--                                icon: "success",-->
+<!--                                title: "Success",-->
+<!--                                text: "Coupon status updated!",-->
+<!--                                confirmButtonText: "OK",-->
+<!--                                allowOutsideClick: false,-->
+<!--                            });-->
+<!--                  data.textContent = status ? "List" : "Unlist";-->
+<!--                  data.classList.remove( status ? "btn-danger" : "btn-success");-->
+<!--                  data.classList.add(status ? "btn-success" : "btn-danger");-->
+<!--                  data.setAttribute("data-current-status", status ? false : true);-->
+<!--            }-->
+<!--            else-->
+<!--            {-->
+<!--                 Swal.fire({-->
+<!--                    icon: "error",-->
+<!--                    title: "Error",-->
+<!--                    text: "Some issues while updating status",-->
+<!--                    confirmButtonText: "OK",-->
+<!--                    allowOutsideClick: false,-->
+<!--                });-->
 
-            }
-        })
-        .catch(error => {
-        // Handle network errors or other unexpected issues
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "An unexpected error occurred. Please try again.",
-            confirmButtonText: "OK",
-            allowOutsideClick: false,
-        });
-    });
-    }
+<!--            }-->
+<!--        })-->
+<!--        .catch(error => {-->
+<!--        // Handle network errors or other unexpected issues-->
+<!--        Swal.fire({-->
+<!--            icon: "error",-->
+<!--            title: "Error",-->
+<!--            text: "An unexpected error occurred. Please try again.",-->
+<!--            confirmButtonText: "OK",-->
+<!--            allowOutsideClick: false,-->
+<!--        });-->
+<!--    });-->
+<!--    }-->
 
 
 
@@ -408,7 +423,7 @@
 
         console.log(formData);
 
-        fetch('/admin/product/sorting',{
+        fetch('/admin/coupons/sorting',{
             method: 'POST',
             headers : {"Content-Type" : "application/json"},
             body : JSON.stringify(formData)
@@ -422,27 +437,25 @@
         }
 
     //populate data
-     function populateTable(products) {
-        const tbody = document.getElementById('product-table-body');
+     function populateTable(coupons) {
+        const tbody = document.getElementById('coupon-table-body');
         tbody.innerHTML = '';  // Clear existing rows
 
-        products.forEach(product => {
-        console.log(product.status);
+        coupons.forEach(coupon => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${product.id}</td>
-                <td>${product.name}</td>
-                <td>${product.categoryName}</td>
-                <td>${product.brandName}</td>
-                <td>${product.quantity}</td>
+                <td>${coupon.id}</td>
+                <td>${coupon.couponName}</td>
+                <td>${coupon.couponCode}</td>
+                <td>${coupon.discountValue}</td>
+                <td>${coupon.usageLimit}</td>
+                <td>${coupon.endDate}</td>
                 <td>
-                    <button class="btn btn-sm ${product.status ? 'btn-danger' : 'btn-success'}" onclick="updateStatus(this)"
-                            data-current-status="${product.status}"
-                            data-product-id="${product.id}"
+                    <button class="btn btn-sm btn-danger" onclick="window.location.href='/admin/coupon/remove/${coupon.id}' "
                             >
-                            ${product.status ? 'Unlist' : 'List'}
+                            Remove
                     </button>
-                    <button class="btn btn-sm btn-link" onclick="window.location.href='/admin/product/editproduct/${product.id}'">
+                    <button class="btn btn-sm btn-link" onclick="window.location.href='/admin/coupon/edit/${coupon.id}'">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </td>
@@ -457,7 +470,7 @@
         console.log(keyword);
         if(keyword !="" && keyword != null )
         {
-        fetch(`/admin/product/search?keyword=${keyword}`,{
+        fetch(`/admin/coupons/search?keyword=${keyword}`,{
             method:'GET'
         })
         .then(response => response.json())

@@ -311,21 +311,24 @@
         <div class="col-lg-4">
             <div class="order-summary">
                 <h5 class="mb-4">Order Summary</h5>
-                <div class="promo-input mb-4">
-                    <input type="text" class="form-control" placeholder="Promo code">
-                    <button class="btn btn-outline-dark">Apply</button>
+                <div class="promo-input mb-1">
+                    <input type="text" class="form-control" placeholder="Promo code" id="promoCodeInputElement">
+                    <button class="btn btn-outline-dark" onclick="applyCoupon()">Apply</button>
                 </div>
+                <small class="text-danger" id="promoCodeErrorField"></small>
                 <div class="summary-row">
                     <span>Sub Total</span>
-                    <span th:text="'₹'+${subtotalFormatted}"></span>
+                    <span th:text="'₹'+${subtotalFormatted}" id="subtotalElement" th:data-subtotal="${subtotal}"></span>
                 </div>
                 <div class="summary-row">
                     <span>Estimated delivery charge</span>
                     <span>Free Delivery</span>
                 </div>
-                <div class="summary-row">
+                <div class="summary-row d-none" id="promoCodeDetails">
                     <span>Promotion Applied</span>
-                    <span>--</span>
+                    <span id="promotionApplied"></span>
+                    <span>Discount value</span>
+                    <span class="text-success" id="discountValue"></span>
                 </div>
                 <div class="summary-row total-row">
                     <span>Total</span>
@@ -550,7 +553,26 @@ document.querySelectorAll('input[name="payment"]').forEach(input => {
     });
 });
 
-
+function applyCoupon()
+    {
+    const couponCode = document.getElementById("promoCodeInputElement").value;
+    const subtotal = Number(document.getElementById("subtotalElement").getAttribute('data-subtotal'));
+        fetch(`/user/checkout/applyCoupon?couponCode=${couponCode}&subtotal=${subtotal}`,{
+            method:'POST',
+        })
+        .then(response => {
+        if(response.ok)
+        {
+            const promoDetails = document.getElementById("promoCodeDetails");
+            const promotionApplied = document.getElementById("promotionApplied");
+            const discountValue = document.getElementById("promotionApplied");
+            promotionApplied.textContent ="";
+            discountValue.textContent = "";
+            promoDetails.classList.remove("d-none");
+        }
+        else if(response.status == )
+        })
+    }
 </script>
 </body>
 </html>

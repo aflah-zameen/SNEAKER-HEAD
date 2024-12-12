@@ -44,13 +44,14 @@ public class ProductService {
     }
 
 
-    public List<ProductDto> categoryProduct(Category category)
+    public List<ProductDto> categoryProduct(Category category,Long id)
     {
         List<Product> products = productRepository.findByCategory(category);
-
+        List<Wishlist> wishlists = wishlistRepository.findAllByUser_id(id);
         return  productMapper.toDTOList(products).stream().filter(ProductDto::getStatus).peek(pd -> {
             pd.setDefaultVariantDTO(pd.getProductVariantDTOs().stream().findFirst().orElse(null));
             pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+            pd.setWishlisted(wishlists.stream().anyMatch(wi-> wi.getProduct().getId().equals(pd.getId())));
         } ).collect(Collectors.toList());
     }
     public ProductDto FindProduct(Long id)
@@ -261,7 +262,8 @@ public class ProductService {
                 default: productDtos= new ArrayList<>();
             }
         }
-        return productDtos;
+        List<Wishlist> wishlists = wishlistRepository.findAll();
+        return productDtos.stream().peek(pd -> pd.setWishlisted(wishlists.stream().anyMatch(wi -> wi.getProduct().getId().equals(pd.getId())))).collect(Collectors.toList());
 
     }
 
@@ -276,14 +278,14 @@ public class ProductService {
         return productDtos;
     }
 
-    public List<ProductDto> ListAllProducts() {
+    public List<ProductDto> ListAllProducts(Long id) {
         List<Product> products = productRepository.findAll();
         products = products.stream().filter(Product::getStatus).collect(Collectors.toList());
-        List<Wishlist> wishlists = wishlistRepository.findAll();
+        List<Wishlist> wishlists = wishlistRepository.findAllByUser_id(id);
         return productMapper.toDTOList(products).stream().peek(pd -> {
             pd.setDefaultVariantDTO(pd.getProductVariantDTOs().stream().findFirst().orElse(null));
             pd.getProductVariantDTOs().forEach(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
-            pd.setWishlisted(wishlists.contains(pd.getId()));
+            pd.setWishlisted(wishlists.stream().anyMatch(wi -> wi.getProduct().getId().equals(pd.getId())));
         }).collect(Collectors.toList());
 
     }

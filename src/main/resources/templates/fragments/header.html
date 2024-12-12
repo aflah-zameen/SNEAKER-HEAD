@@ -16,8 +16,7 @@
             </div>
             <a href="/user/wishlist" class="text-dark position-relative d-none d-lg-flex">
                 <i class="bi bi-heart fs-4"></i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
-                        5 <!-- Replace this with dynamic count -->
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" id="wishlistCount" th:text="${wishlistCount}">
                     </span>
             </a>
             <a href="/user/cart" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>

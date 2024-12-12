@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
@@ -105,8 +105,8 @@
 
 
 <!-- Main Content -->
-<main class="container " style="margin-top:7rem;">
-    <h1 class="mb-2">Wish list</h1>
+<main class="container " style="margin-top:7rem; min-height:100vh;">
+    <h1 class="mb-2">Wishlist</h1>
 
     <table class="wishlist-table">
         <thead>
@@ -119,38 +119,42 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
+        <tr th:each="product : ${products}" th:data-product-id="${product.id}">
             <td>
                 <button class="remove-btn">×</button>
             </td>
             <td>
                 <div class="d-flex align-items-center gap-3">
-                    <img src="/placeholder.svg" alt="P-69000" class="product-image">
-                    <span>P-69000</span>
+                    <img th:src="${product.defaultVariantDTO.images.get(0)}" alt="P-69000" class="product-image">
+                    <span th:text="${product.name}"></span>
                 </div>
             </td>
-            <td>₹11,695.00</td>
-            <td>In Stock</td>
+            <td th:text="'₹'+${product.defaultVariantDTO.formattedPrice}"></td>
             <td>
-                <button class="btn btn-dark">Add to cart</button>
+                <p  th:text="${product.DefaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}"
+                    th:classappend="${product.DefaultVariantDTO.quantity > 0 ? 'text-success' : 'text-danger'}" class="product-stock-status">
+                </p>
+            </td>
+            <td>
+                <a th:href="@{/user/product/detail/{id}(id=${product.id})}"><button class="btn btn-dark" >Show Details</button></a>
             </td>
         </tr>
-        <tr>
-            <td>
-                <button class="remove-btn">×</button>
-            </td>
-            <td>
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/placeholder.svg" alt="P-78000" class="product-image">
-                    <span>P-78000</span>
-                </div>
-            </td>
-            <td>₹11,695.00</td>
-            <td>In Stock</td>
-            <td>
-                <button class="btn btn-dark">Add to cart</button>
-            </td>
-        </tr>
+<!--        <tr>-->
+<!--            <td>-->
+<!--                <button class="remove-btn">×</button>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--                <div class="d-flex align-items-center gap-3">-->
+<!--                    <img src="/placeholder.svg" alt="P-78000" class="product-image">-->
+<!--                    <span>P-78000</span>-->
+<!--                </div>-->
+<!--            </td>-->
+<!--            <td>₹11,695.00</td>-->
+<!--            <td>In Stock</td>-->
+<!--            <td>-->
+<!--                <button class="btn btn-dark">Add to cart</button>-->
+<!--            </td>-->
+<!--        </tr>-->
         </tbody>
     </table>
 </main>
@@ -167,7 +171,21 @@
     document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const row = btn.closest('tr');
-            row.remove();
+            const productId = row.getAttribute('data-product-id');
+            fetch(`/user/wishlist/remove?productId=${productId}`,{
+            method : 'DELETE',
+            })
+            .then(response => {
+            if(response.ok)
+            {
+                row.remove();
+                const wishlistCountElement = document.getElementById('wishlistCount');
+                wishlistCountElement.textContent = Number(wishlistCountElement.textContent)-1;
+            }
+            })
+            .catch(error => Console.log(error));
+
+
         });
     });
 
@@ -179,6 +197,8 @@
             setTimeout(() => {
                 btn.textContent = 'Add to cart';
                 btn.disabled = false;
+
+
             }, 2000);
         });
     });

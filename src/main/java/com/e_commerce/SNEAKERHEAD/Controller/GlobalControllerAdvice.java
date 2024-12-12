@@ -13,4 +13,9 @@ public class GlobalControllerAdvice {
     {
         return (String) session.getAttribute("userName");
     }
+    @ModelAttribute("wishlistCount")
+    public Integer wishlistCount(HttpSession session)
+    {
+        return (Integer) session.getAttribute("wishlistCount");
+    }
 }
