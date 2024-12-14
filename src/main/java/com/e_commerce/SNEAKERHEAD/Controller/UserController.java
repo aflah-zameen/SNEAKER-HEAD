@@ -6,6 +6,7 @@ import com.e_commerce.SNEAKERHEAD.Mappers.AddressMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.CartMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
+import com.e_commerce.SNEAKERHEAD.Service.CouponService;
 import com.e_commerce.SNEAKERHEAD.Service.OrderService;
 import com.e_commerce.SNEAKERHEAD.Service.ProductService;
 import com.e_commerce.SNEAKERHEAD.Service.UserService;
@@ -69,6 +70,11 @@ public class UserController {
     @Autowired
     CouponRepository couponRepository;
 
+    @Autowired
+    CouponService couponService;
+
+    @Autowired
+    UserCouponUsageRepository userCouponUsageRepository;
 
     @GetMapping("/home")
     public String AdminProduct()
@@ -496,15 +502,15 @@ public class UserController {
         WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
         UserAddress address = addressRepository.findByUser_idAndDefaultAddressStatusAndStatus(user.getId(), true,"AVAILABLE").orElse(new UserAddress());
         String FormattedSubTotal = (String) session.getAttribute("subtotalFormatted");
-
-
         OrderDto orderDto = new OrderDto();
         orderDto.setVariantId((Long)session.getAttribute("productVariantId"));
         orderDto.setQuantity((Integer)session.getAttribute("productQuantity"));
+        List<Coupon> coupons = couponService.ListCoupons(user);
         model.addAttribute("subtotal",(Double) session.getAttribute("subtotal"));
         model.addAttribute("addressObject",new AddressDTO());
         model.addAttribute("defaultAddress",address);
         model.addAttribute("subtotalFormatted",FormattedSubTotal);
+        model.addAttribute("coupons",coupons);
         return "checkout";
     }
 
@@ -539,14 +545,52 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Order is not accepted");
         }
         Order order = new Order();
+        Coupon coupon;
         UserAddress userAddress=addressRepository.findById(orderDto.getAddressId()).orElseThrow(()->new NullPointerException());
+        if(orderDto.getCouponId() != null)
+        {
+            coupon = couponRepository.findById(orderDto.getCouponId()).orElse(new Coupon());
+        }
+        else
+        {
+            coupon = new Coupon();
+        }
+        Double orderTotal =(Double)session.getAttribute("subtotal");;
+        if(coupon.getDiscountType().equalsIgnoreCase("percentage"))
+        {
+           orderTotal = orderTotal*(coupon.getDiscountValue()/100);
+        }
+        else
+        {
+            orderTotal = orderTotal-coupon.getDiscountValue();
+        }
         order.setUser(user);
+        order.setCoupon(coupon);
         order.setOrderDate(LocalDate.now());
-        order.setOrderTotal((Double)session.getAttribute("subtotal"));
+        order.setOrderTotal(orderTotal);
         order.setAddress(userAddress);
         order.setPaymentMethod(orderDto.getPaymentMethod());
         order.setStatus("PENDING");
         Order newOrder = orderRepository.save(order);
+        UserCouponUsage userCouponUsage = userCouponUsageRepository.findByUser_idAndCoupon_id(user.getId(),coupon.getId()).orElse(new UserCouponUsage());
+        if(userCouponUsage.getId() != null)
+        {
+            userCouponUsage.setUsageCount(userCouponUsage.getUsageCount()+1);
+            Coupon coupon1 = couponRepository.findById(coupon.getId()).orElse(new Coupon());
+            coupon1.setUsedCount(coupon1.getUsedCount()+1);
+            couponRepository.save(coupon1);
+            userCouponUsageRepository.save(userCouponUsage);
+        }
+        else
+        {
+            userCouponUsage.setCoupon(coupon);
+            userCouponUsage.setUser(user);
+            userCouponUsage.setUsageCount(1);
+            Coupon coupon1 = couponRepository.findById(coupon.getId()).orElse(new Coupon());
+            coupon1.setUsedCount(coupon1.getUsedCount()+1);
+            couponRepository.save(coupon1);
+            userCouponUsageRepository.save(userCouponUsage);
+        }
         for(Cart cart : carts)
         {
             OrderItems orderItems = new OrderItems();
@@ -563,15 +607,37 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("/checkout/applyCoupon")
-    public ResponseEntity<?> addCoupon(@RequestParam("couponCode") String couponCode,@RequestParam("subtotal") Double subtotal)
+    public ResponseEntity<?> addCoupon(@RequestParam("couponId") Long id,@RequestParam("subtotal") Double subtotal)
     {
         Map<String,String> response = new HashMap<>();
-        Map<String,Double> opertaion = new HashMap<>();
-        opertaion = couponRepository.findAllByIsActive(true).stream().filter(cp -> cp.getCouponCode().equalsIgnoreCase(couponCode)).collect(Collectors.toMap( cp -> cp.getDiscountType(),cp-> cp.getDiscountValue() ));
-        if(!opertaion.isEmpty())
+        Coupon coupon = couponRepository.findById(id).orElse(new Coupon());
+        if(coupon!=null)
         {
-            response.put()
-            return ResponseEntity.ok()
+            String discountType = coupon.getDiscountType();
+            Double price = coupon.getDiscountValue();
+            if(discountType.equalsIgnoreCase("percentage"))
+            {
+                price = subtotal * (price/100);
+                subtotal = subtotal - price;
+            }
+            else {
+                subtotal = subtotal - price;
+            }
+
+            DecimalFormat formatter = new DecimalFormat("#,##0.00");
+            String FormattedSubTotal = formatter.format(subtotal);
+            String FormattedDiscountValue = formatter.format(price);
+
+            response.put("couponCode",coupon.getCouponCode().toUpperCase());
+            response.put("FormattedSubtotal",FormattedSubTotal);
+            response.put("FormattedDiscountValue",FormattedDiscountValue);
+            response.put("couponId",String.valueOf(coupon.getId()));
+
+            return ResponseEntity.ok(response);
+        }
+        else {
+            response.put("errorMessage","Promo code("+coupon.getCouponCode()+") is not valid!");
+            return  ResponseEntity.badRequest().body(response);
         }
     }
 

@@ -21,8 +21,12 @@ public class Order {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id",nullable = false)
     private WebUser user;
+
+    @OneToOne
+    @JoinColumn(name = "coupon_id",nullable = false)
+    private Coupon coupon;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")

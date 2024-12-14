@@ -67,5 +67,8 @@ public class Coupon {
     @Column(name="discount_type")
     private String discountType;
 
+    @Column(name = "new_user_coupon")
+    private Boolean newUserCoupon;
+
 
 }

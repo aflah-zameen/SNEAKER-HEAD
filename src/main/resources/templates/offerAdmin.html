@@ -151,7 +151,7 @@
         </div>
         <div class="col-md-9 col-lg-10">
             <div class="d-flex justify-content-between align-items-center my-4">
-                <h2 class="mb-0">Coupons</h2>
+                <h2 class="mb-0">Offer</h2>
 
                 <!-- Search Bar -->
                 <div class="input-group" style="max-width: 400px;">
@@ -161,8 +161,8 @@
                 </div>
 
                 <!-- Add Coupon Button -->
-                <button class="btn btn-primary btn-sm" onclick="window.location.href='/admin/coupon/addcoupon'">
-                    + Add Coupon
+                <button class="btn btn-primary btn-sm" onclick="window.location.href='/admin/offer/addoffer'">
+                    + Add Offer
                 </button>
             </div>
 
@@ -181,25 +181,16 @@
                             </button>
                         </th>
                         <th class="sortable">
-                            Coupon name
-                            <button class="btn  p-0" onclick="sort(this,'couponName', 'ASC')">
+                            Offer name
+                            <button class="btn  p-0" onclick="sort(this,'offerName', 'ASC')">
                                 <i class="bi bi-arrow-up"></i>
                             </button>
-                            <button class="btn  p-0" onclick="sort(this,'couponName', 'DESC')">
+                            <button class="btn  p-0" onclick="sort(this,'offerName', 'DESC')">
                                 <i class="bi bi-arrow-down"></i>
                             </button>
                         </th>
                         <th class="sortable">
-                            Coupon Code
-                            <button class="btn  p-0" onclick="sort(this,'couponCode', 'ASC')">
-                                <i class="bi bi-arrow-up"></i>
-                            </button>
-                            <button class="btn  p-0" onclick="sort(this,'couponCode', 'DESC')">
-                                <i class="bi bi-arrow-down"></i>
-                            </button>
-                        </th>
-                        <th class="sortable">
-                            Discount Value
+                            Offer Percentage
                             <button class="btn  p-0" onclick="sort(this,'discountValue', 'ASC')">
                                 <i class="bi bi-arrow-up"></i>
                             </button>
@@ -208,13 +199,7 @@
                             </button>
                         </th>
                         <th class="sortable">
-                            Usage Limit
-                            <button class="btn  p-0" onclick="sort(this,'usageLimit', 'ASC')">
-                                <i class="bi bi-arrow-up"></i>
-                            </button>
-                            <button class="btn  p-0" onclick="sort(this,'usageLimit', 'DESC')">
-                                <i class="bi bi-arrow-down"></i>
-                            </button>
+                            Applied on
                         </th>
                         <th class="sortable">
                             Expiry Date
@@ -228,21 +213,21 @@
                         <th>Actions</th>
                     </tr>
                     </thead>
-                    <tbody th:if="${coupons}" id="coupon-table-body">
-                    <tr th:each="coupon : ${coupons}">
-                        <td th:text="${coupon.id}"></td>
-                        <td th:text="${coupon.couponName}"></td>
-                        <td th:text="${coupon.couponCode}"></td>
-                        <td th:text="${coupon.discountValue}"></td>
-                        <td th:text="${coupon.usageLimit}"></td>
-                        <td th:text="${coupon.endDate}"></td>
+                    <tbody th:if="${offers}" id="offer-table-body">
+                    <tr th:each="offer : ${offers}">
+                        <td th:text="${offer.id}"></td>
+                        <td th:text="${offer.offerName}"></td>
+                        <td th:text="${offer.discountPercentage}"></td>
+                        <td th:if="${offer.product}" th:text="'Product :'+${offer.product.name}"></td>
+                        <td th:unless="${offer.product}" th:text="'Category : '+${offer.category.name}"></td>
+                        <td th:text="${offer.endDate}"></td>
                         <td>
                             <button class="btn btn-sm btn-danger"
-                                    th:onclick="|window.location.href='/admin/coupon/remove/' + ${coupon.id}|">
+                                    th:onclick="|window.location.href='/admin/offer/remove/' + ${offer.id}|">
                                     Remove
                             </button>
                             <button class="btn btn-sm "
-                                    th:onclick="|window.location.href='/admin/coupon/edit/' + ${coupon.id}|">
+                                    th:onclick="|window.location.href='/admin/offer/edit/' + ${offer.id}|">
                                 <i class="bi bi-pencil"></i>
                             </button>
                         </td>
@@ -423,7 +408,7 @@
 
         console.log(formData);
 
-        fetch('/admin/coupons/sorting',{
+        fetch('/admin/offers/sorting',{
             method: 'POST',
             headers : {"Content-Type" : "application/json"},
             body : JSON.stringify(formData)
@@ -437,25 +422,25 @@
         }
 
     //populate data
-     function populateTable(coupons) {
-        const tbody = document.getElementById('coupon-table-body');
+     function populateTable(offers) {
+        const tbody = document.getElementById('offer-table-body');
         tbody.innerHTML = '';  // Clear existing rows
 
-        coupons.forEach(coupon => {
+        offers.forEach(offer => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${coupon.id}</td>
-                <td>${coupon.couponName}</td>
-                <td>${coupon.couponCode}</td>
-                <td>${coupon.discountValue}</td>
-                <td>${coupon.usageLimit}</td>
-                <td>${coupon.endDate}</td>
+                <td>${offer.id}</td>
+                <td>${offer.offerName}</td>
+                <td>${offer.offerCode}</td>
+                <td>${offer.discountValue}</td>
+                <td>${offer.usageLimit}</td>
+                <td>${offer.endDate}</td>
                 <td>
-                    <button class="btn btn-sm btn-danger" onclick="window.location.href='/admin/coupon/remove/${coupon.id}' "
+                    <button class="btn btn-sm btn-danger" onclick="window.location.href='/admin/offer/remove/${offer.id}' "
                             >
                             Remove
                     </button>
-                    <button class="btn btn-sm btn-link" onclick="window.location.href='/admin/coupon/edit/${coupon.id}'">
+                    <button class="btn btn-sm btn-link" onclick="window.location.href='/admin/offer/edit/${offer.id}'">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </td>
@@ -470,7 +455,7 @@
         console.log(keyword);
         if(keyword !="" && keyword != null )
         {
-        fetch(`/admin/coupons/search?keyword=${keyword}`,{
+        fetch(`/admin/offers/search?keyword=${keyword}`,{
             method:'GET'
         })
         .then(response => response.json())

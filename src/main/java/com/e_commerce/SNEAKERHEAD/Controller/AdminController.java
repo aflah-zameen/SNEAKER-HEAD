@@ -519,5 +519,10 @@ AdminManagementService adminManagementService;
         return ResponseEntity.ok(coupons);
     }
 
+    //offers
+
+    @GetMapping("/offers")
+
+
 
 }

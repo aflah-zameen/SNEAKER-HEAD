@@ -14,6 +14,7 @@ public class OrderDto {
     private Long id;
     private Long variantId;
     private Long addressId;
+    private Long couponId;
     private Double deliveryCharge;
     private Double orderTotal;
     private String paymentMethod;

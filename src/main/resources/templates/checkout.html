@@ -11,6 +11,85 @@
 
         /* Custom CSS */
 
+
+        //new-modal-css
+
+            #couponModal .modal-dialog {
+        max-height: 80%; /* Adjust the percentage as needed */
+        margin: auto;
+    }
+
+    #couponModal .modal-content {
+        height: 100%;
+        overflow: hidden; /* Prevent overflow of the content */
+    }
+
+    #couponModal .modal-body {
+        max-height: 32rem; /* Adjust for header and footer heights */
+        overflow-y: auto; /* Enable vertical scrolling */
+    }
+
+           //modal-coupon
+           .text-pink {
+    color: #ff3f6c !important;
+}
+
+.border-pink {
+    border-color: #ff3f6c !important;
+}
+
+.form-check-input:checked {
+    background-color: #ff3f6c;
+    border-color: #ff3f6c;
+}
+
+.btn-danger {
+    background-color: #ff3f6c;
+    border-color: #ff3f6c;
+}
+
+.btn-danger:hover {
+    background-color: #ff3f6c;
+    border-color: #ff3f6c;
+    opacity: 0.9;
+}
+
+
+.text-pink {
+    color: #ff3f6c !important;
+}
+
+.border-pink {
+    border-color: #ff3f6c !important;
+}
+
+.form-check-input:checked {
+    background-color: #ff3f6c;
+    border-color: #ff3f6c;
+}
+
+.btn-danger {
+    background-color: #ff3f6c;
+    border-color: #ff3f6c;
+}
+
+.btn-danger:hover {
+    background-color: #ff3f6c;
+    border-color: #ff3f6c;
+    opacity: 0.9;
+}
+
+.form-check.disabled .form-check-label {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-check.disabled .form-check-input {
+    pointer-events: none;
+}
+
+
+
         .preferences-link {
             color: #007bff;
             cursor: pointer;
@@ -110,7 +189,7 @@
         }
 
         @media (max-width: 768px) {
-            .order-summary {
+            .order-summary {5
                 margin-top: 2rem;
             }
         }
@@ -309,13 +388,71 @@
 
         <!-- Order Summary -->
         <div class="col-lg-4">
+
             <div class="order-summary">
-                <h5 class="mb-4">Order Summary</h5>
-                <div class="promo-input mb-1">
-                    <input type="text" class="form-control" placeholder="Promo code" id="promoCodeInputElement">
-                    <button class="btn btn-outline-dark" onclick="applyCoupon()">Apply</button>
+                <div class=" mb-5 position-relative w-100 ">
+                    <div class=" w-100 d-flex justify-content-between" id="applyCouponElement">
+                        <h5>Apply Coupon</h5>
+                        <button class="btn-sm btn btn-dark" id="openModalBtn">Apply</button>
+                    </div>
+                    <div class=" w-100 d-flex justify-content-between d-none" id="editCouponElement">
+                        <div>
+                            <h5 class="m-0">Coupon Applied</h5>
+                            <small class="text-success" id="couponAppliedText">You saved additional $150</small>
+                        </div>
+                        <div>
+                            <button class="btn-sm btn btn-dark mt-2 mb-2" id="editModalBtn" >Edit</button>
+                            <button class="btn-sm btn btn-danger mt-2 mb-2" id="removeCouponElement" >Remove</button>
+                        </div>
+                    </div>
+<!--                    coupon&#45;&#45;modal-->
+
+                    <div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header border-bottom-0">
+                                    <h5 class="modal-title" id="couponModalLabel">APPLY COUPON</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="Enter coupon code" id="couponInput">
+                                        <button class="btn btn-outline-secondary text-pink" type="button" id="checkBtn">CHECK</button>
+                                    </div>
+                                    <div class="border rounded p-3 mb-3" th:each="coupon : ${coupons}">
+                                        <div class="form-check">
+                                            <input class="form-check-input couponRadio" th:data-minimum-order="${coupon.minimumOrderValue}" th:data-coupon-id="${coupon.id}" type="radio" name="coupon" >
+                                            <label class="form-check-label w-100" >
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <span class="border border-pink rounded px-2 py-1 text-pink" th:text="${coupon.couponCode}"></span>
+                                                        <p class="my-2"th:if="${coupon.discountType == 'percentage'}" th:text="'Save ₹'+${subtotal*(coupon.discountValue/100)}"></p>
+                                                        <p class="my-2"th:unless="${coupon.discountType == 'percentage'}" th:text="'Save ₹'+${coupon.discountValue}"></p>
+                                                        <small class="text-muted" th:if="${coupon.discountType == 'percentage'}" th:text="${coupon.discountValue}+'% off on minimum purchase of Rs. '+${coupon.minimumOrderValue}"></small>
+                                                        <small class="text-muted" th:unless="${coupon.discountType == 'percentage'}" th:text="'₹'+${coupon.discountValue}+' off on minimum purchase of Rs. '+${coupon.minimumOrderValue}"></small>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+<!--                                    <div id="couponError" class="text-danger mb-3" style="display: none;"></div>-->
+<!--                                    <div class="d-flex justify-content-between align-items-center mb-3">-->
+<!--                                        <span>Maximum savings:</span>-->
+<!--                                        <span>₹200</span>-->
+<!--                                    </div>-->
+                                    <button class="btn btn-danger w-100 position-sticky bottom-0" id="applyBtn">APPLY</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-                <small class="text-danger" id="promoCodeErrorField"></small>
+                <h5 class="mb-4">Order Summary</h5>
+                <div class="promo-input mb-1" id="referralCodeHeader">
+                    <input type="text" class="form-control" placeholder="Referral code" id="referralCodeElement">
+                    <button class="btn btn-outline-dark" onclick="applyReferralCode()">Apply</button>
+                </div>
+                <small class="text-danger" id="referralCodeErrorField"></small>
                 <div class="summary-row">
                     <span>Sub Total</span>
                     <span th:text="'₹'+${subtotalFormatted}" id="subtotalElement" th:data-subtotal="${subtotal}"></span>
@@ -324,15 +461,19 @@
                     <span>Estimated delivery charge</span>
                     <span>Free Delivery</span>
                 </div>
-                <div class="summary-row d-none" id="promoCodeDetails">
-                    <span>Promotion Applied</span>
-                    <span id="promotionApplied"></span>
-                    <span>Discount value</span>
-                    <span class="text-success" id="discountValue"></span>
+                <div class="d-none" id="promoCodeDetails">
+                    <div class="summary-row">
+                        <span>Promotion Applied</span>
+                        <span id="promotionApplied"></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Discount value</span>
+                        <span class="text-success" id="discountValue"></span>
+                    </div>
                 </div>
                 <div class="summary-row total-row">
                     <span>Total</span>
-                    <span class="text-danger" th:text="'₹'+${subtotalFormatted}"></span>
+                    <span class="text-danger" th:text="'₹'+${subtotalFormatted}" id="totalAmountElement"></span>
                 </div>
                 <button class="btn btn-dark w-100 mb-4" th:onclick="submitOrder(this)" th:data-address-id="${defaultAddress.id}">Place Order</button>
             </div>
@@ -349,7 +490,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script th:inline="javascript">
-
+    let couponId=null;
+    let tempCouponId;
     let selectedMethod=null;
     // Function to get the selected payment method
 function getSelectedPaymentMethod() {
@@ -373,6 +515,7 @@ document.querySelectorAll('input[name="payment"]').forEach(input => {
     function submitOrder(data){
 
     let addressIdTemp = data.getAttribute("data-address-id");
+    console.log(couponId);
     if( addressIdTemp==null || selectedMethod == null )
     {
         if(addressIdTemp == null)
@@ -383,10 +526,10 @@ document.querySelectorAll('input[name="payment"]').forEach(input => {
     }
     else
     {
-    console.log(selectedMethod+">>>>>>>>");
         const bodyData = {
         paymentMethod:selectedMethod,
-        addressId: addressIdTemp
+        addressId: addressIdTemp,
+        couponId:couponId
         }
 
         fetch('/user/checkout',{
@@ -462,6 +605,7 @@ document.querySelectorAll('input[name="payment"]').forEach(input => {
     const submitButton = document.getElementById('submitAddress');
     const preferencesLink = document.getElementById('preferencesLink');
     const instructionsTextarea = document.getElementById('instructions');
+
 
     const requiredFields = [
         'country', 'type', 'name', 'phone', 'zipCode', 'street', 'building', 'city', 'state','defaultAddressStatus'
@@ -553,26 +697,204 @@ document.querySelectorAll('input[name="payment"]').forEach(input => {
     });
 });
 
-function applyCoupon()
-    {
-    const couponCode = document.getElementById("promoCodeInputElement").value;
+
+
+
+
+<!--function applyCoupon()-->
+<!--    {-->
+<!--    const couponCode = document.getElementById("promoCodeInputElement").value;-->
+<!--    let referralCodeErrorField = document.getElementById("referralCodeErrorField");-->
+<!--    referralCodeErrorField.textContent = "";-->
+<!--    if(couponCode.trim()=="")-->
+<!--    {-->
+<!--        referralCodeErrorField.textContent = "Promo code is null";-->
+<!--        return "failed";-->
+<!--    }-->
+<!--    const subtotal = Number(document.getElementById("subtotalElement").getAttribute('data-subtotal'));-->
+<!--        fetch(`/user/checkout/applyCoupon?couponCode=${couponCode}&subtotal=${subtotal}`,{-->
+<!--            method:'POST',-->
+<!--        })-->
+<!--        .then(response => {-->
+<!--        if(response.ok)-->
+<!--        {-->
+<!--        return response.json().then(data => {-->
+
+<!--            const promoDetails = document.getElementById("promoCodeDetails");-->
+<!--            const promotionApplied = document.getElementById("promotionApplied");-->
+<!--            const discountValue = document.getElementById("discountValue");-->
+<!--            const totalAmountElement = document.getElementById("totalAmountElement");-->
+<!--            promotionApplied.textContent =data.couponCode;-->
+<!--            discountValue.textContent = '₹'+data.FormattedDiscountValue;-->
+<!--            totalAmountElement.textContent = '₹'+data.FormattedSubtotal;-->
+<!--            promoDetails.classList.remove("d-none");-->
+<!--        });-->
+<!--        }-->
+<!--        else if (response.status == 400)-->
+<!--        {-->
+<!--            return response.json().then(data => {-->
+<!--            referralCodeErrorField.textContent = data.errorMessage ;-->
+
+<!--            });-->
+<!--        }-->
+
+<!--        });-->
+<!--    }-->
+
+    //modal-coupon
+
+     const openModalBtn = document.getElementById('openModalBtn');
+     const editModalBtn = document.getElementById('editModalBtn');
+    const couponModal = new bootstrap.Modal(document.getElementById('couponModal'));
+    const applyBtn = document.getElementById('applyBtn');
+    applyBtn.disabled=true;
+    const checkBtn = document.getElementById('checkBtn');
+    const couponInput = document.getElementById('couponInput');
+    const couponRadios = document.getElementById('couponModal').querySelectorAll('.couponRadio');
+<!--    const couponError = document.getElementById('couponError');-->
+
     const subtotal = Number(document.getElementById("subtotalElement").getAttribute('data-subtotal'));
-        fetch(`/user/checkout/applyCoupon?couponCode=${couponCode}&subtotal=${subtotal}`,{
+
+   couponRadios.forEach(element => {
+    if(!(subtotal >= Number(element.getAttribute("data-minimum-order"))))
+    {
+         element.disabled = true;
+        element.checked = false;
+        element.parentElement.classList.add('disabled');
+    }
+    else
+    {
+          element.disabled = false;
+        element.parentElement.classList.remove('disabled');
+    }
+   });
+
+    openModalBtn.addEventListener('click', function() {
+        couponModal.show();
+    });
+
+    editModalBtn.addEventListener('click', function() {
+        couponModal.show();
+    });
+
+    function disableCoupon() {
+        couponRadio.disabled = true;
+        couponRadio.checked = false;
+        couponRadio.parentElement.classList.add('disabled');
+<!--        couponError.textContent = reason;-->
+<!--        couponError.style.display = 'block';-->
+    }
+
+    function enableCoupon() {
+        couponRadio.disabled = false;
+        couponRadio.parentElement.classList.remove('disabled');
+<!--        couponError.style.display = 'none';-->
+    }
+
+<!--    function checkCouponValidity() {-->
+<!--        if (cartTotal < 899) {-->
+<!--            disableCoupon('Cart total must be at least ₹899 to use this coupon.');-->
+<!--        } else {-->
+<!--            enableCoupon();-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Check coupon validity when the modal is shown-->
+<!--    couponModal._element.addEventListener('shown.bs.modal', checkCouponValidity);-->
+
+<!--    applyBtn.addEventListener('click', function() {-->
+<!--        if (couponRadio.checked) {-->
+<!--            alert('Coupon TRYMSPRTS applied!');-->
+<!--        } else if (couponInput.value) {-->
+<!--            alert('Entered coupon: ' + couponInput.value);-->
+<!--        } else {-->
+<!--            alert('Please select or enter a coupon');-->
+<!--        }-->
+<!--        couponModal.hide();-->
+<!--    });-->
+
+<!--    checkBtn.addEventListener('click', function() {-->
+<!--        alert('Checking coupon: ' + couponInput.value);-->
+<!--        // Here you would typically make an API call to check the coupon-->
+<!--        // For this example, we'll just simulate a check-->
+<!--        if (couponInput.value === 'INVALID') {-->
+<!--            disableCoupon('This coupon is invalid.');-->
+<!--        } else {-->
+<!--            enableCoupon();-->
+<!--        }-->
+<!--    });-->
+
+<!--    // Simulate changing cart total-->
+<!--    window.changeCartTotal = function(newTotal) {-->
+<!--        cartTotal = newTotal;-->
+<!--        checkCouponValidity();-->
+<!--        alert(`Cart total changed to ₹${newTotal}. Coupon validity updated.`);-->
+<!--    }-->
+couponRadios.forEach(radio => {
+    radio.addEventListener('click', function() {
+    tempCouponId = Number(radio.getAttribute("data-coupon-id"));
+    applyBtn.disabled=false;
+    });
+});
+
+    applyBtn.addEventListener('click',function () {
+        const subtotal = Number(document.getElementById("subtotalElement").getAttribute('data-subtotal'));
+        fetch(`/user/checkout/applyCoupon?couponId=${tempCouponId}&subtotal=${subtotal}`,{
             method:'POST',
         })
         .then(response => {
         if(response.ok)
         {
+        return response.json().then(data => {
+            couponId=Number(data.couponId);
+            const couponAppliedText = document.getElementById("couponAppliedText");
+            const referralCodeHeader = document.getElementById("referralCodeHeader");
+            const editCouponElement = document.getElementById("editCouponElement");
+            const applyCouponElement = document.getElementById("applyCouponElement");
             const promoDetails = document.getElementById("promoCodeDetails");
             const promotionApplied = document.getElementById("promotionApplied");
-            const discountValue = document.getElementById("promotionApplied");
-            promotionApplied.textContent ="";
-            discountValue.textContent = "";
+            const discountValue = document.getElementById("discountValue");
+            const totalAmountElement = document.getElementById("totalAmountElement");
+            promotionApplied.textContent =data.couponCode;
+            discountValue.textContent = '- ₹'+data.FormattedDiscountValue;
+            couponAppliedText.textContent = "You saved additional ₹"+data.FormattedDiscountValue;
+            totalAmountElement.textContent = '₹'+data.FormattedSubtotal
+            referralCodeHeader.classList.add("d-none");
             promoDetails.classList.remove("d-none");
+            editCouponElement.classList.remove("d-none");
+            applyCouponElement.classList.add("d-none");
+        });
         }
-        else if(response.status == )
-        })
-    }
+        else if (response.status == 400)
+        {
+            return response.json().then(data => {
+            referralCodeErrorField.textContent = data.errorMessage ;
+
+            });
+        }
+
+        });
+            couponModal.hide();
+    });
+
+    const removeCouponElement = document.getElementById("removeCouponElement");
+    removeCouponElement.addEventListener("click", function () {
+        const editCouponElement = document.getElementById("editCouponElement");
+        editCouponElement.classList.add("d-none");
+        const applyCouponElement = document.getElementById("applyCouponElement");
+        applyCouponElement.classList.remove("d-none");
+        const promoDetails = document.getElementById("promoCodeDetails");
+        promoDetails.classList.add("d-none");
+        const referralCodeHeader = document.getElementById("referralCodeHeader");
+        referralCodeHeader.classList.remove("d-none");
+        couponRadios.forEach(radio => {
+    applyBtn.disabled=true;
+    radio.checked=false;
+    couponId=null;
+});
+
+    })
+
 </script>
 </body>
 </html>
