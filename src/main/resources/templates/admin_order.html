@@ -122,15 +122,16 @@
         <!-- Sidebar -->
         <div class="col-md-3 col-lg-2 px-0 sidebar">
             <nav class="nav flex-column">
-                <a class="nav-link" href="#dashboard">Dashboard</a>
+                <a class="nav-link" href="/admin/dashboard">Dashboard</a>
                 <a class="nav-link active" href="/admin/orders">Orders</a>
                 <a class="nav-link" href="/admin/product">Products</a>
                 <a class="nav-link" href="/admin/users">Users</a>
                 <a class="nav-link" href="/admin/category">Categories</a>
                 <a class="nav-link" href="/admin/brands">Brands</a>
-                <a class="nav-link" href="#coupons">Coupons</a>
-                <a class="nav-link" href="#banners">Banners</a>
-                <a class="nav-link" href="#payments">Payments</a>
+                <a class="nav-link" href="/admin/coupons">Coupons</a>
+                <a class="nav-link" href="/admin/banners">Banners</a>
+                <a class="nav-link" href="/admin/payments">Payments</a>
+                <a class="nav-link" href="/admin/sales">Sales report</a>
                 <a class="nav-link" href="/logout">Offers</a>
                 <button
                         class="btn btn-danger mt-3"
@@ -178,12 +179,15 @@
                             <td th:text="${order.status}" class="order-status-field">54</td>
                             <td th:text="${order.cancellation}" class="order-cancel-field">54</td>
                             <td th:unless="${order.cancellation}">
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editOrderModal" th:data-order-user="${order.address.name}" th:data-order-method="${order.paymentMethod}" th:data-order-edit-id="${order.id}" onclick="editOrder(this)">
+                                <button th:if="${order.status == 'RETURN'}" class="btn btn-warning" th:data-order-id="${order.id}" onclick="approveReturn(this)">
+                                    Approve
+                                </button>
+                                <button class="btn btn-primary" th:unless="${order.status == 'RETURN' || order.status == 'RETURNED'}"  data-bs-toggle="modal" data-bs-target="#editOrderModal" th:data-order-user="${order.address.name}" th:data-order-method="${order.paymentMethod}" th:data-order-edit-id="${order.id}" onclick="editOrder(this)">
                                     Edit Order
                                 </button><!--                                <button class="btn btn-sm btn-link" onclick="window.location.href='/admin/product/editproduct'">-->
 <!--                                    <i class="bi bi-pencil"></i>-->
 <!--                                </button>-->
-                                <button class="btn btn-danger"  onclick="orderCancel(this)" th:data-order-id="${order.id}">Cancel</button>
+                                <button class="btn btn-danger" th:if="${order.status == 'PENDING'}"  onclick="orderCancel(this)" th:data-order-id="${order.id}">Cancel</button>
                             </td>
                         </tr>
                         <!-- More product rows -->
@@ -221,11 +225,11 @@
                             <label for="orderStatus" class="form-label">Order Status</label>
                             <select class="form-select" id="orderStatus">
                                 <option value="">Select Status</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Processing">Processing</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Canceled">Canceled</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="PROCESSING">Processing</option>
+                                <option value="SHIPPED">Shipped</option>
+                                <option value="DELIVERED">Delivered</option>
+                                <option value="CANCELLED">Canceled</option>
                             </select>
                             <div class="invalid-feedback">Please select a status.</div>
                         </div>
@@ -418,6 +422,39 @@
         statusField = data.closest('tr').querySelector('.order-status-field');
         document.getElementById("userName").value = data.getAttribute('data-order-user');
         document.getElementById("paymentMethod").value = data.getAttribute('data-order-method')
+    }
+
+    function approveReturn(data)
+    {
+        const orderId = Number(data.getAttribute("data-order-id"));
+         Swal.fire({
+                                        icon: "question",
+                                        title: "Do you want to approve return?",
+                                        text: "To approve click continue",
+                                        showCancelButton: true, // Enables a second button
+                                        confirmButtonText: "Continue", // Text for the primary button
+                                        cancelButtonText: "Cancel", // Text for the secondary button
+                                        allowOutsideClick: false, // Prevent closing by clicking outside
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            returnProduct(orderId,data);
+                                        }
+                                    });
+    }
+
+    function returnProduct(orderId,data)
+    {
+        fetch(`/admin/order/return?orderId=${orderId}`,{
+
+            method:"POST",
+        })
+        .then(response => {
+        if(response.ok)
+        {
+            data.closest('tr').querySelector(".order-status-field").textContent = "RETURNED";
+            data.classList.add("d-none");
+        }
+        })
     }
 </script>
 

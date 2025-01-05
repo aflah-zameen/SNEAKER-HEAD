@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNEAKER HEAD - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+
+    <style>
+        //modal-styles
+        .modal-content {
+      border-radius: 8px;
+    }
+    .modal-header {
+      background-color: #f8f9fa;
+    }
+    .form-label {
+      font-weight: 600;
+    }
+    .is-invalid {
+      border-color: #dc3545;
+    }
+    .invalid-feedback {
+      display: none;
+    }
+    .is-invalid + .invalid-feedback {
+      display: block;
+    }
+
+
+        .navbar-brand {
+         font-weight: 600;
+         color: black;
+ font-family: 'Trirong',serif;
+     }
+     .sidebar {
+         min-height: 100vh;
+         border-right: 1px solid #dee2e6;
+     }
+
+     .sidebar .nav-link {
+         color: #333;
+         padding: 0.8rem 1rem;
+         border-bottom: 1px solid #dee2e6;
+     }
+
+     .sidebar .nav-link:hover,
+     .sidebar .nav-link.active {
+         background-color: #f8f9fa;
+     }
+         .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .filter-section {
+            margin-bottom: 1rem;
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .filter-section label {
+            font-weight: bold;
+        }
+        .filter-section input, .filter-section select {
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .filter-section button {
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .filter-section button:hover {
+            background-color: #0056b3;
+        }
+        #salesOverviewChart {
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        //top-selling
+        .top-selling-container {
+            width: 80%;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        h2 {
+            margin-top: 40px;
+            font-size: 1.6em;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f8f9fa;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<header class="navbar sticky-top bg-white flex-md-nowrap p-0 shadow " style="height: 3rem;">
+    <span class="navbar-brand col-md-3 col-lg-2 me-0 px-3 position-absolute start-50  translate-middle fs-3" style="top:1.5rem;">SNEAKER HEAD</span>
+    <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</header>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 px-0 sidebar">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="#dashboard">Dashboard</a>
+                <a class="nav-link active" href="/admin/orders">Orders</a>
+                <a class="nav-link" href="/admin/product">Products</a>
+                <a class="nav-link" href="/admin/users">Users</a>
+                <a class="nav-link" href="/admin/category">Categories</a>
+                <a class="nav-link" href="/admin/brands">Brands</a>
+                <a class="nav-link" href="#coupons">Coupons</a>
+                <a class="nav-link" href="#banners">Banners</a>
+                <a class="nav-link" href="#payments">Payments</a>
+                <a class="nav-link" href="/logout">Offers</a>
+                <button
+                        class="btn btn-danger mt-3"
+                        onclick="window.location.href='/logout'"
+                        style="width: 100%; text-align: center; background-color: #dc3545; color: white; border: none; padding: 10px; font-size: 16px; cursor: pointer;">
+                    Logout
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container col-md-9">
+            <div class="d-flex justify-content-between">
+                <h1>Sales Overview</h1>
+                <div class="filter-section">
+                    <label for="filterType">Filter By:</label>
+                    <select id="filterType" onchange="toggleFilterInputs()">
+                        <option value="year">Year</option>
+                        <option value="month">Month</option>
+                        <option value="custom">Custom Date</option>
+                    </select>
+
+                    <div id="yearFilter" class="filter-input" >
+                        <label for="yearInput">Year:</label>
+                        <input type="number" id="yearInput" placeholder="Enter Year">
+                    </div>
+
+                    <div id="monthFilter" class="filter-input" style="display:none;">
+                        <label for="monthInput">Month:</label>
+                        <input type="number" id="monthInput" placeholder="Enter Month (1-12)">
+                    </div>
+
+                    <div id="customFilter" class="filter-input" style="display:none;">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate">
+                    </div>
+
+                    <button onclick="fetchAndRenderChart()">Apply</button>
+                </div>
+
+            </div>
+            <canvas id="salesOverviewChart" width="800" height="300"></canvas>
+            <div class="container">
+                <h1>Top 10 Selling Overview</h1>
+
+                <div id="productSection">
+                    <h2>Top 10 Best Selling Products</h2>
+                    <div id="productLoading" class="loading">Loading products...</div>
+                    <table id="productTable" style="display:none;">
+                        <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Total Sales</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div id="productNoData" class="no-data" style="display:none;">No data available</div>
+                </div>
+
+                <div id="categorySection">
+                    <h2>Top 10 Best Selling Categories</h2>
+                    <div id="categoryLoading" class="loading">Loading categories...</div>
+                    <table id="categoryTable" style="display:none;">
+                        <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Total Sales</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div id="categoryNoData" class="no-data" style="display:none;">No data available</div>
+                </div>
+
+                <div id="brandSection">
+                    <h2>Top 10 Best Selling Brands</h2>
+                    <div id="brandLoading" class="loading">Loading brands...</div>
+                    <table id="brandTable" style="display:none;">
+                        <thead>
+                        <tr>
+                            <th>Brand Name</th>
+                            <th>Total Sales</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div id="brandNoData" class="no-data" style="display:none;">No data available</div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const initializePage = () => {
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // getMonth() is zero-based
+
+        // Set default filter to 'month'
+        document.getElementById("filterType").value = "month";
+
+        // Set default current month and year in the input fields
+        document.getElementById("monthInput").value = currentMonth;
+
+        // Automatically fetch and render the chart for the current month
+        fetchAndRenderChart();
+        console.log("heyy");
+        toggleFilterInputs(); // Ensure the right filter inputs are shown
+    };
+
+
+    const toggleFilterInputs = () => {
+        const filterType = document.getElementById("filterType").value;
+        document.getElementById("yearFilter").style.display = filterType === "year" ? "block" : "none";
+        document.getElementById("monthFilter").style.display = filterType === "month" ? "block" : "none";
+        document.getElementById("customFilter").style.display = filterType === "custom" ? "block" : "none";
+    };
+
+        let chartInstance = null;
+
+const fetchAndRenderChart = async () => {
+    const filterType = document.getElementById("filterType").value;
+    let query = "/admin/dashboard/sales";
+
+    // Constructing the query based on the selected filter
+    if (filterType === "year") {
+        const year = document.getElementById("yearInput").value;
+        query += `?year=${year}`;
+    } else if (filterType === "month") {
+        const month = document.getElementById("monthInput").value;
+        query += `?month=${month}`;
+    } else if (filterType === "custom") {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        query += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+
+    try {
+        const response = await fetch(query);
+        const salesData = await response.json();
+
+        const labels = salesData.map(item => item.date);
+        const data = salesData.map(item => item.totalSales);
+
+        // Destroy the previous chart if it exists
+        if (chartInstance) {
+            chartInstance.destroy();  // Ensure the old chart is destroyed
+            chartInstance = null;  // Reset chartInstance
+        }
+
+        // Get the canvas context and clear it
+        const ctx = document.getElementById('salesOverviewChart').getContext('2d');
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);  // Clear canvas content
+
+        // Create a new chart with the updated data
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Sales Overview',
+                    data: data,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Date' } },
+                    y: { title: { display: true, text: 'Total Sales' } }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching or rendering chart data:", error);
+    }
+};
+
+//top-selling
+
+    const fetchData = async () => {
+        try {
+            // Fetch top-selling products, categories, and brands
+            const productResponse = await fetch('/admin/dashboard/top?type=product');
+            const categoryResponse = await fetch('/admin/dashboard/top?type=category');
+            const brandResponse = await fetch('/admin/dashboard/top?type=brand');
+
+            // Handle the responses
+            const productData = await productResponse.json();
+            const categoryData = await categoryResponse.json();
+            const brandData = await brandResponse.json();
+
+            // Render data in the tables
+            renderTableData('product', productData);
+            renderTableData('category', categoryData);
+            renderTableData('brand', brandData);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+    const renderTableData = (type, data) => {
+        const table = document.getElementById(`${type}Table`);
+        const loading = document.getElementById(`${type}Loading`);
+        const noData = document.getElementById(`${type}NoData`);
+
+        // Hide the loading indicator
+        loading.style.display = 'none';
+
+        // Show table if data is present
+        if (data.length > 0) {
+            const tbody = table.getElementsByTagName('tbody')[0];
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = item.name;
+                row.insertCell(1).textContent = item.totalSales;
+            });
+
+            table.style.display = 'table';
+            noData.style.display = 'none';
+        } else {
+            table.style.display = 'none';
+            noData.style.display = 'block';
+        }
+    };
+
+    // Call the fetchData function when the page loads
+    window.onload = () => {
+
+            initializePage();
+             fetchData();
+    };
+
+</script>
+
+</body>
+</html>

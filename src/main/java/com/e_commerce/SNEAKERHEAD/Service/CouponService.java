@@ -1,7 +1,8 @@
 package com.e_commerce.SNEAKERHEAD.Service;
 
 import com.e_commerce.SNEAKERHEAD.Entity.Coupon;
-import com.e_commerce.SNEAKERHEAD.Entity.Order;
+import com.e_commerce.SNEAKERHEAD.Entity.OrderEntity;
+import com.e_commerce.SNEAKERHEAD.Entity.OrderEntity;
 import com.e_commerce.SNEAKERHEAD.Entity.UserCouponUsage;
 import com.e_commerce.SNEAKERHEAD.Entity.WebUser;
 import com.e_commerce.SNEAKERHEAD.Repository.CouponRepository;
@@ -37,7 +38,7 @@ public class CouponService {
     public List<Coupon> ListCoupons(WebUser user) {
 
     List<Coupon> coupons = couponRepository.findAllByIsActive(true);
-    List<Order> orders = orderRepository.findAllByUser_id(user.getId());
+    List<OrderEntity> orders = orderRepository.findAllByUser_id(user.getId());
     coupons = coupons.stream()
             .filter(cp-> !cp.getNewUserCoupon() || orderRepository.findAllByUser_id(user.getId()).isEmpty()).collect(Collectors.toList());
         System.out.println(coupons);

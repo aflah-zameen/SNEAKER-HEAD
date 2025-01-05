@@ -2,26 +2,37 @@ package com.e_commerce.SNEAKERHEAD.Controller;
 
 import com.e_commerce.SNEAKERHEAD.DTO.*;
 import com.e_commerce.SNEAKERHEAD.Entity.*;
-import com.e_commerce.SNEAKERHEAD.Enums.BrandStatus;
-import com.e_commerce.SNEAKERHEAD.Enums.CategoryStatus;
+import com.e_commerce.SNEAKERHEAD.Mappers.OfferMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
+import com.e_commerce.SNEAKERHEAD.Mappers.SalesOrderMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
 import com.e_commerce.SNEAKERHEAD.Service.*;
 import com.e_commerce.SNEAKERHEAD.Service.AdminManagementService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.aspectj.apache.bcel.classfile.LocalVariable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.sql.Date;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,6 +87,73 @@ AdminManagementService adminManagementService;
     @Autowired
     CriteriaCouponRepository criteriaCouponRepository;
 
+    @Autowired
+    OffersRepository offersRepository;
+
+    @Autowired
+    OfferMapper offerMapper;
+
+    @Autowired
+    TransactionRepository transactionRepository;
+
+    @Autowired
+    WalletRepository walletRepository;
+
+    @Autowired
+    SalesOrderMapper salesOrderMapper;
+
+    @Autowired
+    SaleReportService saleReportService;
+
+    @Autowired
+    RefferalCodeRepository refferalCodeRepository;
+
+    @Autowired
+    SaleRepository saleRepository;
+
+    @Autowired
+    DashboardService dashboardService;
+
+    @GetMapping("/dashboard")
+    public String showDashboard()
+    {
+        return "admin_dashboard";
+    }
+
+    @ResponseBody
+    @GetMapping("/dashboard/sales")
+    public List<SalesOverviewDTO> salesOverview(@RequestParam(value = "startDate",required = false) LocalDate startDate,
+                                                @RequestParam(value = "endDate",required = false) LocalDate endDate,
+                                                @RequestParam(value = "year",required = false) Integer year,
+                                                @RequestParam(value = "month",required = false) Integer month)
+    {
+        List<SalesOverviewDTO> salesOverviewDTOS = new ArrayList<>();
+        if(year != null)
+        {
+            startDate = LocalDate.of(year,1,1);
+            endDate = LocalDate.of(year,12,31);
+        }
+        else if(month != null)
+        {
+            int currentYear = LocalDate.now().getYear();
+            YearMonth yearMonth = YearMonth.of(currentYear, month);
+            startDate = yearMonth.atDay(1);
+            endDate = yearMonth.atEndOfMonth();
+            System.out.println(startDate+">>"+endDate);
+        }
+        List<OrderEntity> orderEntities = orderRepository.findByOrderDateBetweenAndStatus(startDate,endDate,"DELIVERED");
+        orderEntities.forEach(or->
+                salesOverviewDTOS.add(new SalesOverviewDTO(or.getOrderDate(),or.getOrderTotal())));
+        return salesOverviewDTOS;
+    }
+
+    @ResponseBody
+    @GetMapping("/dashboard/top")
+    public List<TopSellingDTO> fetchTop(@RequestParam(name = "type") String type)
+    {
+        return dashboardService.getTopSelling(type);
+    }
+
 
     @GetMapping("/product")
     public String AdminProduct(Model model)
@@ -84,7 +162,7 @@ AdminManagementService adminManagementService;
         Page<Product> productPage = productService.ListProduct(sortProductDTO.getPageablePage());
         List<ProductDto> productDtos = productMapper.toDTOList(productPage.getContent()).stream().peek(pd->pd.setQuantity(pd.getProductVariantDTOs().stream().mapToInt(pv -> pv.getQuantity()).sum())).peek(pd -> {
             pd.setDefaultVariantDTO(pd.getProductVariantDTOs().getFirst());
-            pd.getProductVariantDTOs().forEach( pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+            pd.getProductVariantDTOs().forEach( pv -> pv.setFormattedPrice(pv.FormattedPrice(pv.getPrice())));
         }).collect(Collectors.toList());
         model.addAttribute("products",productDtos);
         model.addAttribute("totalPages",productPage.getTotalPages());
@@ -165,7 +243,7 @@ AdminManagementService adminManagementService;
 
     @ResponseBody
     @PostMapping("/product/variant")
-    public ResponseEntity<?> addProduct(@Valid @RequestBody ProductVariantDTO productVariantDto, HttpServletRequest request )
+    public ResponseEntity<?> addProduct(@RequestBody ProductVariantDTO productVariantDto, HttpServletRequest request )
     {
         if(productVariantRepository.existsByArticleCode(productVariantDto.getArticleCode()))
         {
@@ -174,7 +252,6 @@ AdminManagementService adminManagementService;
         }
         HttpSession session = request.getSession();
         Long productId =(Long) session.getAttribute("productId");
-        System.out.println(productId+">>>>");
         adminManagementService.addProductVariant(productVariantDto,productId);
         return ResponseEntity.ok("Product successfully added");
     }
@@ -255,7 +332,6 @@ AdminManagementService adminManagementService;
     @PostMapping(value = "/attribute/add/data")
     public ResponseEntity<?> SaveCategory(@Valid @RequestBody Attribute attribute,@RequestParam String type)
     {
-        System.out.println(type.equals("Category"));
         if(type.equals("Category"))
         {
             if (categoryRepository.existsByName(attribute.getName())) {
@@ -383,35 +459,74 @@ AdminManagementService adminManagementService;
     @GetMapping("/orders")
     public String ListOrders(Model model)
     {
-        List<Order> orders = orderRepository.findAll();
-        for(Order order : orders)
-        {
-            System.out.println(order);
-        }
+        List<OrderEntity> orders = orderRepository.findAll();
         model.addAttribute("orders",orders);
         return "admin_order";
     }
     @ResponseBody
     @PutMapping("/orders/edit")
-    public ResponseEntity<?> EditOrder(@RequestBody EditOrder editOrder)
+    public ResponseEntity<?> EditOrderEntity(@RequestBody EditOrder editOrder)
     {
-        Order order = orderRepository.findById(editOrder.getOrderId()).orElseThrow(()-> new NullPointerException());
+        OrderEntity order = orderRepository.findById(editOrder.getOrderId()).orElseThrow(()-> new NullPointerException());
         order.setStatus(editOrder.getOrderStatus());
         order.setPaymentMethod(editOrder.getPaymentMethod());
         UserAddress address = addressRepository.findById(order.getAddress().getId()).orElse(new UserAddress());
         address.setName(editOrder.getUserName());
         addressRepository.save(address);
         orderRepository.save(order);
+        if(order.getStatus().equalsIgnoreCase("DELIVERED"))
+        {
+            if(order.getReferralEntity() != null)
+            {
+                ReferralEntity referralEntity = refferalCodeRepository.findById(order.getReferralEntity().getId()).orElse(new ReferralEntity());
+                Long userId = referralEntity.getUser().getId();
+                Wallet wallet = walletRepository.findByUser_id(userId).orElse(new Wallet());
+                wallet.setBalance(wallet.getBalance()+500);
+                walletRepository.save(wallet);
+                Transaction transaction = new Transaction();
+                transaction.setTransactionDate(LocalDate.now());
+                transaction.setAmount(500D);
+                transaction.setWallet(wallet);
+                transaction.setStatus("REFER REWARD");
+                transactionRepository.save(transaction);
+            }
+        }
         return ResponseEntity.status(HttpStatus.OK).body("Confirmed order");
     }
     @ResponseBody
     @PostMapping("/orders/cancel/{id}")
     public ResponseEntity<?> cancelOrder(@PathVariable Long id)
     {
-        Order order = orderRepository.findById(id).orElseThrow(()-> new NullPointerException());
+        OrderEntity order = orderRepository.findById(id).orElseThrow(()-> new NullPointerException());
         order.setCancellation(true);
         orderRepository.save(order);
         return ResponseEntity.status(HttpStatus.OK).body("Confirmed cancellation");
+    }
+
+    @ResponseBody
+    @PostMapping("/order/return")
+    public ResponseEntity<?> returnProduct(@RequestParam("orderId") Long id)
+    {
+        OrderEntity order = orderRepository.findById(id).orElse(new OrderEntity());
+        order.setStatus("RETURNED");
+        orderRepository.save(order);
+
+        WebUser user = order.getUser();
+
+        Wallet wallet = walletRepository.findByUser_id(user.getId()).orElse(new Wallet());
+        Transaction transaction = new Transaction();
+        transaction.setWallet(wallet);
+        transaction.setAmount(order.getOrderTotal());
+        transaction.setStatus("REFUNDED");
+        transactionRepository.save(transaction);
+
+
+        wallet.setBalance(wallet.getBalance()+order.getOrderTotal());
+        wallet.setLastUpdate(LocalDate.now());
+        walletRepository.save(wallet);
+
+        return ResponseEntity.ok("success");
+
     }
 
     @ResponseBody
@@ -490,7 +605,6 @@ AdminManagementService adminManagementService;
             }
         }
         if(result.hasErrors()) {
-            System.out.println(result.getAllErrors().toString());
             model.addAttribute("couponObject",coupon);
             return "add_coupon";
         }
@@ -522,6 +636,285 @@ AdminManagementService adminManagementService;
     //offers
 
     @GetMapping("/offers")
+    public String showAllOffers(Model model)
+    {
+        SortProductDTO sortProductDTO = new SortProductDTO();
+        Page offerPage = offersRepository.findAll(sortProductDTO.getPageablePage());
+        model.addAttribute("offers",offerPage.getContent());
+        model.addAttribute("totalPages",offerPage.getTotalPages());
+        model.addAttribute("currentPage",0);
+        model.addAttribute("pageSize",10);
+        return "offerAdmin";
+    }
+
+    @GetMapping("/offer/addoffer")
+    public String showAddOffers(Model model)
+    {
+        model.addAttribute("offerObject",new OfferDTO());
+        model.addAttribute("categories",categoryRepository.findAllByStatus(true));
+        model.addAttribute("products",productRepository.findAllByStatus(true));
+        return "add_offer";
+    }
+
+    @PostMapping("/offer/data")
+    public String addOffer(@Valid @ModelAttribute("offerObject") OfferDTO offerDTO,BindingResult result,Model model)
+    {
+        if(result.hasErrors())
+        {
+            model.addAttribute("offerObject",offerDTO);
+            model.addAttribute("categories",categoryRepository.findAllByStatus(true));
+            model.addAttribute("products",productRepository.findAllByStatus(true));
+            return "add_offer";
+        }
+
+        Offer offer=offerMapper.toEntity(offerDTO);
+        offer.setType(offerDTO.getType());
+        offer.setTypeId(offerDTO.getTypeId());
+        offer.setIsActive(true);
+        offer=offersRepository.save(offer);
+        if(offerDTO.getType().equalsIgnoreCase("product"))
+        {
+            Product product = productRepository.findById(offerDTO.getTypeId()).orElse(new Product());
+//            List<Offer> productOffers = offersRepository.findByTypeAndTypeIdAndEndDateGreaterThanEqual("product",product.getId(),LocalDate.now());
+//            List<Offer> categoryOffers = offersRepository.findByTypeAndTypeIdAndEndDateGreaterThanEqual("category",product.getId(),LocalDate.now());
+//
+//            List<Offer> allOffers = new ArrayList<>();
+//            allOffers.addAll(productOffers);
+//            allOffers.addAll(categoryOffers);
+//            double discountValue = offerDTO.getDiscountValue();
+            if(product.getAppliedOffer()!=null)
+            {
+                    if(product.getAppliedOffer().getDiscountValue()<offerDTO.getDiscountValue())
+                    {
+                        product.setAppliedOffer(offer);
+                        for(ProductVariant pv : product.getProductVariants())
+                        {
+                            pv.setOfferPrice(pv.getPrice()-(pv.getPrice()*((double)offerDTO.getDiscountValue())/100));
+                            productVariantRepository.save(pv);
+                        }
+                        productRepository.save(product);
+                    }
+
+            }
+            else
+            {
+                product.setAppliedOffer(offer);
+                productRepository.save(product);
+                for(ProductVariant pv : product.getProductVariants())
+                {
+                    pv.setOfferPrice(pv.getPrice()-(pv.getPrice()*((double)offerDTO.getDiscountValue())/100));
+                    productVariantRepository.save(pv);
+                }
+            }
+
+
+        }
+        else
+        {
+            Category category = categoryRepository.findById(offerDTO.getTypeId()).orElse(new Category());
+            List<Product> products = category.getProducts();
+            for(Product p : products)
+            {
+                System.out.println(p.getId());
+            }
+            for(Product product : products)
+            {
+                if(product.getAppliedOffer()!=null)
+                {
+                    if(product.getAppliedOffer().getDiscountValue()<offerDTO.getDiscountValue())
+                    {
+
+                        product.setAppliedOffer(offer);
+                        for(ProductVariant pv : product.getProductVariants())
+                        {
+                            pv.setOfferPrice(pv.getPrice()-(pv.getPrice()*((double)offerDTO.getDiscountValue())/100));
+                            productVariantRepository.save(pv);
+                        }
+                        productRepository.save(product);
+                    }
+                }
+                else
+                {
+                    product.setAppliedOffer(offer);
+                    productRepository.save(product);
+                    for(ProductVariant pv : product.getProductVariants())
+                    {
+                        pv.setOfferPrice(pv.getPrice()-(pv.getPrice()*((double)offerDTO.getDiscountValue())/100));
+                        productVariantRepository.save(pv);
+                    }
+                }
+            }
+        }
+        return "redirect:/admin/offers";
+    }
+
+    @ResponseBody
+    @PostMapping("/offers/sorting")
+    public ResponseEntity<List<OfferDTO>> sortOffers(@RequestBody SortProductDTO sortProductDTO)
+    {
+        Page<Offer> offerPage = offersRepository.findAll(sortProductDTO.getPageablePage());
+        List<Offer> offers = offerPage.getContent();
+        List<OfferDTO> offerDTOS = offerMapper.toDTOList(offers);
+        return ResponseEntity.ok(offerDTOS);
+    }
+
+
+    @GetMapping("/sales")
+    public String showSalesReport(Model model)
+    {
+        Pageable pageable = PageRequest.of(0,5, Sort.Direction.ASC,"id");
+        Page<OrderEntity> orderPage = orderRepository.findAllByStatus("DELIVERED",pageable);
+        List<OrderEntity> orderEntities = orderRepository.findAllByStatus("DELIVERED");
+        model.addAttribute("orders",orderPage.getContent());
+        model.addAttribute("totalPages",orderPage.getTotalPages());
+
+        Double overallSales = orderEntities.stream().mapToDouble(OrderEntity::getOrderTotal).sum();
+        Long overallOrders = orderEntities.stream().count();
+        Double overallDiscounts = orderEntities.stream().mapToDouble(OrderEntity::getDeductedAmount).sum();
+        model.addAttribute("overallSales",overallSales);
+        model.addAttribute("overallOrders",overallOrders);
+        model.addAttribute("overallDiscounts",overallDiscounts);
+        return "sales_report";
+    }
+
+    @ResponseBody
+    @PostMapping("/sales/sorting")
+    public ResponseEntity<SalesPaginationDTO> paginationSales(@RequestBody SalesPaginationDTO salesPaginationDTO) {
+        // Determine start and end dates based on report type
+        Page<OrderEntity> orderEntityPage;
+        List<OrderEntity> orderEntities;
+       if(salesPaginationDTO.getReportType().equalsIgnoreCase("ALL"))
+       {
+           orderEntityPage = orderRepository.findAllByStatus("DELIVERED",salesPaginationDTO.getPageablePage());
+           orderEntities = orderRepository.findAllByStatus("DELIVERED");
+       }
+       else
+       {
+           LocalDate startDate = salesPaginationDTO.getStartDate();
+           LocalDate endDate = salesPaginationDTO.getEndDate();
+           System.out.println(startDate);
+           if (startDate == null) {
+               startDate = saleReportService.getStartOfReport(salesPaginationDTO.getReportType());
+               endDate = saleReportService.getEndOfReport(salesPaginationDTO.getReportType());
+           }
+
+           // Fetch paginated and filtered data from the repository
+          orderEntityPage = orderRepository.findByOrderDateBetweenAndStatus(startDate,endDate,salesPaginationDTO.getPageablePage(),"DELIVERED");
+           orderEntities = orderRepository.findByOrderDateBetweenAndStatus(startDate,endDate,"DELIVERED");
+       }// Map to DTO
+        salesPaginationDTO.setOrdersList(salesOrderMapper.toDTOList(orderEntityPage.getContent()));
+        System.out.println(salesPaginationDTO.getOrdersList().getFirst().getDeductedAmount());
+        salesPaginationDTO.setTotalPages(orderEntityPage.getTotalPages());
+        salesPaginationDTO.setOverallOrders(orderEntities.stream().count());
+        salesPaginationDTO.setOverallSales(orderEntities.stream().mapToDouble(OrderEntity::getOrderTotal).sum());
+        salesPaginationDTO.setDiscountValue(orderEntities.stream().mapToDouble(OrderEntity::getDeductedAmount).sum());
+        // Return the response
+        return ResponseEntity.ok(salesPaginationDTO);
+    }
+
+    @GetMapping("/sales/download-pdf")
+    public ResponseEntity<InputStreamResource> downloadPdf(@RequestParam("reportType") String reportType,
+                                                           @RequestParam("startDate") String startDateString,
+                                                           @RequestParam("endDate") String endDateString,
+                                                           HttpServletResponse response) {
+        try {
+            LocalDate startDate;
+            LocalDate endDate;
+            if(!startDateString.equalsIgnoreCase("null"))
+            {
+                startDate = LocalDate.parse(startDateString);
+                endDate = LocalDate.parse(endDateString);
+            }
+            else
+            {
+                startDate =null;
+                endDate = null;
+            }
+            List<OrderEntity> orderEntities;
+            if(reportType.equalsIgnoreCase("ALL"))
+            {
+                orderEntities = orderRepository.findAllByStatus("DELIVERED");
+            }
+            else
+            {
+                if (startDate == null) {
+                    startDate = saleReportService.getStartOfReport(reportType);
+                    endDate = saleReportService.getEndOfReport(reportType);
+                }
+                orderEntities = orderRepository.findByOrderDateBetweenAndStatus(startDate,endDate,"DELIVERED");
+            }
+
+            String filePath = "sales_report.pdf";
+
+            // Generate the PDF
+            ByteArrayOutputStream pdfContent = saleReportService.generateSalesReportPdf(filePath, orderEntities);
+
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(pdfContent.toByteArray());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sales_report.pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new InputStreamResource(inputStream));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/sales/download-excel")
+    public ResponseEntity<InputStreamResource> downloadExcel(@RequestParam("reportType") String reportType,
+                                                             @RequestParam("startDate") String startDateString,
+                                                             @RequestParam("endDate") String endDateString, HttpServletResponse response) {
+        try {
+            LocalDate startDate;
+            LocalDate endDate;
+            if(!startDateString.equalsIgnoreCase("null"))
+            {
+                startDate = LocalDate.parse(startDateString);
+                endDate = LocalDate.parse(endDateString);
+            }
+            else
+            {
+                startDate =null;
+                endDate = null;
+            }
+            List<OrderEntity> orderEntities;
+            if(reportType.equalsIgnoreCase("ALL"))
+            {
+                orderEntities = orderRepository.findAllByStatus("DELIVERED");
+            }
+            else
+            {
+                if (startDate == null) {
+                    startDate = saleReportService.getStartOfReport(reportType);
+                    endDate = saleReportService.getEndOfReport(reportType);
+                }
+                orderEntities = orderRepository.findByOrderDateBetweenAndStatus(startDate,endDate,"DELIVERED");
+            }
+
+            String filePath = "sales_report.xlsx";
+
+            // Generate the PDF
+            ByteArrayOutputStream byteArrayOutputStream=saleReportService.generateSalesReportExcel(filePath, orderEntities);
+
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+            // Set response headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sales_report.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(inputStream));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+
+        }
+    }
 
 
 

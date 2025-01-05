@@ -62,5 +62,5 @@ public class UserAddress {
     private String status;
 
     @OneToMany(mappedBy = "address",cascade = CascadeType.ALL)
-    private List<Order> orders;
+    private List<OrderEntity> orders;
 }

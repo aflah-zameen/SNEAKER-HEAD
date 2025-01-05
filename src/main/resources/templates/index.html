@@ -38,7 +38,32 @@
 <div th:replace="fragments/header :: header">
 
 </div>
-
+<!-- Referral Modal -->
+<div class="modal fade" id="referralModal" tabindex="-1" aria-labelledby="referralModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title custom-modal-title" id="referralModalLabel">Send Referral Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="reward-info">
+                    <p class="mb-1"><strong>Rewards:</strong></p>
+                    <p class="mb-1">You get: ₹500</p>
+                    <p class="mb-0">Your friend gets: ₹1000</p>
+                </div>
+                <form id="referralForm">
+                    <div class="mb-3">
+                        <label for="emailInput" class="form-label">Friend's Email Address</label>
+                        <input type="email" class="form-control" id="emailInput" >
+                        <div id="emailError" class="error-message"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Referral</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- Hero Section -->
     <section class="hero-section position-relative top-0 " >
         <div id="heroCarousel" class="carousel slide " data-bs-ride="carousel">
@@ -189,5 +214,51 @@
             })
         });
     </script>
+<script>
+    function openReferralModal() {
+        var myModal = new bootstrap.Modal(document.getElementById('referralModal'));
+        myModal.show();
+    }
+
+    function validateEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    document.getElementById('referralForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var email = document.getElementById('emailInput').value;
+        var errorElement = document.getElementById('emailError');
+
+        if (!validateEmail(email)) {
+            errorElement.textContent = 'Please enter a valid email address.';
+            return;
+        }
+
+        errorElement.textContent = ''; // Clear any previous error message
+         fetch(`/user/referral?email=${email}`,{
+         method:'GET',
+         })
+         .then(response => {
+            if(response.ok)
+            {
+                Swal.fire({
+            title: 'Send successfully',
+            text: "You get reward after a successful delivery of your friend.",
+            icon: 'success',
+            confirmButtonText: 'Send',
+        });
+            }
+
+         })
+        var myModal = bootstrap.Modal.getInstance(document.getElementById('referralModal'));
+        myModal.hide();
+    });
+
+    // Clear error message when user starts typing
+    document.getElementById('emailInput').addEventListener('input', function() {
+        document.getElementById('emailError').textContent = '';
+    });
+</script>
 </body>
 </html>

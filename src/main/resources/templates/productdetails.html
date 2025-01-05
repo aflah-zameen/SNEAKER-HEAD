@@ -114,8 +114,10 @@
                 </div>
 
                 <!-- Price -->
-                <div class="mb-3">
-                    <span class="h3 me-2" th:text="'₹'+${details.defaultVariantDTO.formattedPrice}" id="product-price" th:data-product-price="${details.defaultVariantDTO.formattedPrice}"></span>
+                <div class="d-flex">
+                    <div class="me-2 h3" th:text="'₹'+${details.DefaultVariantDTO.price}" th:classappend="${details.appliedOffer} ? 'text-decoration-line-through' : '' " th:id="${details.appliedOffer} ? 'mrp-price' :'product-price'" th:data-product-price="${details.defaultVariantDTO.formattedPrice}"></div>
+                    <div th:if="${details.appliedOffer}" class="me-2 h3 text-success" th:text="'₹'+${details.defaultVariantDTO.offerPrice}"  th:id="${details.appliedOffer} ? 'product-price' :'null-value'" th:data-product-price="${details.DefaultVariantDTO.offerPrice}"></div>
+                    <div th:if="${details.appliedOffer}" th:text="${details.appliedOffer.discountValue}+'%'" class="ms-3 text-danger"></div>
                 </div>
 
                 <!-- Size Selection -->
@@ -129,7 +131,7 @@
                 <h3 class="h6">Color:</h3>
                 <div class="mb-3 d-flex"  >
 
-                    <div id="colorOptions" class="color-option" th:each="variant : ${details.productVariantDTOs}" th:style="'background-color:' + ${variant.color}"  th:onclick="'changeContent(this);'"  th:data-variant-id = "${variant.id}" >
+                    <div id="colorOptions" class="color-option" th:each="variant : ${details.productVariantDTOs}" th:style="'background-color:' + ${variant.colorCode}"  th:onclick="'changeContent(this);'"  th:data-variant-id = "${variant.id}" >
 
                     </div>
                 </div>
@@ -315,8 +317,17 @@
 
             //render-price
             const priceElement = document.getElementById("product-price");
-            priceElement.textContent="₹"+variant.formattedPrice;
-            priceElement.setAttribute("data-product-price",variant.price);
+
+            if(variant.offerPrice == null)
+            {
+                priceElement.textContent="₹"+variant.formattedPrice;
+                priceElement.setAttribute("data-product-price",variant.price);
+            }
+            else
+            {
+                priceElement.textContent="₹"+variant.offerPrice;
+                priceElement.setAttribute("data-product-price",variant.offerPriceDouble);
+            }
 
 
             //render-article-code
@@ -455,7 +466,7 @@
             productVariantId:variantId,
             userId:userIdTemp,
             size:parseFloat(selectedSize)
-            }
+            };
             console.log(formData);
             fetch('/user/addcart', {
     method: 'POST',

@@ -2,6 +2,7 @@ package com.e_commerce.SNEAKERHEAD.DTO;
 
 import com.e_commerce.SNEAKERHEAD.Entity.Brand;
 import com.e_commerce.SNEAKERHEAD.Entity.Category;
+import com.e_commerce.SNEAKERHEAD.Entity.Offer;
 import com.e_commerce.SNEAKERHEAD.Entity.ProductVariant;
 import lombok.Data;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class ProductDto {
     private String categoryName;
     private String genericName;
     private Double weight;
+    private Offer appliedOffer;
     private String manufacturer;
     private String countryOfOrigin;
     private String importedBy;

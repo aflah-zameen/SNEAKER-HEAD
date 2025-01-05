@@ -140,6 +140,8 @@
                 <a class="nav-link" href="/admin/coupons">Coupons</a>
                 <a class="nav-link" href="/admin/banners">Banners</a>
                 <a class="nav-link" href="/admin/payments">Payments</a>
+                <a class="nav-link" href="/admin/sales">Sales report</a>
+
                 <a class="nav-link" href="/admin/offers">Offers</a>
                 <button
                         class="btn btn-danger mt-3"
@@ -217,9 +219,8 @@
                     <tr th:each="offer : ${offers}">
                         <td th:text="${offer.id}"></td>
                         <td th:text="${offer.offerName}"></td>
-                        <td th:text="${offer.discountPercentage}"></td>
-                        <td th:if="${offer.product}" th:text="'Product :'+${offer.product.name}"></td>
-                        <td th:unless="${offer.product}" th:text="'Category : '+${offer.category.name}"></td>
+                        <td th:text="${offer.discountValue}"></td>
+                        <td th:if="${offer.type}" th:text="${offer.type == 'product' ? 'Product-ID :'+offer.typeId : 'Category-ID : '+offer.typeId}"></td>
                         <td th:text="${offer.endDate}"></td>
                         <td>
                             <button class="btn btn-sm btn-danger"
@@ -415,6 +416,7 @@
         })
         .then(response => response.json())
         .then( data => {
+        console.log(data);
         populateTable(data);
         })
         .catch(error => console.error('Error fetching products:', error));
@@ -427,13 +429,13 @@
         tbody.innerHTML = '';  // Clear existing rows
 
         offers.forEach(offer => {
+            console.log(offer);
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${offer.id}</td>
                 <td>${offer.offerName}</td>
-                <td>${offer.offerCode}</td>
                 <td>${offer.discountValue}</td>
-                <td>${offer.usageLimit}</td>
+                <td>${offer.categoryName ? `Category: ${offer.categoryName}` : `Product: ${offer.productName}`}</td>
                 <td>${offer.endDate}</td>
                 <td>
                     <button class="btn btn-sm btn-danger" onclick="window.location.href='/admin/offer/remove/${offer.id}' "

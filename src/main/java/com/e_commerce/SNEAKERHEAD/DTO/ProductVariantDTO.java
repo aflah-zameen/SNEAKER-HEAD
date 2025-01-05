@@ -1,5 +1,6 @@
 package com.e_commerce.SNEAKERHEAD.DTO;
 
+import com.e_commerce.SNEAKERHEAD.Entity.Offer;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,13 +20,14 @@ public class ProductVariantDTO {
    private Long id;
    private String articleCode;
    private Double price;
-   private String color;
+   private String colorCode;
    private Integer quantity;
-   private List<String> size;
+   private String[] size;
    private List<String> images;
    private String formattedPrice;
    private Integer maxQuantity;
-   public String FormattedPrice(){
+   private String offerPrice;
+   public String FormattedPrice(Double price){
       DecimalFormat formatter = new DecimalFormat("#,##0.00");
       return formatter.format(price);
    }

@@ -1,20 +1,18 @@
 package com.e_commerce.SNEAKERHEAD.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Entity
 @Setter
 @Getter
 @Table(name = "order_details")
-public class Order {
+public class OrderEntity {
     @Id
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +22,8 @@ public class Order {
     @JoinColumn(name = "user_id",nullable = false)
     private WebUser user;
 
-    @OneToOne
-    @JoinColumn(name = "coupon_id",nullable = false)
+    @OneToOne(optional = true)
+    @JoinColumn(name = "coupon_id")
     private Coupon coupon;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -35,7 +33,7 @@ public class Order {
     @Column(name = "delivery_charge")
     private Double deliveryCharge;
 
-    @Column(name="order_date")
+    @Column(name="order_date",nullable = false)
     private LocalDate orderDate;
 
     @Column(name = "order_total_amount")
@@ -44,7 +42,7 @@ public class Order {
     @Column(name = "tax")
     private String tax;
 
-    @Column(name="status")
+    @Column(name="status",nullable = false)
     private String status;
 
     @Column(name="payment_method")
@@ -52,6 +50,20 @@ public class Order {
 
     @Column(name = "cancellation")
     private boolean cancellation;
+
+    @Column(name="return_reason")
+    private String returnReason;
+
+    @Column(name="deducted_amount")
+    private Double deductedAmount;
+
+    @OneToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="referral_id")
+    private ReferralEntity referralEntity;
 
     @OneToMany(mappedBy ="order",cascade = CascadeType.ALL)
     private List<OrderItems> orderItems;

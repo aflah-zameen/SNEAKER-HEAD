@@ -241,6 +241,7 @@ Copy code
         <div class="col-md-9 col-lg-10 main-content">
             <h2 class="mb-4">Offer</h2>
             <form th:object="${offerObject}" th:action="@{/admin/offer/data}" method="post">
+                <input type="number" class="form-control d-none" th:field="*{id}"  name="offerId">
                 <div class="row g-3">
                     <!-- Offer Name -->
                     <div class="col-md-4">
@@ -252,7 +253,7 @@ Copy code
                     <!-- Discount Value -->
                     <div class="col-md-4">
                         <label class="form-label">Discount Value</label>
-                        <input type="text" class="form-control" th:field="*{discountValue}" placeholder="Enter discount value" name="discountValue">
+                        <input type="number" class="form-control" th:field="*{discountValue}" placeholder="Enter discount value" name="discountValue">
                         <div class="text-danger" th:if="${#fields.hasErrors('discountValue')}" th:errors="*{discountValue}"></div>
                     </div>
 
@@ -268,15 +269,16 @@ Copy code
                         <label class="form-label">Select Type</label>
                         <div class="d-flex align-items-center">
                             <div class="form-check me-3">
-                                <input type="radio" class="form-check-input" id="categoryType"  value="category" onclick="toggleSelection('category')" name="offerType" th:field="*{offerType}">
+                                <input type="radio" class="form-check-input" id="categoryType"  value="category" onclick="toggleSelection('category')" name="type" th:field="*{type}">
                                 <label for="categoryType" class="form-check-label">Category</label>
                             </div>
                             <div class="form-check">
-                                <input type="radio" class="form-check-input" id="productType" name="offerType" value="product" onclick="toggleSelection('product')" th:field="*{offerType}">
+                                <input type="radio" class="form-check-input" id="productType" name="type" value="product" onclick="toggleSelection('product')" th:field="*{type}">
                                 <label for="productType" class="form-check-label">Product</label>
                             </div>
-                            <div class="text-danger" th:if="${#fields.hasErrors('offerType')}" th:errors="*{offerType}"></div>
                         </div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('typeId')}" th:errors="*{typeId}"></div>
                     </div>
 
                     <!-- Dropdowns -->
@@ -295,7 +297,6 @@ Copy code
                                 <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.name}"></option>
                             </select>
                         </div>
-                        <div class="text-danger" th:if="${#fields.hasErrors('typeId')}" th:errors="*{typeId}"></div>
                     </div>
 
                     <!-- End Date -->
@@ -429,20 +430,27 @@ Copy code
 <!-- });-->
 
     function toggleSelection(type) {
-        const categoryItems = document.getElementById('categoryItemsHeader');
-        const productItems = document.getElementById('productItemsHeader');
+    const categoryItemsHeader = document.getElementById('categoryItemsHeader');
+    const productItemsHeader = document.getElementById('productItemsHeader');
+    const categorySelect = document.getElementById('categoryItems');
+    const productSelect = document.getElementById('productItems');
 
-        // Reset visibility
-        categoryItems.classList.add('d-none');
-        productItems.classList.add('d-none');
+    // Reset visibility and name attributes
+    categoryItemsHeader.classList.add('d-none');
+    productItemsHeader.classList.add('d-none');
+    categorySelect.removeAttribute('name');
+    productSelect.removeAttribute('name');
 
-        // Show the selected dropdown
-        if (type === 'category') {
-            categoryItems.classList.remove('d-none');
-        } else if (type === 'product') {
-            productItems.classList.remove('d-none');
-        }
+    // Show the selected dropdown and set its name
+    if (type === 'category') {
+        categoryItemsHeader.classList.remove('d-none');
+        categorySelect.setAttribute('name', 'typeId');
+    } else if (type === 'product') {
+        productItemsHeader.classList.remove('d-none');
+        productSelect.setAttribute('name', 'typeId');
     }
+}
+
 
 </script>
 

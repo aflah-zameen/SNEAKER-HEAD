@@ -28,14 +28,17 @@ public class ProductVariant {
     @Column(name = "article_code", nullable = false)
     private String articleCode;
 
-    @Column(name = "size")
-    private List<String> size;
+    @Column(name = "size",columnDefinition = "character varying[]")
+    private String[] size;
 
     @Column(name = "quantity")
     private Integer quantity;
 
     @Column(name = "color")
     private String color;
+
+    @Column(name="color_code")
+    private String colorCode;
 
     @Column(name = "price")
     private Double price;
@@ -49,11 +52,15 @@ public class ProductVariant {
     @Column(name="stock_status")
     private String stockStatus;
 
+    @Column(name="offer_price")
+    private Double offerPrice;
+
     @OneToMany(mappedBy = "productVariant",cascade = CascadeType.ALL)
     private List<Cart> carts;
 
     @OneToMany(mappedBy = "productVariant",cascade = CascadeType.ALL)
     private List<OrderItems> orderItems;
+
 
     public String getFormattedPrice(){
         DecimalFormat formatter = new DecimalFormat("#,##0.00");

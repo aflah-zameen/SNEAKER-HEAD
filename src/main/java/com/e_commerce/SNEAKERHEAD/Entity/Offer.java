@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -17,19 +18,23 @@ public class Offer {
     private Long id;
 
     @Column(name = "discount_percentage")
-    private Integer discountPercentage;
+    private Integer discountValue;
 
-    @OneToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @Column(name="type_id")
+    private Long typeId;
 
-    @OneToOne
-    @JoinColumn(name="category_id")
-    private Category category;
+    @Column(name ="type")
+    private String type;
 
     @Column(name="is_active")
     private Boolean isActive;
 
     @Column(name = "description")
     private String description;
+
+    @Column(name="offer_name")
+    private String offerName;
+
+    @Column(name="end_date")
+    private LocalDate endDate;
 }

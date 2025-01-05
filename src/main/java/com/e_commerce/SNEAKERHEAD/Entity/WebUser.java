@@ -58,10 +58,13 @@ public class WebUser{
     private List<UserAddress> addresses;
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<Order> orders;
+    private List<OrderEntity> orders;
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Cart> carts;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Payment> payments;
 
 
 }

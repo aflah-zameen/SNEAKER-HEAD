@@ -75,19 +75,17 @@
 
         /* Pagination Styles */
         .pagination {
-            justify-content: center;
-            margin: 2rem 0;
-        }
-        .page-link {
-            color: #000;
-            border: none;
-            padding: 0.5rem 1rem;
-        }
-        .page-link.active {
-            background: none;
-            font-weight: bold;
-            text-decoration: underline;
-        }
+    justify-content: center;
+}
+
+.page-item.disabled {
+    cursor: not-allowed;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
 
 
     </style>
@@ -113,9 +111,9 @@ z
 
         <!-- Filters -->
         <div class="d-flex justify-content-between align-items-center mb-4 " id="all-filter" th:if="${category == 'Available' or category== 'Search'}">
-            <div class="d-flex">
+            <div class="d-flex" id="left-filters">
                 <div class="dropdown me-4">
-                    <span>Shoe Size (UK)</span>
+                    <span data-filter-type="size">Shoe Size (UK)</span>
                     <button class="filter-button dropdown-toggle" type="button" id="shoeSizeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Select
                     </button>
@@ -128,19 +126,19 @@ z
                     </ul>
                 </div>
                 <div class="dropdown me-4">
-                    <span>Price</span>
+                    <span data-filter-type="price">Price</span>
                     <button class="filter-button dropdown-toggle" type="button" id="priceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Select
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="priceDropdown">
-                        <li><a class="dropdown-item" data-sort="<5000" href="#">Under 5,000</a></li>
+                        <li><a class="dropdown-item" data-sort="0-5000" href="#">Under 5,000</a></li>
                         <li><a class="dropdown-item" data-sort="5000-10000" href="#">5,000 - 10,000</a></li>
                         <li><a class="dropdown-item" data-sort="10000-15000" href="#">10,000 - 15,000</a></li>
-                        <li><a class="dropdown-item" data-sort=">15000" href="#">Over 15,000</a></li>
+                        <li><a class="dropdown-item" data-sort="15000-99999999" href="#">Over 15,000</a></li>
                     </ul>
                 </div>
                 <div class="dropdown me-4">
-                    <span>Brand</span>
+                    <span data-filter-type="brand">Brand</span>
                     <button class="filter-button dropdown-toggle" type="button" id="brandDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Select
                     </button>
@@ -161,7 +159,7 @@ z
 <!--                    </ul>-->
 <!--                </div>-->
                 <div class="dropdown me-4" >
-                    <span>Gender</span>
+                    <span data-filter-type="category">Gender</span>
                     <button class="filter-button dropdown-toggle" type="button" id="genderDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Select
                     </button>
@@ -171,6 +169,9 @@ z
 <!--                        <li><a class="dropdown-item" href="#">Unisex</a></li>-->
                     </ul>
                 </div>
+                <div>
+                    <button class="btn btn-dark" onclick="clearFilters()">Clear All</button>
+                </div>
             </div>
 
             <div class="dropdown">
@@ -179,64 +180,71 @@ z
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="sortDropdown">
 <!--                <li><a class="dropdown-item" href="#" data-sort="featured">Featured</a></li>-->
-                    <li><a class="dropdown-item" href="#" data-sort="price-low-high">Price: Low to High</a></li>
-                    <li><a class="dropdown-item" href="#" data-sort="price-high-low">Price: High to Low</a></li>
-                    <li><a class="dropdown-item" href="#" data-sort="aA-zZ">aA - zZ</a></li>
-                    <li><a class="dropdown-item" href="#" data-sort="zZ-aA">zZ - aA</a></li>
+                    <li><a class="dropdown-item" href="#" data-sort-order="ASC" data-sort-by="price">Price: Low to High</a></li>
+                    <li><a class="dropdown-item" href="#" data-sort-order="DESC" data-sort-by="price">Price: High to Low</a></li>
+                    <li><a class="dropdown-item" href="#" data-sort-order="ASC" data-sort-by="name">aA - zZ</a></li>
+                    <li><a class="dropdown-item" href="#" data-sort-order="DESC" data-sort-by="name">zZ - aA</a></li>
                 </ul>
             </div>
         </div>
 
         <!-- Products Grid -->
         <div class="row" id="productsGrid" th:if="${products}">
-            <div class="col-md-2" id="product-card"  th:each="product : ${products}">
-                <div class="product-card" th:id="${product.id}" style=" height:23rem;">
-
-                    <a th:href="@{/user/product/detail/{id}(id=${product.id})}">     <img th:src="${product.defaultVariantDTO.images.get(0)}" alt="WMN'S DUNK LOW" class="product-image">
+            <div class="col-md-4" id="product-card"  th:each="product : ${products}">
+                <div class="product-card" th:id="${product.id}">
+                    <span th:if="${product.offerName}" th:text="${product.offerName}" class="text-danger position-absolute end-0"></span>
+                    <a th:href="@{/user/product/detail/{id}(id=${product.id})}">     <img th:src="${product.defaultVariant.coverImageURL}" alt="WMN'S DUNK LOW" class="product-image">
                     </a>
                         <div class="d-flex position-relative">
-                            <div class="product-brand " th:text="${product.brandName}"></div>
+                            <div class="product-brand " th:text="${product.brand}"></div>
                             <button class="wishlist-icon border-0 p-0 position-absolute end-0 bg-transparent" th:data-product-id="${product.id}" onclick="toggleWishlist(this)">
-                                <i th:class="${product.wishlisted} ? 'bi bi-heart-fill' : 'bi bi-heart'"
-                                   th:style="${product.wishlisted} ? 'color: red;' : 'color: grey;'"></i>
+                                <i th:class="${product.wishListStatus == true} ? 'bi bi-heart-fill' : 'bi bi-heart'"
+                                   th:style="${product.wishListStatus == true } ? 'color: red;' : 'color: grey;'"></i>
                             </button>
                         </div>
                         <div class="color-options">
-                            <span th:each="entry : ${product.productVariantDTOs}"
-                                  th:style="'background-color:' + ${entry.color}"
+                            <span th:each="entry : ${product.variantCards}"
+                                  th:style="'background-color:' + ${entry.colorCode}"
                                   th:id="'color-' + ${entry.color}"
                                   class="color-circle"
                                   th:data-product-id ="${product.id}"
-                                  th:data-product-color = "${entry.color}"
-                                  th:data-product-image = "${entry.images.get(0)}"
+                                  th:data-product-color = "${entry.colorCode}"
+                                  th:data-product-image = "${entry.coverImageURL}"
                                   th:data-product-quantity="${entry.quantity}"
                                   th:data-product-price = "${entry.price}"
+                                  th:data-product-offer-price = "${entry.offerPrice}"
                                   th:onclick="'changeContent(this);'">
                             </span>
                         </div>
                         <div class="product-name" th:text="${product.name}"></div>
-                    <p  th:text="${product.DefaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}"
-                       th:classappend="${product.DefaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}" class="product-stock-status">
+                    <p  th:text="${product.defaultVariant.quantity > 0 ? 'In stock' : 'Out of stock'}"
+                       th:classappend="${product.defaultVariant.quantity > 0 ? 'in-stock' : 'text-danger'}" class="product-stock-status">
                     </p>
-                        <div class="product-price" th:text="'₹'+${product.DefaultVariantDTO.price}"></div>
+                    <div class="d-flex">
+                        <div class="product-price" th:text="'₹'+${product.defaultVariant.price}" th:classappend="${product.defaultVariant.offerPrice} ? 'text-decoration-line-through' : '' "></div>
+                        <div th:if="${product.defaultVariant.offerPrice}" class="product-price product-offer-price text-success ms-2" th:text="'₹'+${product.defaultVariant.offerPrice}"></div>
+                    </div>
 
                 </div>
             </div>
         </div>
 
         <!-- Pagination -->
-<!--        <nav aria-label="Page navigation">-->
-<!--            <ul class="pagination">-->
-<!--                <li class="page-item"><a class="page-link" href="#">←</a></li>-->
-<!--                <li class="page-item"><a class="page-link active" href="#">1</a></li>-->
-<!--                <li class="page-item"><a class="page-link" href="#">2</a></li>-->
-<!--                <li class="page-item"><a class="page-link" href="#">3</a></li>-->
-<!--                <li class="page-item"><a class="page-link" href="#">4</a></li>-->
-<!--                <li class="page-item"><span class="page-link">...</span></li>-->
-<!--                <li class="page-item"><a class="page-link" href="#">46</a></li>-->
-<!--                <li class="page-item"><a class="page-link" href="#">→</a></li>-->
-<!--            </ul>-->
-<!--        </nav>-->
+        <nav aria-label="Page navigation" id="paginationData" th:data-total-page="${products.totalPages}" >
+            <ul class="pagination" id="pagination">
+                <li class="page-item" id="prevButton">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <!-- Page numbers will be inserted here by JavaScript -->
+                <li class="page-item" id="nextButton">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 
     <!-- Footer -->
@@ -271,7 +279,7 @@ z
             const newPrice = data.getAttribute('data-product-price');
             const image = data.getAttribute('data-product-image');
             const quantity=data.getAttribute('data-product-quantity');
-
+            const offerPrice = data.getAttribute('data-product-offer-price');
             if(productCard)
             {
                 const coverImage = productCard.querySelector(".product-image");
@@ -284,97 +292,138 @@ z
                 {
                     priceElement.textContent = '₹'+newPrice;
                 }
+                const offerPriceElement = productCard.querySelector(".product-offer-price");
+                offerPriceElement.textContent = '₹'+offerPrice;
                 const stockStatus = productCard.querySelector(".product-stock-status");
                 stockStatus.textContent = quantity > 0 ? "In stock" : "Out of stock";
                 stockStatus.classList.remove(quantity > 0 ? "text-danger" : "in-stock");
                 stockStatus.classList.add(quantity > 0 ? "in-stock" : "text-danger");
-                console.log(stockStatus.style.color);
+
             }
         }
-        // Filter functionality
-        const allFilter = document.getElementById("all-filter");
-        allFilter.querySelectorAll('.dropdown-menu a').forEach(item => {
-            item.addEventListener('click', event => {
-                event.preventDefault();
-                const allFilterButton = document.querySelectorAll('.filter-button');
-                allFilterButton.forEach(element => {
-                    element.textContent = "Select";
-                });
-                const filterButton =event.target.closest('.dropdown').querySelector('.filter-button');
-                const filterType = event.target.closest('.dropdown').querySelector('span').textContent.trim();
-                const filterValue = event.target.getAttribute('data-sort');
-                filterButton.textContent = event.target.textContent;
-                const categoryElement = document.getElementById("collection-type");
-                const category = categoryElement.getAttribute('data-category');
-                console.log(filterType);
-                fetch(`/user/product/filter?filterType=${filterType}&filterValue=${filterValue}&category=${category}`, {
-                method: 'GET',
+
+
+        // fetch products
+        let filters = {};
+        let sortBy="id";
+        let sortDirection="ASC";
+        let searchQuery="";
+        let page=0;
+        let size = 6;
+       function fetchProducts()
+       {
+       const formData={
+       page:page,
+       size:size,
+       sortDirection:sortDirection,
+       searchQuery:searchQuery,
+       sortBy:sortBy,
+       filters:filters
+       };
+       console.log(formData);
+        fetch('/user/shop', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body : JSON.stringify(formData)
             })
                 .then((response) => response.json())
                 .then((data) => {
-                    console.log(data);
                     const productGrid = document.getElementById("productsGrid");
-                    productGrid.innerHTML = '';
+                    totalPages = data.totalPages;
+                    currentPage=page+1;
+                    updatePagination();
 
-                    data.forEach(product => {
-                        const formattedPrice = formatPrice(product.defaultVariantDTO.price);
-                        const imageSrc = product.defaultVariantDTO?.images?.[0] || '/path/to/default-image.jpg'; // Fallback to a default image if undefined
+                    productGrid.innerHTML = '';
+                    data.content.forEach(product => {
+                        const formattedPrice = formatPrice(product.defaultVariant.price);
+                        const formattedOfferPrice = formatPrice(product.defaultVariant.offerPrice);
+
+                        const imageSrc = product.defaultVariant.coverImageURL || '/path/to/default-image.jpg'; // Fallback to a default image if undefined
                         const productCardElement = `
-                          <div class="col-md-2" id="product-card" >
+                          <div class="col-md-4" id="product-card" >
                             <div class="product-card " id="${product.id}">
+                            ${product.defaultVariant.offerPrice ?
+                             `<span class="text-danger position-absolute end-0">${product.offerName}</span>` : ''}
                                 <a href="/user/product/detail/${product.id}">
                                     <img src="${imageSrc}" alt="Product Image" class="product-image">
                                 </a>
                                 <div class="d-flex position-relative">
-                            <div class="product-brand " >${product.brandName}</div>
+                            <div class="product-brand " >${product.brand}</div>
                             <button class="wishlist-icon border-0 p-0 position-absolute end-0 bg-transparent" data-product-id="${product.id}" onclick="toggleWishlist(this)">
-                                <i class="${product.wishlisted ? 'bi bi-heart-fill' : 'bi bi-heart'}"
-                                   style="${product.wishlisted ? 'color: red;' : 'color: grey;'}"></i>
+                                <i class="${product.wishListStatus == true ? 'bi bi-heart-fill' : 'bi bi-heart'}"
+                                   style="${product.wishListStatus == true ? 'color: red;' : 'color: grey;'}"></i>
                             </button>
                         </div>
                                 <div class="color-options">
-                                   ${product.productVariantDTOs?.map(variant => `
+                                   ${product.variantCards.map(variant => `
                                         <span
-                                            style="background-color: ${variant.color || '#000'}"
+                                            style="background-color: ${variant.colorCode || '#000'}"
                                             class="color-circle"
                                             data-product-id="${product.id}"
-                                            data-product-color="${variant.color || 'N/A'}"
-                                            data-product-image="${variant.images?.[0] || imageSrc}"
+                                            data-product-color="${variant.colorCode || 'N/A'}"
+                                            data-product-image="${variant.coverImageURL || imageSrc}"
                                             data-product-quantity="${variant.quantity || 'N/A'}"
-                                            data-product-price="${variant.formattedPrice || 'N/A'}"
+                                            data-product-price="${variant.price || 'N/A'}"
+                                            data-product-offer-price = ${variant.offerPrice}
                                             onclick="changeContent(this);">
                                         </span>
                                     `).join('') || ''}
                                 </div>
                                 <div class="product-name">${product.name || 'Unnamed Product'}</div>
                                <p id="stock-element"
-                       class="product-stock-status ${product.defaultVariantDTO.quantity > 0 ? 'in-stock' : 'text-danger'}">
-                        ${product.defaultVariantDTO.quantity > 0 ? 'In stock' : 'Out of stock'}
+                       class="product-stock-status ${product.defaultVariant.quantity > 0 ? 'in-stock' : 'text-danger'}">
+                        ${product.defaultVariant.quantity > 0 ? 'In stock' : 'Out of stock'}
                     </p>
-                                <div class="product-price">${formattedPrice || 'N/A'}</div>
+                                <div class="d-flex">
+                                    <div class="product-price ${product.defaultVariant.offerPrice ? 'text-decoration-line-through' : ''}">${formattedPrice || 'N/A'}</div>
+                                    ${product.defaultVariant.offerPrice
+                                             ? `<div class="product-price product-offer-price text-success ms-2">${formattedOfferPrice}</div>`
+                                                : ''}
+                                </div>
                             </div>
                           </div>`;
                         productGrid.innerHTML += productCardElement;
                     });
                 })
                 .catch(error => console.error('Error fetching products:', error));
+       }
 
-            });
-        });
-
-        // Sort functionality
-        document.querySelectorAll('#sortDropdown .dropdown-item').forEach(item => {
+        // Filter functionality
+        const allFilter = document.getElementById("left-filters");
+        allFilter.querySelectorAll('.dropdown-menu a').forEach(item => {
             item.addEventListener('click', event => {
                 event.preventDefault();
-                const sortValue = event.target.dataset.sort;
-                document.getElementById('currentSort').textContent = event.target.textContent;
-                console.log(`Sort applied: ${sortValue}`);
-                // Add your sort logic here
+                const filterButton =event.target.closest('.dropdown').querySelector('.filter-button');
+                const filterType = event.target.closest('.dropdown').querySelector('span').getAttribute("data-filter-type");
+                const filterValue = event.target.getAttribute('data-sort');
+                 if(filterType !=null && filterValue != null)
+                 {
+                    Object.assign(filters, { [filterType]: filterValue });
+                 }
+                filterButton.textContent = event.target.textContent;
+                const categoryElement = document.getElementById("collection-type");
+                page=0;
+                fetchProducts();
+             });
+             });
+
+
+        // Sort functionality
+        document.querySelectorAll('#sortDropdown + .dropdown-menu .dropdown-item').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                sortDirection = event.target.dataset.sortOrder;
+                sortBy = event.target.dataset.sortBy;
+                console.log(event.target.textContent);
+                document.getElementById("sortDropdown").textContent = event.target.textContent;
+                page=0;
+                fetchProducts();
             });
         });
+
+
 
         //adding to wishlist
         function toggleWishlist(element) {
@@ -412,8 +461,94 @@ function removeFromWishlist(productId) {
         method: 'DELETE'
     }).then(response => console.log("Removed from wishlist"));
 }
+    function searchProduct()
+        {
+            searchQuery = document.getElementById("searchFieldInput").value.trim();
+            fetchProducts();
+        }
+
+        function clearFilters()
+        {
+            const filterButtons= document.querySelectorAll(".filter-button");
+            filterButtons.forEach(button => {
+                button.textContent="Select";
+            });
+            document.getElementById("searchFieldInput").value="";
+            searchQuery = "";
+            sortDirection="ASC";
+            sortBy="id";
+            filters={};
+            size=6;
+            page=0;
+            fetchProducts();
+        }
 
 
+        //pagination-nav
+
+        const pagination = document.getElementById('pagination');
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+
+    let totalPages =Number( document.getElementById("paginationData").getAttribute("data-total-page")); // Change this to the total number of pages you have
+    const visiblePages = 5;
+    let currentPage = 1;
+
+    function updatePagination() {
+        // Clear existing page numbers
+        const pageNumbers = pagination.querySelectorAll('.page-item:not(#prevButton):not(#nextButton)');
+        pageNumbers.forEach(item => item.remove());
+
+        // Calculate start and end page numbers to display
+        let startPage = Math.max(currentPage - Math.floor(visiblePages / 2), 1);
+        let endPage = Math.min(startPage + visiblePages - 1, totalPages);
+
+        if (endPage - startPage + 1 < visiblePages) {
+            startPage = Math.max(endPage - visiblePages + 1, 1);
+        }
+
+        // Add page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = `page-item${i === currentPage ? ' active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.addEventListener('click', () => {
+                currentPage = i;
+                updatePagination();
+                page=currentPage-1;
+                fetchProducts();
+            });
+            nextButton.parentNode.insertBefore(li, nextButton);
+        }
+
+        // Update prev/next button states
+        prevButton.classList.toggle('disabled', currentPage === 1);
+        nextButton.classList.toggle('disabled', currentPage === totalPages);
+    }
+
+    // Event listeners for prev/next buttons
+    prevButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            updatePagination();
+            page=currentPage-1;
+            fetchProducts();
+        }
+    });
+
+    nextButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+            currentPage++;
+            updatePagination();
+            page=currentPage-1;
+            fetchProducts();
+        }
+    });
+
+    // Initial pagination setup
+    updatePagination();
     </script>
 </body>
 </html>

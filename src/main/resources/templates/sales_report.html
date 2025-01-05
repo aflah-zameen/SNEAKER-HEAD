@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNEAKER HEAD - Sales Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+
+    <style>
+        //modal-styles
+        .modal-content {
+      border-radius: 8px;
+    }
+    .modal-header {
+      background-color: #f8f9fa;
+    }
+    .form-label {
+      font-weight: 600;
+    }
+    .is-invalid {
+      border-color: #dc3545;
+    }
+    .invalid-feedback {
+      display: none;
+    }
+    .is-invalid + .invalid-feedback {
+      display: block;
+    }
+
+
+        .navbar-brand {
+         font-weight: 600;
+         color: black;
+ font-family: 'Trirong',serif;
+     }
+     .sidebar {
+         min-height: 100vh;
+         border-right: 1px solid #dee2e6;
+     }
+
+     .sidebar .nav-link {
+         color: #333;
+         padding: 0.8rem 1rem;
+         border-bottom: 1px solid #dee2e6;
+     }
+
+     .sidebar .nav-link:hover,
+     .sidebar .nav-link.active {
+         background-color: #f8f9fa;
+     }
+
+     .main-content {
+         padding: 20px;
+     }
+
+     .table-responsive {
+         margin-top: 20px;
+     }
+
+     .status-badge {
+         padding: 0.25rem 0.5rem;
+         border-radius: 4px;
+         font-size: 0.875rem;
+     }
+
+     .status-badge.list {
+         background-color: black;
+         color: white;
+     }
+
+     .status-badge.unlist {
+         background-color: green;
+         color: white;
+     }
+
+     .search-box {
+         max-width: 300px;
+     }
+
+     .logo {
+         font-size: 1.5rem;
+         font-weight: bold;
+         padding: 1rem;
+         border-bottom: 1px solid #dee2e6;
+     }
+
+     .file-upload {
+         border: 2px dashed #dee2e6;
+         padding: 20px;
+         text-align: center;
+         margin: 10px 0;
+         cursor: pointer;
+     }
+
+     .uploaded-files {
+         display: flex;
+         gap: 10px;
+         margin-top: 10px;
+     }
+
+     .uploaded-file {
+         padding: 5px 10px;
+         background: #f8f9fa;
+         border-radius: 4px;
+         display: flex;
+         align-items: center;
+         gap: 5px;
+     }
+    </style>
+</head>
+<body>
+<header class="navbar sticky-top bg-white flex-md-nowrap p-0 shadow " style="height: 3rem;">
+    <span class="navbar-brand col-md-3 col-lg-2 me-0 px-3 position-absolute start-50  translate-middle fs-3" style="top:1.5rem;">SNEAKER HEAD</span>
+    <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</header>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 px-0 sidebar">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+                <a class="nav-link active" href="/admin/orders">Orders</a>
+                <a class="nav-link" href="/admin/product">Products</a>
+                <a class="nav-link" href="/admin/users">Users</a>
+                <a class="nav-link" href="/admin/category">Categories</a>
+                <a class="nav-link" href="/admin/brands">Brands</a>
+                <a class="nav-link" href="/admin/coupons">Coupons</a>
+                <a class="nav-link" href="/admin/banners">Banners</a>
+                <a class="nav-link" href="/admin/payments">Payments</a>
+                <a class="nav-link" href="/admin/sales">Sales report</a>
+                <a class="nav-link" href="/logout">Offers</a>
+                <button
+                        class="btn btn-danger mt-3"
+                        onclick="window.location.href='/logout'"
+                        style="width: 100%; text-align: center; background-color: #dc3545; color: white; border: none; padding: 10px; font-size: 16px; cursor: pointer;">
+                    Logout
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Sales Report</h2>
+                    <div class="d-flex ">
+                        <button class="btn btn-dark me-3" onclick="downloadPDF()">Export to PDF</button>
+                        <button class="btn btn-dark" onclick="downloadExcel()" >Export to EXCEL</button>
+                    </div>
+
+            </div>
+            <div class="d-flex">
+                <div class="salesFilters w-75 d-flex justify-content-around align-items-center">
+                    <div class="d-flex">
+                        <label>Start Date:</label>
+                        <div>
+                            <input type="date" id="startDateInput" >
+                            <small class="text-danger d-none" id="startDateError" >Select a date</small>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <label>End Date:</label>
+                        <div>
+                            <input type="date" id="endDateInput" >
+                            <small class="text-danger d-none" id="endDateError" >Select a date</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-dark" onclick="applyFilter()">filter</button>
+                    <div>
+                        <label>Report Type:</label>
+                        <select id="reportType">
+                            <option selected value="ALL">All</option>
+                            <option value="DAILY">Daily</option>
+                            <option value="WEEKLY">Weekly</option>
+                            <option value="MONTHLY">Monthly</option>
+                            <option value="YEARLY">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="w-25">
+                    <div>
+                        <label>Overall sales : </label>
+                        <span th:text="'₹ '+${overallSales}" class="fw-bolder" id="overallSales"></span>
+                    </div>
+                    <div>
+                        <label>Overall orders : </label>
+                        <span th:text="${overallOrders}" class="fw-bolder" id="overallOrders"></span>
+                    </div>
+                    <div>
+                        <label>Overall discounts : </label>
+                        <span th:text="${overallDiscounts}" class="fw-bolder" id="overallDiscounts"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <div>
+                    <label>Page size:</label>
+                    <input type="number" id="pageSize" style="width:4rem;" placeholder="5" value="5"  >
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th class="sortable">
+                            Order ID
+                            <button class="btn  p-0" onclick="sort(this,'id', 'ASC')">
+                                <i class="bi bi-arrow-up "></i>
+                            </button>
+                            <button class="btn  p-0" onclick="sort(this,'id', 'DESC')">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </th>
+                        <th class="sortable">
+                            User
+                            <button class="btn  p-0" onclick="sort(this,'user.fullName', 'ASC')">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button class="btn  p-0" onclick="sort(this,'user.fullName', 'DESC')">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </th>
+                        <th class="sortable">
+                            Payment Method
+                        </th>
+                        <th class="sortable">
+                            Total Amount
+                            <button class="btn  p-0" onclick="sort(this,'orderTotal', 'ASC')">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button class="btn  p-0" onclick="sort(this,'orderTotal', 'DESC')">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </th>
+<!--                        <th>-->
+<!--                            Offer amount-->
+<!--                        </th>-->
+                        <th class="sortable">
+                            Date
+                            <button class="btn  p-0" onclick="sort(this,'orderDate', 'ASC')">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button class="btn  p-0" onclick="sort(this,'orderDate', 'DESC')">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </th>
+                        <th class="sortable">
+                            Discount value
+                        </th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody th:if="${orders}" id="order-table-body">
+                    <tr th:each="order : ${orders}">
+                        <td th:text="${order.id}"></td>
+                        <td th:text="${order.user.fullName}"></td>
+                        <td th:text="${order.paymentMethod}" class="order-method-field">Nike</td>
+                        <td th:text="'₹'+${order.getFormattedPrice()}">54</td>
+<!--                        <td th:text="'₹'+${order.payment.transaction.amount}">54</td>-->
+                        <td th:text="${order.orderDate}">54</td>
+                        <td th:text="'₹'+${order.deductedAmount}">54</td>
+                        <td th:text="${order.status}" class="order-status-field">54</td>
+                    </tr>
+                    <!-- More product rows -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="my-3" id="paginationElement" th:if="${totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:each="page : ${#numbers.sequence(1, totalPages)}"  >
+                        <a class="page-link" th:classappend="${page == 1} ? 'active'" href="#" th:onclick="'goToPage(this,' + ${page} + ');'" th:text="${page}"></a>
+                    </li>
+                </ul>
+            </nav>
+
+        </div>
+    </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    let pageNumber = 0;
+   let sortBy ="id";
+   let orderType ="ASC";
+   let pageSize = Number(document.getElementById("pageSize").value);
+
+   let reportType = "ALL";
+   let startDate = null;
+   let endDate=null;
+
+   const reportTypeElement = document.getElementById("reportType");
+   reportTypeElement.addEventListener("change",function(){
+    startDate = null;
+    endDate=null;
+    pageNumber=0;
+    sortBy ="id";
+    orderType ="ASC";
+    pageSize = Number(document.getElementById("pageSize").value);
+    reportType = reportTypeElement.value;
+    document.getElementById("startDateInput").value="";
+    document.getElementById("endDateInput").value="";
+    paginationSorting();
+   });
+
+
+   function applyFilter()
+   {
+        startDateElement = document.getElementById("startDateInput");
+        endDateElement = document.getElementById("endDateInput");
+        if(startDateElement.value == "" || endDateElement.value=="")
+        {
+            if(startDateElement.value == "")
+            {
+                document.getElementById("startDateError").classList.remove("d-none");
+            }
+            else
+            {
+                document.getElementById("startDateError").classList.add("d-none");
+            }
+            if(endDateElement.value == "")
+            {
+                document.getElementById("endDateError").classList.remove("d-none");
+            }
+            else
+            {
+                document.getElementById("endDateError").classList.add("d-none");
+            }
+        }
+        else
+        {
+        document.getElementById("endDateError").classList.add("d-none");
+        document.getElementById("startDateError").classList.add("d-none");
+        startDate = startDateElement.value;
+        endDate = endDateElement.value;
+        reportTypeElement.value="ALL";
+        pageNumber=0;
+        sortBy ="id";
+        orderType ="ASC";
+        pageSize = Number(document.getElementById("pageSize").value);
+        paginationSorting();
+         }
+   }
+
+
+   const pageSizeElement = document.getElementById("pageSize");
+   pageSizeElement.addEventListener("input",function(){
+    pageSize = pageSizeElement.value ;
+   })
+   function goToPage(data,page) {
+      const pageElements = document.querySelectorAll('.page-link');
+      pageElements.forEach(element => {
+      element.classList.remove("active");
+      });
+      data.classList.add("active");
+      pageNumber = Number(page)-1;
+      paginationSorting();
+   }
+   function sort(data,sort,order)
+   {
+
+   const iconElements = data.closest('tr').querySelectorAll('.bi');
+      iconElements.forEach(element => {
+      element.classList.remove("text-danger");
+      });
+      data.querySelector('.bi').classList.add('text-danger');
+       sortBy =sort;
+       orderType = order;
+        paginationSorting();
+   }
+   function paginationSorting()
+   {
+
+       const formData = {
+       sortBy : sortBy,
+       order : orderType,
+       pageNumber : pageNumber,
+       pageSize : pageSize,
+       reportType : reportType,
+       startDate : startDate,
+       endDate : endDate
+       };
+
+       console.log(formData);
+
+       fetch('/admin/sales/sorting',{
+           method: 'POST',
+           headers : {"Content-Type" : "application/json"},
+           body : JSON.stringify(formData)
+       })
+       .then(response => response.json())
+       .then( data => {
+       populateTable(data);
+       const overallSales = document.getElementById("overallSales");
+       const overallOrders = document.getElementById("overallOrders");
+       const overallDiscounts = document.getElementById("overallDiscounts");
+       overallSales.textContent = '₹'+data.overallSales.toString();
+       overallOrders.textContent = data.overallOrders;
+       overallDiscounts.textContent = '₹'+data.discountValue.toString();
+       })
+       .catch(error => console.error('Error fetching products:', error));
+
+       }
+
+       function downloadPDF()
+        {
+            fetch(`/admin/sales/download-pdf?reportType=${reportType}&startDate=${startDate}&endDate=${endDate}`,{
+                method: 'GET',
+                 headers: {
+                    "Content-Type": "application/pdf",
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    throw new Error("Failed to fetch PDF");
+                }
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "sales_report.pdf"; // Set the file name
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error("Error downloading the PDF:", error);
+            });
+        }
+         function downloadExcel()
+        {
+            fetch(`/admin/sales/download-excel?reportType=${reportType}&startDate=${startDate}&endDate=${endDate}`,{
+                method: 'GET',
+            })
+            .then((response) => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.blob(); // Convert response to Blob
+    })
+    .then((blob) => {
+        // Create a temporary URL for the Blob
+        const url = window.URL.createObjectURL(blob);
+
+        // Create a temporary anchor element
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'sales_report.xlsx'); // File name
+
+        // Append the anchor to the body
+        document.body.appendChild(link);
+
+        // Trigger the download
+        link.click();
+
+        // Remove the anchor element
+        link.remove();
+    })
+    .catch((error) => {
+        console.error('Error downloading the file:', error);
+    });
+        }
+
+   //populate data
+    function populateTable(data) {
+       const tbody = document.getElementById('order-table-body');
+       tbody.innerHTML = '';  // Clear existing rows
+
+       data.ordersList.forEach(order => {
+           const tr = document.createElement('tr');
+           let amount = order.orderTotal;
+           amount = amount.toString();
+           console.log(amount);
+           tr.innerHTML = `
+               <td>${order.id}</td>
+               <td>${order.userName}</td>
+               <td>${order.paymentMethod}</td>
+               <td>${"₹"+amount}</td>
+               <td>${order.orderDate}</td>
+               <td>${"₹"+order.deductedAmount}</td>
+               <td>${order.orderStatus}</td>
+           `;
+           tbody.appendChild(tr);
+       });
+       const paginationElement = document.getElementById("paginationElement");
+       if(data.totalPages>1)
+       {
+        paginationElement.classList.remove("d-none");
+        const ulElement = paginationElement.querySelector(".pagination");
+        ulElement.innerHTML='';
+            for( i=1;i<=data.totalPages;i++)
+            {
+                ulElement.innerHTML += `
+                    <li class="page-item"  >
+                        <a class="page-link ${i===data.pageNumber+1 ? 'active' : '' }" href="#" onclick="goToPage(this,${i})" >${i}</a>
+                    </li>
+           `;
+            }
+       }
+       else
+       {
+        paginationElement.classList.add("d-none");
+       }
+
+
+
+   }
+</script>
+
+</body>
+</html>

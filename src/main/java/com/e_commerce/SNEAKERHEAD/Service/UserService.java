@@ -11,10 +11,15 @@ import com.e_commerce.SNEAKERHEAD.Repository.AddressRepository;
 import com.e_commerce.SNEAKERHEAD.Repository.CartRepository;
 import com.e_commerce.SNEAKERHEAD.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -27,6 +32,8 @@ public class UserService {
     CartRepository cartRepository;
     @Autowired
     AddressMapper addressMapper;
+    @Autowired
+    private JavaMailSender mailSender;
 
     public List<UsersList> ListUser()
     {
@@ -47,33 +54,21 @@ public class UserService {
     }
     public boolean addAddress(AddressDTO addressDto, WebUser user)
     {
-        UserAddress address = new UserAddress();
+        UserAddress address;
         List<UserAddress> tempList = addressRepository.findAllByUser_idAndStatus(user.getId(), "AVAILABLE");
-        for(UserAddress x : tempList)
+        if(!tempList.isEmpty())
         {
-            if(x.getName().contains(addressDto.getName()) && x.getCity().contains(addressDto.getCity()) && x.getCountry().contains(addressDto.getCountry()) && x.getBuilding().contains(addressDto.getBuilding()) && x.getState().contains(addressDto.getState()) && x.getStreet().contains(addressDto.getStreet()))
+            for(UserAddress x : tempList)
             {
-                return false;
+                if(x.getName().contains(addressDto.getName()) && x.getCity().contains(addressDto.getCity()) && x.getCountry().contains(addressDto.getCountry()) && x.getBuilding().contains(addressDto.getBuilding()) && x.getState().contains(addressDto.getState()) && x.getStreet().contains(addressDto.getStreet()))
+                {
+                    return false;
+                }
             }
         }
         if(tempList.isEmpty())
         {
             addressDto.setDefaultAddressStatus(true);
-//            address.setUser(user);
-//            address.setName(addressDto.getName());
-//            address.setPhone(addressDto.getPhone());
-//            address.setBuilding(addressDto.getBuilding());
-//            address.setCity(addressDto.getCity());
-//            address.setCountry(addressDto.getCountry());
-//            address.setState(addressDto.getState());
-//            address.setLandmark(addressDto.getLandmark());
-//            address.setInstruction(addressDto.getInstruction());
-//            address.setZipCode(addressDto.getZipCode());
-//            address.setType(addressDto.getType());
-//            address.setStreet(addressDto.getStreet());
-//            address.setStatus("AVAILABLE");
-//            addressRepository.save(address);
-//            return true;
         }
         else if(addressDto.isDefaultAddressStatus())
         {
@@ -83,21 +78,6 @@ public class UserService {
                 {
                     x.setDefaultAddressStatus(false);
                     addressRepository.save(x);
-//                    address.setDefaultAddressStatus(true);
-//                    address.setUser(user);
-//                    address.setName(addressDto.getName());
-//                    address.setPhone(addressDto.getPhone());
-//                    address.setBuilding(addressDto.getBuilding());
-//                    address.setCity(addressDto.getCity());
-//                    address.setCountry(addressDto.getCountry());
-//                    address.setState(addressDto.getState());
-//                    address.setLandmark(addressDto.getLandmark());
-//                    address.setInstruction(addressDto.getInstruction());
-//                    address.setZipCode(addressDto.getZipCode());
-//                    address.setType(addressDto.getType());
-//                    address.setStreet(addressDto.getStreet());
-//                    address.setStatus("AVAILABLE");
-//                    addressRepository.save(address);
 
                 }
             }
@@ -105,21 +85,6 @@ public class UserService {
         else
         {
             addressDto.setDefaultAddressStatus(false);
-//            address.setUser(user);
-//            address.setName(addressDto.getName());
-//            address.setPhone(addressDto.getPhone());
-//            address.setBuilding(addressDto.getBuilding());
-//            address.setCity(addressDto.getCity());
-//            address.setCountry(addressDto.getCountry());
-//            address.setState(addressDto.getState());
-//            address.setLandmark(addressDto.getLandmark());
-//            address.setInstruction(addressDto.getInstruction());
-//            address.setZipCode(addressDto.getZipCode());
-//            address.setType(addressDto.getType());
-//            address.setStreet(addressDto.getStreet());
-//            address.setStatus("AVAILABLE");
-//            addressRepository.save(address);
-
         }
         address = addressMapper.toEntity(addressDto);
         address.setStatus("AVAILABLE");
@@ -145,5 +110,19 @@ public class UserService {
         temp.setQuantity(quantity);
         cartRepository.save(temp);
         return "Cart added successfully";
+    }
+
+    public String generateReferralCode(Long userId) {
+        // You can customize this logic to make it more user-specific
+        String randomPart = UUID.randomUUID().toString().substring(0, 3); // 8 chars of random UUID
+        return "REF-" + userId+ randomPart;  // Custom format: REF-USERID-RANDOM
+    }
+    public void sendReferralCodeEmail(String Email,String referralCode)
+    {
+        SimpleMailMessage message=new SimpleMailMessage();
+        message.setTo(Email);
+        message.setSubject("You will get ₹1000 off");
+        message.setText("Referral code : "+referralCode);
+        mailSender.send(message);
     }
 }

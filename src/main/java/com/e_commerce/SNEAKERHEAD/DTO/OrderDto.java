@@ -20,4 +20,5 @@ public class OrderDto {
     private String paymentMethod;
     private Integer quantity;
     private String selectedSize;
+    private Long referralId;
 }

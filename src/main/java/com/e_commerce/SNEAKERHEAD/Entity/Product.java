@@ -10,7 +10,7 @@ import java.util.List;
 
 @Setter
 @Getter
-        @ToString
+@ToString
 @Entity
 @Table(name = "product")
 public class Product{
@@ -58,6 +58,9 @@ public class Product{
         @Column(name = "name")
         private String name;
 
+        @ManyToOne
+        @JoinColumn(name = "applied_offer_id")
+        private Offer appliedOffer;
 
 
     }

@@ -150,6 +150,25 @@
             </div>
         </div>
 
+<!--        modal-->
+        <div class="modal fade" id="returnReasonModal" tabindex="-1" aria-labelledby="returnReasonModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="returnReasonModalLabel">Why are you returning the product?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="returnReason" class="form-control" rows="4" placeholder="Please provide your reason for returning the product..."></textarea>
+                    </div>
+                    <div class="text-danger d-none" id="textAreaError">Provide the reason</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="submitReturnReason()">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Content Area -->
         <div class="col-md-9">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -169,7 +188,7 @@
             <!-- Order 1 -->
             <div th:each="order : ${orders}">
                 <div th:each="orderItem :${order.orderItems}">
-                   <div class="order-card p-4" th:if="${order.status != 'Delivered'}">
+                   <div class="order-card p-4" th:if="${order.status != 'DELIVERED'}">
                        <div class=" p-3"  >
                            <div class="d-flex justify-content-between align-items-start mb-3">
                                <div class="d-flex gap-3">
@@ -177,11 +196,16 @@
                                    <div>
                                        <!--                                    <p class="mb-0">Estimated Delivery</p>-->
                                        <!--                                    <p class="mb-0">on Thu, 4 oct</p>-->
-                                       <p class="mb-0" th:text="${order.status}"></p>
+                                       <p class="mb-0 status-header" th:text="${order.status}"></p>
                                    </div>
                                </div>
-                                   <button class="btn btn-sm" style="background-color:orange;" th:if="${order.cancellation}">Cancelled</button>
-                                   <button class="btn btn-danger btn-sm" th:unless="${order.cancellation}" onclick="orderCancel(this)" th:data-order-id="${order.id}">Cancel</button>
+                                   <div th:if="${order.status=='PENDING'}">
+                                       <button class="btn btn-sm" style="background-color:orange;" th:if="${order.cancellation}">Cancelled</button>
+                                       <button class="btn btn-danger btn-sm" th:unless="${order.cancellation}" onclick="orderCancel(this)" th:data-order-id="${order.id}">Cancel</button>
+                                   </div>
+                                    <div th:if="${order.status=='PAYMENTED' || order.status == 'DELIVERED' }">
+                                        <button class="btn btn-sm btn-primary" th:onclick="|window.location.href='/user/orders/invoice?orderId=${order.id}'|" >Download invoice </button>
+                                    </div>
                            </div>
                        </div>
                        <div class="d-flex gap-3 mb-3">
@@ -200,7 +224,7 @@
                                <p class="mb-0" th:text="'Order date : '+${order.orderDate}"></p>
                            </div>
                        </div>
-                       <div class="order-status">
+                       <div class="order-status" th:if="${order.status=='PENDING'}">
                            <div class="status-line">
                                <div class="status-line-progress" style="width: 75%"></div>
                            </div>
@@ -217,25 +241,31 @@
                                <span class="small">Delivered</span>
                            </div>
                        </div>
+                       <div th:if="${order.status == 'UNPAID'}" class="d-flex justify-content-end " id="repaymentElement">
+                           <button class="btn btn-sm" style="background-color:blue; color:white;" onclick="repayment(this)" th:data-order-id="${order.id}" th:data-order-amount="${order.orderTotal}" id="repaymentButton" >Repayment</button>
+                       </div>
                    </div>
 
 <!--                    Deliverd-card-->
-                    <div class="order-card p-3" th:unless="${order.status != 'Delivered'}">
+                    <div class="order-card p-3" th:unless="${order.status != 'DELIVERED'}">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="d-flex gap-3">
                                 <i class="bi bi-truck"></i>
                                 <div>
-                                    <p class="mb-0">Delivered</p>
+                                    <p class="mb-0 status-header">Delivered</p>
                                     <p class="mb-0">on Tue, 1 oct</p>
                                 </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary" th:onclick="|window.location.href='/user/orders/invoice?orderId=${order.id}'|">Download invoice </button>
                             </div>
                         </div>
                         <div class="d-flex gap-3 mb-3">
                             <img th:src= "${orderItem.productVariant.images.get(0)}" alt="Nike WMN'S DUNK LOW" class="product-img">
                             <div>
-                                <p class="mb-1" th:text="${orderItem.productVariant.product.brand.name}">Nike</p>
-                                <h5 th:text="${orderItem.productVariant.product.name}">WMN'S DUNK LOW</h5>
-                                <p class="mb-0" th:text="'₹'+${orderItem.productVariant.getFormattedPrice()}">₹9,695.00</p>
+                                <p class="mb-1" th:text="${orderItem.productVariant.product.brand.name}"></p>
+                                <h5 th:text="${orderItem.productVariant.product.name}"></h5>
+                                <p class="mb-0" th:text="'₹'+${orderItem.productVariant.getFormattedPrice()}"></p>
                             </div>
                             <div style="margin-left:2rem; width:15rem;">
                                 <h5 >Delivering Address</h5>
@@ -246,15 +276,22 @@
                                 <p class="mb-0" th:text="'Order date : '+${order.orderDate}"></p>
                             </div>
                         </div>
-                        <div class="text-muted small">
-                            Exchange/Return window closed on 17 oct
-                        </div>
-                        <div class="mt-3">
-                            <i class="bi bi-star"></i>
-                            <i class="bi bi-star"></i>
-                            <i class="bi bi-star"></i>
-                            <i class="bi bi-star"></i>
-                            <i class="bi bi-star"></i>
+                        <div class="card_bottom" th:if="${order.status == 'DELIVERED'}">
+                            <div class="text-muted small">
+                                Exchange/Return window closed on 17 oct
+                            </div>
+                            <div class="justify-content-between d-flex">
+                                <div class="mt-3">
+                                    <i class="bi bi-star"></i>
+                                    <i class="bi bi-star"></i>
+                                    <i class="bi bi-star"></i>
+                                    <i class="bi bi-star"></i>
+                                    <i class="bi bi-star"></i>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm" style="background-color:orange; color:white;" onclick="returnProduct(this)" th:data-order-id="${order.id}" id="returnButton" >Return</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -271,7 +308,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
+    let orderIdPublic;
     function orderCancel(data)
     {
         const orderId=data.getAttribute('data-order-id');
@@ -290,7 +330,7 @@
                             confirmButtonText: "OK", // This sets the button text
                             allowOutsideClick: false,
                         });
-                        data.textContent="Cancelled";
+                        data.textContent="CANCELLED";
                         data.style.color="black";
                         data.style.backgroundColor="orange";
 
@@ -314,6 +354,137 @@
                         text: "Failed to connect to the server. Please try again later.",
                     });
                 });
+    }
+
+    let currentElementPublic;
+    function returnProduct(data)
+    {
+    currentElementPublic=data;
+     orderIdPublic = Number(data.getAttribute("data-order-id"));
+
+         Swal.fire({
+                                        icon: "question",
+                                        title: "Do you want to return product?",
+                                        text: "To return click continue",
+                                        showCancelButton: true, // Enables a second button
+                                        confirmButtonText: "Continue", // Text for the primary button
+                                        cancelButtonText: "Cancel", // Text for the secondary button
+                                        allowOutsideClick: false, // Prevent closing by clicking outside
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            openReturnModal();
+                                        }
+                                    });
+
+    }
+
+    function openReturnModal() {
+            var myModal = new bootstrap.Modal(document.getElementById('returnReasonModal'));
+            myModal.show();
+        }
+
+        // Function to handle form submission
+        function submitReturnReason() {
+            const reason = document.getElementById('returnReason').value;
+            console.log(reason);
+            if (reason.trim() === '') {
+                document.getElementById("textAreaError").classList.remove("d-none");
+            }
+            else
+            {
+
+                var myModalEl = document.getElementById('returnReasonModal');
+            var modal = bootstrap.Modal.getInstance(myModalEl);
+            modal.hide();
+
+                document.getElementById("textAreaError").classList.add("d-none");
+
+                fetch(`/user/order/return?orderId=${orderIdPublic}&returnReason=${reason}`,{
+                       method: "POST",
+                       })
+                       .then(response => {
+
+                       if(response.ok)
+                       {
+                            Swal.fire({
+                            icon: "success",
+                            title: "Return request confirmed",
+                            text: "Your request will be analyzed soon.",
+                            confirmButtonText: "OK", // This sets the button text
+                            allowOutsideClick: false,
+                        });
+                        const currentElement = currentElementPublic.closest(".order-card");
+                        console.log(currentElement);
+                        currentElement.querySelector(".status-header").textContent="RETURN";
+                        currentElement.querySelector(".card_bottom").classList.add("d-none");
+                       }
+                       })  ;
+
+
+
+            }
+        }
+
+    function repayment(data)
+    {
+        const orderId = Number(data.getAttribute("data-order-id"));
+        const amount = Number(data.getAttribute("data-order-amount"));
+        fetch(`/user/razorpay?amount=${amount}`) // Example API call
+                .then((response) => response.json())
+                .then((orderDetails) => {
+                    const options = {
+                        key: 'rzp_test_vmcKcGOY0AS0MM', // Replace with your Razorpay test key ID
+                        amount: orderDetails.amount, // Amount in paise
+                        currency: orderDetails.currency,
+                        name: 'SNEAKERHEAD',
+                        description: 'E-commerce Transaction',
+                        order_id: orderDetails.id, // Razorpay order ID from backend
+                        handler: function (response) {
+
+                        fetch(`/user/razorpay?orderId=${orderId}`,{
+                        method:'PUT',
+
+                        })
+                        .then((response)=>{
+                        console.log(response);
+                                if(response.ok)
+                                {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Payment successfully completed",
+                                        allowOutsideClick: false,
+                                    });
+                                    document.querySelector(".status-header").textContent="PAYMENTED";
+                                    document.getElementById("repaymentElement").classList.add("d-none");
+                                    document.getElementById("repaymentElement").classList.remove("d-flex");
+
+                                }
+                        });
+                        },
+                        prefill: {
+                            name: 'Customer Name',
+                            email: 'customer@example.com',
+                            contact: '9876543210',
+                        },
+                        theme: {
+                            color: '#3399cc',
+                        },
+                         modal: {
+                    ondismiss: function () {
+                                    Swal.fire({
+                                        icon: "warning",
+                                        title: "Payment Cancelled",
+                                        text: "Your order has been placed with an unpaid status. Complete payment from the orders page.",
+
+                                    });
+                                }
+                    },
+                };
+
+                    const razorpay = new Razorpay(options);
+                    razorpay.open();
+                })
+                .catch((error) => console.error('Error fetching Razorpay order:', error));
     }
 </script>
 </body>

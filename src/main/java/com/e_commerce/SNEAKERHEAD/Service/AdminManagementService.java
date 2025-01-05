@@ -108,7 +108,7 @@ public class AdminManagementService {
         Product product = productRepository.findById(productId).orElse(new Product());
         ProductVariant productVariant = new ProductVariant();
         productVariant.setProduct(product);
-        productVariant.setColor(productVariantDto.getColor());
+        productVariant.setColorCode(productVariantDto.getColorCode());
         productVariant.setQuantity(productVariantDto.getQuantity());
         productVariant.setSize(productVariantDto.getSize());
         List<String> images= new ArrayList<>();

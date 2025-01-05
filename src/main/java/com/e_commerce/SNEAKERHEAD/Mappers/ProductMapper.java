@@ -17,7 +17,8 @@ public interface ProductMapper {
             @Mapping(target = "productVariantDTOs", source = "productVariants"), // Map productVariants list
             @Mapping(target = "defaultVariantDTO", expression = "java(getDefaultVariant(product.getProductVariants()))"), // Custom mapping for defaultVariant
             @Mapping(target = "brandName", source = "brand.name"), // Map Brand's name to brandName in DTO
-            @Mapping(target = "categoryName", source = "category.name") // Map Category's name to categoryName in DTO
+            @Mapping(target = "categoryName", source = "category.name"), // Map Category's name to categoryName in DTO
+            @Mapping(target = "appliedOffer", source = "appliedOffer")
     })
     ProductDto toDTO(Product product);
 

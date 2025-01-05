@@ -7,12 +7,12 @@
         </button>
         <div class="d-flex align-items-center gap-3">
             <div class="input-group input-group-sm d-none d-xl-flex">
-                <form method="GET" action="/user/search" class="d-flex">
-                    <input type="search" class="form-control" name="keyword" placeholder="Search" th:value="${keyword}">
-                    <button class="input-group-text" id="basic-addon1" type="submit">
+                <div class="d-flex">
+                    <input type="search" class="form-control" name="keyword" placeholder="Search" id="searchFieldInput">
+                    <button class="input-group-text" id="basic-addon1" type="submit" onclick="searchProduct()">
                         <i class="bi bi-search"></i>
                     </button>
-                </form>
+                </div>
             </div>
             <a href="/user/wishlist" class="text-dark position-relative d-none d-lg-flex">
                 <i class="bi bi-heart fs-4"></i>
@@ -49,7 +49,10 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link sale" href="#">Sale</a>
-            </li><li class="nav-item">
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="openReferralModal()">Refer a Friend</a>
+            </li>
             <li class="nav-item">
                 <a href="#" class="text-dark d-lg-none"><i class="bi bi-person fs-4"></i></a>
             </li>
@@ -67,3 +70,5 @@
         </ul>
     </div>
 </nav>
+
+

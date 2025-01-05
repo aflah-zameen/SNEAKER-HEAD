@@ -6,22 +6,30 @@ import com.e_commerce.SNEAKERHEAD.Mappers.AddressMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.CartMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
-import com.e_commerce.SNEAKERHEAD.Service.CouponService;
-import com.e_commerce.SNEAKERHEAD.Service.OrderService;
-import com.e_commerce.SNEAKERHEAD.Service.ProductService;
-import com.e_commerce.SNEAKERHEAD.Service.UserService;
+import com.e_commerce.SNEAKERHEAD.Service.*;
+import com.razorpay.RazorpayClient;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.model.IModel;
 
+import java.beans.Transient;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -76,65 +84,80 @@ public class UserController {
     @Autowired
     UserCouponUsageRepository userCouponUsageRepository;
 
+    @Autowired
+    TransactionRepository transactionRepository;
+
+    @Autowired
+    PaymentRepository paymentRepository;
+
+    @Autowired
+    WalletRepository walletRepository;
+
+    @Autowired
+    RefferalCodeRepository refferalCodeRepository;
+
+    @Autowired
+    InvoiceService invoiceService;
+
     @GetMapping("/home")
     public String AdminProduct()
     {
         return "index";
     }
-    @GetMapping("/women")
-    public String WomenProduct(Model model,HttpServletRequest request)
-    {
-        HttpSession session = request.getSession();
-        String email =(String)session.getAttribute("userEmail");
-        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
-        Category category = categoryRepository.findByName("Women").orElseThrow(()->new NullPointerException());
-        List<ProductDto> products = productService.categoryProduct(category,user.getId());
-        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
-        model.addAttribute("products",products);
-        model.addAttribute("url","women");
-        model.addAttribute("category","Women");
-        model.addAttribute("brands",brands);
-        model.addAttribute("breadcrumb","Women");
-        return "productList";
-    }
+//    @GetMapping("/women")
+//    public String WomenProduct(Model model,HttpServletRequest request)
+//    {
+//        HttpSession session = request.getSession();
+//        String email =(String)session.getAttribute("userEmail");
+//        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
+//        Category category = categoryRepository.findByName("Women").orElseThrow(()->new NullPointerException());
+//        List<ProductDto> products = productService.categoryProduct(category,user.getId());
+//        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
+//        model.addAttribute("products",products);
+//        model.addAttribute("url","women");
+//        model.addAttribute("category","Women");
+//        model.addAttribute("brands",brands);
+//        model.addAttribute("breadcrumb","Women");
+//        return "productList";
+//    }
 
-    @GetMapping("/product/filter")
-    public ResponseEntity<List<ProductDto>> filterWomenProducts(@RequestParam String filterType,@RequestParam String filterValue,@RequestParam String category,Model model)
-    {
-//        if(category.equals("Available") || category.equals("Search"))
-//        {
-//
-//            return ResponseEntity.ok(productDtos);
-//        }
-//        else {
-//            Category categoryObject = categoryRepository.findByName(category).orElseThrow(() -> new NullPointerException());
-//            List<ProductDto> productDTOs = productService.filterProduct(categoryObject, filterValue);
-//            return ResponseEntity.ok(productDTOs);
-//        }
-        List<ProductDto> productDtos=productService.filterProduct(filterType,filterValue);
-        if(productDtos.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(productDtos);
-        else
-        return ResponseEntity.ok(productDtos);
-    }
+//    @GetMapping("/product/filter")
+//    public ResponseEntity<List<ProductDto>> filterWomenProducts(@RequestParam String filterType,@RequestParam String filterValue,@RequestParam String category,Model model)
+//    {
+////        if(category.equals("Available") || category.equals("Search"))
+////        {
+////
+////            return ResponseEntity.ok(productDtos);
+////        }
+////        else {
+////            Category categoryObject = categoryRepository.findByName(category).orElseThrow(() -> new NullPointerException());
+////            List<ProductDto> productDTOs = productService.filterProduct(categoryObject, filterValue);
+////            return ResponseEntity.ok(productDTOs);
+////        }
+//        List<ProductDto> productDtos=productService.filterProduct(filterType,filterValue);
+//        if(productDtos.isEmpty())
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(productDtos);
+//        else
+//        return ResponseEntity.ok(productDtos);
+//    }
 
 
-    @GetMapping("/men")
-    public String MenProduct(Model model,HttpServletRequest request)
-    {
-        HttpSession session = request.getSession();
-        String email =(String)session.getAttribute("userEmail");
-        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
-        Category category = categoryRepository.findByName("Men").orElseThrow(()->new NullPointerException());
-        List<ProductDto> products = productService.categoryProduct(category,user.getId());
-        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
-        model.addAttribute("products",products);
-        model.addAttribute("url","men");
-        model.addAttribute("category","Men");
-        model.addAttribute("brands",brands);
-        model.addAttribute("breadcrumb","Men");
-        return "productList";
-    }
+//    @GetMapping("/men")
+//    public String MenProduct(Model model,HttpServletRequest request)
+//    {
+//        HttpSession session = request.getSession();
+//        String email =(String)session.getAttribute("userEmail");
+//        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
+//        Category category = categoryRepository.findByName("Men").orElseThrow(()->new NullPointerException());
+//        List<ProductDto> products = productService.categoryProduct(category,user.getId());
+//        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
+//        model.addAttribute("products",products);
+//        model.addAttribute("url","men");
+//        model.addAttribute("category","Men");
+//        model.addAttribute("brands",brands);
+//        model.addAttribute("breadcrumb","Men");
+//        return "productList";
+//    }
 
     @GetMapping("/product/detail/{id}")
     public String EditProduct(@PathVariable("id") Long id, Model model,HttpServletRequest request)
@@ -142,7 +165,8 @@ public class UserController {
         HttpSession session = request.getSession();
         String email =(String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
-        ProductDto details = productService.FindProduct(id);
+        ProductDto details = productMapper.toDTO(productRepository.findById(id).orElse(new Product()));
+        System.out.println(details);
         model.addAttribute("userId",user.getId());
         model.addAttribute("details",details);
         model.addAttribute("categoryUrl",details.getCategoryName().toLowerCase());
@@ -178,7 +202,7 @@ public class UserController {
 
         HttpSession session = request.getSession();
         WebUser user = userRepository.findByEmail((String) session.getAttribute("userEmail")).orElse(new WebUser());
-        Order order = new Order();
+        OrderEntity order = new OrderEntity();
         UserAddress address = addressRepository.findById(orderDto.getAddressId()).orElse(new UserAddress());
         ProductVariant productVariant = productVariantRepository.findById(orderDto.getVariantId()).orElse(new ProductVariant());
         order.setUser(user);
@@ -212,11 +236,12 @@ public class UserController {
         HttpSession session = request.getSession();
         List<ProductVariant> productVariants = new ArrayList<>();
         WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
-        List<Order> orders = orderRepository.findAllByUser_id(user.getId());
-        Collections.reverse(orders);
-        orders = orders.stream()
-                .sorted(Comparator.comparing(Order::isCancellation)) // Sort false first, true later
-                .collect(Collectors.toList());
+        List<OrderEntity> orders = orderRepository.findAllByUser_id(user.getId());
+        orders=orders.stream().sorted(Comparator.comparingLong(OrderEntity::getId).reversed()).toList();
+//        Collections.reverse(orders);
+//        orders = orders.stream()
+//                .sorted(Comparator.comparing(Order::isCancellation)) // Sort false first, true later
+//                .collect(Collectors.toList());
         model.addAttribute("orders",orders);
         model.addAttribute("user",user);
         return "orders";
@@ -225,11 +250,48 @@ public class UserController {
     @PostMapping("/orders/cancel/{id}")
     public ResponseEntity<?> cancelOrder(@PathVariable Long id)
     {
-        Order order = orderRepository.findById(id).orElseThrow(()-> new NullPointerException());
+        OrderEntity order = orderRepository.findById(id).orElseThrow(()-> new NullPointerException());
         order.setCancellation(true);
         orderRepository.save(order);
         return ResponseEntity.status(HttpStatus.OK).body("Confirmed cancellation");
     }
+
+    @ResponseBody
+    @PostMapping("/order/return")
+    public ResponseEntity<?> returnOrder(@RequestParam("orderId") Long orderId,@RequestParam("returnReason") String reason)
+    {
+        OrderEntity order = orderRepository.findById(orderId).orElse(new OrderEntity());
+        order.setReturnReason(reason);
+        order.setStatus("RETURN");
+        orderRepository.save(order);
+        return ResponseEntity.ok("Success");
+    }
+
+    @ResponseBody
+    @GetMapping("/orders/invoice")
+    public ResponseEntity<InputStreamResource> downloadInvoice(@RequestParam("orderId") Long orderId){
+       try{
+           String filePath = "invoice_"+orderId+".pdf";
+           ByteArrayOutputStream pdfContent = invoiceService.generateInvoicePdf(orderId);
+           ByteArrayInputStream inputStream = new ByteArrayInputStream(pdfContent.toByteArray());
+
+           HttpHeaders headers = new HttpHeaders();
+           headers.add(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename="+filePath);
+
+           return ResponseEntity.ok()
+                   .headers(headers)
+                   .contentType(MediaType.APPLICATION_PDF)
+                   .body(new InputStreamResource(inputStream));
+
+       }
+       catch (Exception e) {
+           e.printStackTrace();
+           return ResponseEntity.internalServerError().build();
+       }
+
+    }
+
+
     @GetMapping("/editprofile")
     public String editProfile(Model  model,HttpServletRequest request)
     {
@@ -391,7 +453,7 @@ public class UserController {
         WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         List<Wishlist> wishlists = wishlistRepository.findAllByUser_id(user.getId());
         List<Product> products = productRepository.findAllByStatus(true).stream().filter(pd -> wishlists.stream().anyMatch(wi-> wi.getProduct().getId().equals(pd.getId()))).collect(Collectors.toList());
-        List<ProductDto> productDtos = productMapper.toDTOList(products).stream().peek(pd -> { pd.getProductVariantDTOs().stream().peek(pv -> pv.setFormattedPrice(pv.FormattedPrice()));
+        List<ProductDto> productDtos = productMapper.toDTOList(products).stream().peek(pd -> { pd.getProductVariantDTOs().stream().peek(pv -> pv.setFormattedPrice(pv.FormattedPrice(pv.getPrice())));
                                                                                                         pd.setDefaultVariantDTO(pd.getProductVariantDTOs().stream().findFirst().orElse(new ProductVariantDTO()));
                                                                                                         }).collect(Collectors.toList());
         for(ProductDto p : productDtos)
@@ -400,6 +462,37 @@ public class UserController {
         }
         model.addAttribute("products",productDtos);
         return "wishlist";
+    }
+
+    @ResponseBody
+    @GetMapping("/wishlist/data")
+    public List<ProductVariantDTO>  fetchModal(@RequestParam("productId") Long productId)
+    {
+        Product product = productRepository.findById(productId).orElse(new Product());
+        Map<String,String[]> colorSizes = new HashMap<>();
+        return productMapper.toDTO(product).getProductVariantDTOs();
+    }
+
+    @ResponseBody
+    @PostMapping("/wishlist/addCart")
+    public ResponseEntity<?> addToCart(@RequestParam("variantId") Long variantId,
+                                       @RequestParam("quantity") Integer quantity,
+                                       @RequestParam("size") String size,
+                                       HttpServletRequest request
+                                       )
+    {
+        HttpSession session = request.getSession();
+        String email = (String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
+        ProductVariant productVariant = productVariantRepository.findById(variantId).orElseThrow(() ->new NullPointerException());
+                Cart cart = new Cart();
+                cart.setUser(user);
+                cart.setSize(Double.parseDouble(size));
+                cart.setQuantity(quantity);
+                cart.setProductVariant(productVariant);
+                cart.setTotalAmount(((double)quantity)*(productVariant.getOfferPrice() != null ? productVariant.getOfferPrice() : productVariant.getPrice()));
+                cartRepository.save(cart);
+                return ResponseEntity.ok("Added successfully");
     }
 
 
@@ -455,20 +548,26 @@ public class UserController {
     @PostMapping("/addcart")
     public ResponseEntity<?> addCartPost(@RequestBody CartDTO cartDto, BindingResult result, HttpServletRequest request)
     {
-        Integer productQuantity = productVariantRepository.findById(cartDto.getProductVariantId()).orElseThrow(()-> new NullPointerException()).getQuantity();
+        HttpSession session = request.getSession();
+        String email = (String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
+        ProductVariant productVariant = productVariantRepository.findById(cartDto.getProductVariantId()).orElse(new ProductVariant());
         if(result.hasErrors())
         {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Product cannot be added");
         }
-        else if(cartDto.getQuantity() > productQuantity )
+        else if(cartDto.getQuantity() > productVariant.getQuantity() )
         {
             Map<String, Object> response = new HashMap<>();
-            response.put("quantity", productQuantity);
+            response.put("quantity", productVariant.getQuantity());
             response.put("message","Lack of products");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
+        cartDto.setTotalAmount(productVariant.getOfferPrice() != null ? productVariant.getOfferPrice()*cartDto.getQuantity()
+                : productVariant.getPrice()*cartDto.getQuantity());
         Cart newCart = cartMapper.toEntity(cartDto);
-        Cart cart=cartRepository.save(newCart);
+        newCart.setUser(user);
+        cartRepository.save(newCart);
         return ResponseEntity.status(HttpStatus.OK).body("Product added to cart");
     }
 
@@ -501,16 +600,25 @@ public class UserController {
         String email = (String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
         UserAddress address = addressRepository.findByUser_idAndDefaultAddressStatusAndStatus(user.getId(), true,"AVAILABLE").orElse(new UserAddress());
+        Wallet wallet = walletRepository.findByUser_id(user.getId()).orElse(new Wallet());
+        if(wallet.getId() == null)
+        {
+            wallet.setUser(user);
+            wallet.setBalance(0D);
+            wallet.setLastUpdate(LocalDate.now());
+            walletRepository.save(wallet);
+        }
         String FormattedSubTotal = (String) session.getAttribute("subtotalFormatted");
         OrderDto orderDto = new OrderDto();
         orderDto.setVariantId((Long)session.getAttribute("productVariantId"));
         orderDto.setQuantity((Integer)session.getAttribute("productQuantity"));
         List<Coupon> coupons = couponService.ListCoupons(user);
-        model.addAttribute("subtotal",(Double) session.getAttribute("subtotal"));
+        model.addAttribute("subtotal",   session.getAttribute("subtotal"));
         model.addAttribute("addressObject",new AddressDTO());
         model.addAttribute("defaultAddress",address);
         model.addAttribute("subtotalFormatted",FormattedSubTotal);
         model.addAttribute("coupons",coupons);
+        model.addAttribute("wallet",wallet);
         return "checkout";
     }
 
@@ -544,53 +652,70 @@ public class UserController {
         {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Order is not accepted");
         }
-        Order order = new Order();
-        Coupon coupon;
+        OrderEntity order = new OrderEntity();
         UserAddress userAddress=addressRepository.findById(orderDto.getAddressId()).orElseThrow(()->new NullPointerException());
-        if(orderDto.getCouponId() != null)
+        Double orderTotal =(Double)session.getAttribute("subtotal");
+        if(orderDto.getCouponId()!=0)
         {
-            coupon = couponRepository.findById(orderDto.getCouponId()).orElse(new Coupon());
+            Coupon coupon = couponRepository.findById(orderDto.getCouponId()).orElse(new Coupon());
+            UserCouponUsage userCouponUsage = userCouponUsageRepository.findByUser_idAndCoupon_id(user.getId(),coupon.getId()).orElse(new UserCouponUsage());
+            if(coupon.getDiscountValue()!=null)
+            {
+                if(coupon.getDiscountType().equalsIgnoreCase("percentage"))
+                {
+                    orderTotal = orderTotal*(coupon.getDiscountValue()/100);
+                }
+                else
+                {
+                    orderTotal = orderTotal-coupon.getDiscountValue();
+                }
+                if(userCouponUsage.getId() != null)
+                {
+                    userCouponUsage.setUsageCount(userCouponUsage.getUsageCount()+1);
+                    coupon.setUsedCount(coupon.getUsedCount()+1);
+                }
+                else
+                {
+                    userCouponUsage.setCoupon(coupon);
+                    userCouponUsage.setUser(user);
+                    userCouponUsage.setUsageCount(1);
+                    coupon.setUsedCount(coupon.getUsedCount()+1);
+                }
+            }
+            couponRepository.save(coupon);
+            userCouponUsageRepository.save(userCouponUsage);
+            if(coupon.getId() != null)
+            {
+                order.setCoupon(coupon);
+            }
+            else
+            {
+                order.setCoupon(null);
+            }
+
         }
-        else
+        if(orderDto.getReferralId() !=0)
         {
-            coupon = new Coupon();
-        }
-        Double orderTotal =(Double)session.getAttribute("subtotal");;
-        if(coupon.getDiscountType().equalsIgnoreCase("percentage"))
-        {
-           orderTotal = orderTotal*(coupon.getDiscountValue()/100);
-        }
-        else
-        {
-            orderTotal = orderTotal-coupon.getDiscountValue();
+            ReferralEntity referralEntity = refferalCodeRepository.findById(orderDto.getReferralId()).orElse(new ReferralEntity());
+            order.setReferralEntity(referralEntity);
+
         }
         order.setUser(user);
-        order.setCoupon(coupon);
         order.setOrderDate(LocalDate.now());
-        order.setOrderTotal(orderTotal);
+        order.setOrderTotal(orderDto.getOrderTotal());
         order.setAddress(userAddress);
+        order.setDeductedAmount(orderTotal-orderDto.getOrderTotal());
         order.setPaymentMethod(orderDto.getPaymentMethod());
-        order.setStatus("PENDING");
-        Order newOrder = orderRepository.save(order);
-        UserCouponUsage userCouponUsage = userCouponUsageRepository.findByUser_idAndCoupon_id(user.getId(),coupon.getId()).orElse(new UserCouponUsage());
-        if(userCouponUsage.getId() != null)
+        if(orderDto.getPaymentMethod().equalsIgnoreCase("cod"))
         {
-            userCouponUsage.setUsageCount(userCouponUsage.getUsageCount()+1);
-            Coupon coupon1 = couponRepository.findById(coupon.getId()).orElse(new Coupon());
-            coupon1.setUsedCount(coupon1.getUsedCount()+1);
-            couponRepository.save(coupon1);
-            userCouponUsageRepository.save(userCouponUsage);
+            order.setStatus("PENDING");
+
         }
         else
         {
-            userCouponUsage.setCoupon(coupon);
-            userCouponUsage.setUser(user);
-            userCouponUsage.setUsageCount(1);
-            Coupon coupon1 = couponRepository.findById(coupon.getId()).orElse(new Coupon());
-            coupon1.setUsedCount(coupon1.getUsedCount()+1);
-            couponRepository.save(coupon1);
-            userCouponUsageRepository.save(userCouponUsage);
+            order.setStatus("PAYMENTED");
         }
+        OrderEntity newOrder = orderRepository.save(order);
         for(Cart cart : carts)
         {
             OrderItems orderItems = new OrderItems();
@@ -607,7 +732,7 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("/checkout/applyCoupon")
-    public ResponseEntity<?> addCoupon(@RequestParam("couponId") Long id,@RequestParam("subtotal") Double subtotal)
+    public ResponseEntity<?> addCoupon(@RequestParam(name = "couponId", defaultValue = "0") Long id,@RequestParam("subtotal") Double subtotal)
     {
         Map<String,String> response = new HashMap<>();
         Coupon coupon = couponRepository.findById(id).orElse(new Coupon());
@@ -666,11 +791,7 @@ public class UserController {
         String email =(String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
-        List<ProductDto>productDtos = productService.ListAllProducts(user.getId());
-        for(ProductDto p : productDtos )
-        {
-            System.out.println(p.getWishlisted());
-        }
+        Page<ShopProductDTO> productDtos = productService.getProducts(0,6,"id","ASC",null,null,user.getId());
         model.addAttribute("products",productDtos);
         model.addAttribute("url","shop");
         model.addAttribute("category","Available");
@@ -707,5 +828,401 @@ public class UserController {
         session.setAttribute("wishlistCount",((Integer) session.getAttribute("wishlistCount"))-1);
         return ResponseEntity.ok("completed");
     }
+
+    @Value("${razorpay.key.id}")
+    private String razorpayKeyId;
+
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret;
+
+    @GetMapping("/razorpay-key")
+    public ResponseEntity<Map<String, String>> getRazorpayKey() {
+        return ResponseEntity.ok(Collections.singletonMap("key", razorpayKeyId));
+    }
+
+
+    @ResponseBody
+    @GetMapping("/razorpay")
+    public ResponseEntity<?> createOrder(@RequestParam double amount) {
+        try {
+            RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+
+            // Create the order request
+            JSONObject orderRequest = new JSONObject();
+            orderRequest.put("amount", (int) (amount * 100)); // Convert to paise
+            orderRequest.put("currency", "INR");
+            orderRequest.put("receipt", "txn_" + System.currentTimeMillis());
+
+            // Call Razorpay API to create order
+            com.razorpay.Order order = razorpayClient.orders.create(orderRequest);
+
+            // Return order details to frontend
+            return ResponseEntity.ok(order.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/razorpay")
+    public ResponseEntity<?> addDetails(@RequestParam("couponId") Long couponId ,
+                                        @RequestParam("addressId") Long addressId,
+                                        @RequestParam("selectedMethod") String selectedMethod,
+                                        @RequestParam("amount") Double amount,HttpServletRequest request,
+                                        @RequestParam(name = "status", required = false,defaultValue = "PAID") String status,
+                                        @RequestParam(name = "referralId") Long referralId)
+    {
+        System.out.println("razorpay = "+selectedMethod);
+        HttpSession session = request.getSession();
+        String email=(String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
+        Double orderTotal =(Double)session.getAttribute("subtotal");
+        List<Cart> carts = cartRepository.findAllByUser_id(user.getId());
+
+        //-update-transaction
+        Transaction transaction = new Transaction();
+        transaction.setStatus("DEBITED");
+        transaction.setAmount(amount/100);
+        transactionRepository.save(transaction);
+
+        //update-payment-transaction-tables
+
+        Payment payment = new Payment();
+        payment.setPaymentDate(LocalDate.now());
+        payment.setTransaction(transaction);
+        payment.setPaymentMethod(selectedMethod);
+        if(status.equalsIgnoreCase("unpaid"))
+            payment.setStatus("UNPAID");
+        else
+            payment.setStatus("SUCCESS");
+        payment.setUser(user);
+        paymentRepository.save(payment);
+
+        OrderEntity order = new OrderEntity();
+        UserAddress userAddress=addressRepository.findById(addressId).orElseThrow(()->new NullPointerException());
+
+        if(couponId!=0)
+        {
+            Coupon coupon = couponRepository.findById(couponId).orElse(new Coupon());
+            order.setUser(user);
+            if(coupon.getId() != null)
+            {
+                order.setCoupon(coupon);
+            }
+            else
+            {
+                order.setCoupon(null);
+            }
+
+            UserCouponUsage userCouponUsage = userCouponUsageRepository.findByUser_idAndCoupon_id(user.getId(),coupon.getId()).orElse(new UserCouponUsage());
+            if(userCouponUsage.getId() != null)
+            {
+                userCouponUsage.setUsageCount(userCouponUsage.getUsageCount()+1);
+                coupon.setUsedCount(coupon.getUsedCount()+1);
+                couponRepository.save(coupon);
+                userCouponUsageRepository.save(userCouponUsage);
+            }
+            else
+            {
+                userCouponUsage.setCoupon(coupon);
+                userCouponUsage.setUser(user);
+                userCouponUsage.setUsageCount(1);
+                coupon.setUsedCount(coupon.getUsedCount()+1);
+                couponRepository.save(coupon);
+                userCouponUsageRepository.save(userCouponUsage);
+            }
+        }
+        System.out.println(referralId);
+        if(referralId != 0)
+        {
+            System.out.println(referralId);
+            ReferralEntity referralEntity = refferalCodeRepository.findById(referralId).orElse(new ReferralEntity());
+            order.setReferralEntity(referralEntity);
+        }
+        order.setUser(user);
+        order.setOrderDate(LocalDate.now());
+        order.setPayment(payment);
+        order.setOrderTotal(amount/100);
+        order.setAddress(userAddress);
+        order.setPaymentMethod(selectedMethod);
+        order.setDeductedAmount(orderTotal-(amount/100));
+        if(status.equalsIgnoreCase("unpaid"))
+            order.setStatus("UNPAID");
+        else
+            order.setStatus("PAYMENTED");
+        OrderEntity newOrder = orderRepository.save(order);
+        for(Cart cart : carts)
+        {
+            OrderItems orderItems = new OrderItems();
+            orderItems.setOrder(newOrder);
+            orderItems.setPrice(cart.getProductVariant().getPrice());
+            orderItems.setQuantity(cart.getQuantity());
+            orderItems.setProductVariant(cart.getProductVariant());
+            orderItemsRepository.save(orderItems);
+        }
+        orderService.updateCartAndStock(carts,user.getId());
+
+        return ResponseEntity.ok("Success");
+
+
+    }
+
+    @ResponseBody
+    @PutMapping("/razorpay")
+    public ResponseEntity<?> repaymentStatus(@RequestParam("orderId") Long orderId)
+    {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElse(new OrderEntity());
+        orderEntity.setStatus("PAYMENTED");
+        Payment payment = orderEntity.getPayment();
+        payment.setStatus("SUCCESS");
+        paymentRepository.save(payment);
+        orderRepository.save(orderEntity);
+        return ResponseEntity.ok("updated successfully");
+    }
+
+
+    //wallet-controller
+    @GetMapping("/wallet")
+    public String viewWallet(HttpServletRequest request,Model model)
+    {
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
+
+        Wallet wallet = walletRepository.findByUser_id(user.getId()).orElse(new Wallet());
+
+        if(wallet.getBalance() == null)
+        {
+            wallet.setBalance(0D);
+            wallet.setUser(user);
+            walletRepository.save(wallet);
+        }
+        DecimalFormat formatter = new DecimalFormat("#,##0.00");
+        String balance = formatter.format(wallet.getBalance());
+        model.addAttribute("wallet", wallet);
+        model.addAttribute("balance", balance);
+        return "wallet_user";
+    }
+
+    @GetMapping("/wallet/history")
+    public String viewHistory(Model model,HttpServletRequest request)
+    {
+
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
+
+        Wallet wallet = walletRepository.findByUser_id(user.getId()).orElse(new Wallet());
+        List<Transaction> transactionList;
+        if(wallet.getId() != null)
+        {
+            transactionList = transactionRepository.findAllByWallet_id(wallet.getId()).stream().sorted(Comparator.comparingLong(Transaction::getId)).collect(Collectors.toList());
+            Collections.reverse(transactionList);
+        }
+        else
+        {
+          transactionList = null;
+        }
+        model.addAttribute("transactions",transactionList);
+
+        return "transaction_user";
+    }
+
+    @ResponseBody
+    @PostMapping("/wallet/addMoney")
+    public ResponseEntity<String> addMoney(@RequestParam(name = "amount") Double amount,HttpServletRequest request)
+    {
+
+        HttpSession session = request.getSession();
+        WebUser user = userRepository.findByEmail((String)session.getAttribute("userEmail")).orElseThrow(()-> new NullPointerException());
+
+
+        Wallet wallet = walletRepository.findByUser_id(user.getId()).orElse(new Wallet());
+        if(wallet.getBalance() != null)
+        {
+            wallet.setBalance(wallet.getBalance()+amount);
+        }
+        else
+        {
+            wallet.setBalance(amount);
+        }
+        wallet.setLastUpdate(LocalDate.now());
+        wallet.setUser(user);
+        wallet = walletRepository.save(wallet);
+        Transaction transaction = new Transaction();
+        transaction.setTransactionDate(LocalDate.now());
+        transaction.setStatus("CREDITED");
+        transaction.setAmount(amount);
+        transaction.setWallet(wallet);
+        transactionRepository.save(transaction);
+        DecimalFormat formatter = new DecimalFormat("#,##0.00");
+        String formattedPrice = formatter.format(wallet.getBalance());
+        return ResponseEntity.ok(formattedPrice);
+    }
+
+    @ResponseBody
+    @PostMapping("/wallet/purchase")
+    public ResponseEntity<?> walletPurchase(@RequestParam(name = "couponId",defaultValue = "0") Long couponId ,
+                                            @RequestParam("addressId") Long addressId,
+                                            @RequestParam("selectedMethod") String selectedMethod,
+                                            @RequestParam("amount") Double amount,
+                                            @RequestParam(name = "referralId") Long referralId,
+                                            HttpServletRequest request)
+    {
+        System.out.println("wallet = "+selectedMethod);
+        HttpSession session = request.getSession();
+        String email=(String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
+        Wallet wallet = walletRepository.findByUser_id(user.getId()).orElse(new Wallet());
+        List<Cart> carts = cartRepository.findAllByUser_id(user.getId());
+        Double orderTotal =(Double)session.getAttribute("subtotal");
+
+        //-update-transaction
+        wallet.setBalance(wallet.getBalance()-amount);
+        walletRepository.save(wallet);
+
+        //-update-transaction
+        Transaction transaction = new Transaction();
+        transaction.setStatus("DEBITED");
+        transaction.setAmount(amount);
+        transaction.setWallet(wallet);
+        transactionRepository.save(transaction);
+
+        //update-payment-transaction-tables
+
+        Payment payment = new Payment();
+        payment.setPaymentDate(LocalDate.now());
+        payment.setTransaction(transaction);
+        payment.setPaymentMethod(selectedMethod);
+        payment.setStatus("SUCCESS");
+        payment.setUser(user);
+        paymentRepository.save(payment);
+
+        OrderEntity order = new OrderEntity();
+        UserAddress userAddress=addressRepository.findById(addressId).orElseThrow(()->new NullPointerException());
+
+        if(couponId!=0)
+        {
+            Coupon coupon = couponRepository.findById(couponId).orElse(new Coupon());
+            order.setUser(user);
+            if(coupon != null)
+            {
+                order.setCoupon(coupon);
+            }
+            else
+            {
+                order.setCoupon(null);
+            }
+
+            UserCouponUsage userCouponUsage = userCouponUsageRepository.findByUser_idAndCoupon_id(user.getId(),coupon.getId()).orElse(new UserCouponUsage());
+            if(userCouponUsage.getId() != null)
+            {
+                userCouponUsage.setUsageCount(userCouponUsage.getUsageCount()+1);
+                coupon.setUsedCount(coupon.getUsedCount()+1);
+                couponRepository.save(coupon);
+                userCouponUsageRepository.save(userCouponUsage);
+            }
+            else
+            {
+                userCouponUsage.setCoupon(coupon);
+                userCouponUsage.setUser(user);
+                userCouponUsage.setUsageCount(1);
+                coupon.setUsedCount(coupon.getUsedCount()+1);
+                couponRepository.save(coupon);
+                userCouponUsageRepository.save(userCouponUsage);
+            }
+        }
+        if(referralId !=0)
+        {
+            System.out.println(referralId);
+            ReferralEntity referralEntity = refferalCodeRepository.findById(referralId).orElse(new ReferralEntity());
+            order.setReferralEntity(referralEntity);
+
+        }
+        order.setUser(user);
+        order.setOrderDate(LocalDate.now());
+        order.setPayment(payment);
+        order.setOrderTotal(amount);
+        System.out.println(orderTotal+">>>"+amount);
+        order.setDeductedAmount(orderTotal-amount);
+        order.setAddress(userAddress);
+        order.setPaymentMethod(selectedMethod);
+        order.setStatus("PAYMENTED");
+        OrderEntity newOrder = orderRepository.save(order);
+        for(Cart cart : carts)
+        {
+            OrderItems orderItems = new OrderItems();
+            orderItems.setOrder(newOrder);
+            orderItems.setPrice(cart.getProductVariant().getPrice());
+            orderItems.setQuantity(cart.getQuantity());
+            orderItems.setProductVariant(cart.getProductVariant());
+            orderItemsRepository.save(orderItems);
+        }
+        orderService.updateCartAndStock(carts,user.getId());
+
+        return ResponseEntity.ok("Success");
+
+
+    }
+
+    @GetMapping("/referral")
+    public ResponseEntity<?> sendReferral(@RequestParam("email") String email,HttpServletRequest request)
+    {
+        HttpSession session = request.getSession();
+        String userEmail=(String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(userEmail).orElseThrow(()->new NullPointerException());
+        String referralCode;
+        if(refferalCodeRepository.existsByUser_id(user.getId()))
+        {
+            ReferralEntity referralEntity = refferalCodeRepository.findByUser_id(user.getId()).orElse(new ReferralEntity());
+            referralCode = referralEntity.getReferralCode();
+        }
+        else
+        {
+            referralCode = userService.generateReferralCode(user.getId());
+            ReferralEntity referralEntity = new ReferralEntity();
+            referralEntity.setUser(user);
+            referralEntity.setReferralCode(referralCode);
+            referralEntity.setUsageCount(0);
+            refferalCodeRepository.save(referralEntity);
+        }
+        userService.sendReferralCodeEmail(email,referralCode);
+        return ResponseEntity.ok("success");
+    }
+
+    @GetMapping("/referral/check")
+    public ResponseEntity<?> applyRefferal(@RequestParam("referralCode") String referralCode,@RequestParam("subtotal") Double subtotal)
+    {
+        Map<String,String> response = new HashMap<>();
+        ReferralEntity referralEntity = refferalCodeRepository.findByReferralCode(referralCode).orElse(new ReferralEntity());
+        if(referralEntity.getId() == null)
+        {
+            return  ResponseEntity.badRequest().body("bad request");
+        }
+        referralEntity.setUsageCount(referralEntity.getUsageCount()+1);
+        subtotal=subtotal-1000;
+        DecimalFormat formatter = new DecimalFormat("#,##0.00");
+        String FormattedSubTotal = formatter.format(subtotal);
+
+        response.put("couponCode",referralCode);
+        response.put("FormattedSubtotal",FormattedSubTotal);
+        response.put("FormattedDiscountValue",formatter.format(1000));
+        response.put("id",String.valueOf(referralEntity.getId()));
+        return ResponseEntity.ok(response);
+    }
+
+    @ResponseBody
+    @PostMapping("/shop")
+    public ResponseEntity<Page<ShopProductDTO>> getProducts(@RequestBody ShopRequestDTO shopRequestDTO,HttpServletRequest request)
+    {
+        HttpSession session = request.getSession();
+        String userEmail=(String)session.getAttribute("userEmail");
+        System.out.println(userEmail);
+        WebUser user = userRepository.findByEmail(userEmail).orElseThrow(NullPointerException::new);
+
+       Page<ShopProductDTO> products =  productService.getProducts(shopRequestDTO.getPage(),shopRequestDTO.getSize(),shopRequestDTO.getSortBy(),shopRequestDTO.getSortDirection(),shopRequestDTO.getSearchQuery(),shopRequestDTO.getFilters(),user.getId());
+       return ResponseEntity.ok(products);
+    }
+
 
 }
