@@ -108,7 +108,7 @@ public class AdminManagementService {
 
 
     public List<String> saveImagesToDirectory(List<MultipartFile> images,String articleCode,String productName) throws IOException {
-        final String IMAGE_DIR = "src/main/resources/static/assests/images/variant/";
+        final String IMAGE_DIR = "/home/ubuntu/SNEAKER-HEAD/src/main/resources/static/assets/images/variant/";
         List<String> paths = new ArrayList<>();
 
         // Ensure the directory exists
@@ -122,7 +122,7 @@ public class AdminManagementService {
         for (MultipartFile image : images) {
             String imageName = productName.replaceAll("\\s+", "")+"_"+articleCode+"_"+x+".jpeg";
             x++;
-            paths.add("/assests/images/variant/"+imageName);
+            paths.add(IMAGE_DIR+imageName);
             Path imagePath = Paths.get(IMAGE_DIR + imageName);
             Files.write(imagePath, image.getBytes());
         }
