@@ -53,7 +53,7 @@ public class LoginController {
                 return "redirect:/user/shop";
             }
         }
-        return "index";
+        return "redirect:/user/shop";
     }
     @GetMapping("/userlogin")
     public String LoginPage(HttpSession session)

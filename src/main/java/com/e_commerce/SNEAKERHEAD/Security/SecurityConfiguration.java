@@ -63,14 +63,14 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/**","/userlogin","/signup","/otpverification","/otpverification/data","/signup/userdata","/oauth2/authorization/google","/login/oauth2/code/google","/resend-otp","/forgetpassword/{email}","/forgetpassword","/otpverification/{email}","/resetpassword","/resetpassword/data","/").permitAll()
+                        .requestMatchers("/api/**","/userlogin","/signup","/otpverification","/otpverification/data","/signup/userdata","/oauth2/authorization/google","/login/oauth2/code/google","/resend-otp","/forgetpassword/{email}","/forgetpassword","/otpverification/{email}","/resetpassword","/resetpassword/data","/","/user/shop").permitAll()
                         .requestMatchers("/css/**","/assets/**","/js/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin( form -> form
-                        .loginPage("http://www.sneakerheadaz.shop/userlogin")
+                        .loginPage("/userlogin")
                         .loginProcessingUrl("/logindata")
                         .passwordParameter("password")
                         .usernameParameter("username")

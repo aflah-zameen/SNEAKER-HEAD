@@ -821,10 +821,10 @@ public class UserController {
     {
         HttpSession session = request.getSession();
         String email =(String)session.getAttribute("userEmail");
-        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
+        WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
         List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
         List<Category> categories = categoryRepository.findAll().stream().filter(Category::getStatus).toList();
-        Page<ShopProductDTO> productDtos = productService.getProducts(0,6,"id","ASC",null,null,user.getId());
+        Page<ShopProductDTO> productDtos = productService.getProducts(0,6,"id","ASC",null,null,user != null ? user.getId():null);
         model.addAttribute("products",productDtos);
         model.addAttribute("url","shop");
         model.addAttribute("category","Available");

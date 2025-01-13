@@ -457,7 +457,12 @@ public class ProductService {
         }
 
         Pageable pageable = PageRequest.of(page,size,sort);
-        List<Wishlist> wishlists = wishlistRepository.findAllByUser_id(userId);
+        List<Wishlist> wishlists;
+        if(userId != null)
+            wishlists = wishlistRepository.findAllByUser_id(userId);
+        else {
+            wishlists = null;
+        }
         spec=spec.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("status"),true));
         if(searchQuery != null && !searchQuery.isEmpty())
@@ -505,7 +510,7 @@ public class ProductService {
                     List<VariantCard> variantCards=new ArrayList<>();
                     product.getProductVariants().forEach(pv->
                         variantCards.add(new VariantCard(pv.getColorCode(),pv.getColor(),pv.getQuantity(),pv.getImages().getFirst(),pv.getPrice(),(pv.getProduct().getAppliedOffer()!=null && pv.getProduct().getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? pv.getOfferPrice() : null,pv.getStockStatus())));
-                    return new ShopProductDTO(product.getId(),product.getName(),product.getBrand().getName(),product.getStatus(),wishlists.stream().anyMatch(wi->wi.getProduct().equals(product)),(product.getAppliedOffer()!=null && product.getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? product.getAppliedOffer().getOfferName():null,(product.getAppliedOffer()!=null && product.getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? product.getAppliedOffer().getDiscountValue() : null,variantCards,variantCards.getFirst());
+                    return new ShopProductDTO(product.getId(),product.getName(),product.getBrand().getName(),product.getStatus(),wishlists != null ? wishlists.stream().anyMatch(wi->wi.getProduct().equals(product)) : null,(product.getAppliedOffer()!=null && product.getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? product.getAppliedOffer().getOfferName():null,(product.getAppliedOffer()!=null && product.getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? product.getAppliedOffer().getDiscountValue() : null,variantCards,variantCards.getFirst());
 
                 }
                         );
