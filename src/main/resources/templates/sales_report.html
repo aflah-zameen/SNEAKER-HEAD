@@ -132,7 +132,7 @@
                 <a class="nav-link" href="/admin/banners">Banners</a>
                 <a class="nav-link" href="/admin/payments">Payments</a>
                 <a class="nav-link" href="/admin/sales">Sales report</a>
-                <a class="nav-link" href="/logout">Offers</a>
+                <a class="nav-link" href="/admin/offers">Offers</a>
                 <button
                         class="btn btn-danger mt-3"
                         onclick="window.location.href='/logout'"
@@ -183,7 +183,7 @@
                 <div class="w-25">
                     <div>
                         <label>Overall sales : </label>
-                        <span th:text="'₹ '+${overallSales}" class="fw-bolder" id="overallSales"></span>
+                        <span th:text="'₹'+${#numbers.formatDecimal(overallSales, 2, 2)}" class="fw-bolder" id="overallSales"></span>
                     </div>
                     <div>
                         <label>Overall orders : </label>
@@ -191,7 +191,7 @@
                     </div>
                     <div>
                         <label>Overall discounts : </label>
-                        <span th:text="${overallDiscounts}" class="fw-bolder" id="overallDiscounts"></span>
+                        <span th:text="'₹'+${#numbers.formatDecimal(overallDiscounts, 2, 2)}" class="fw-bolder" id="overallDiscounts"></span>
                     </div>
                 </div>
             </div>
@@ -260,7 +260,7 @@
                         <td th:text="'₹'+${order.getFormattedPrice()}">54</td>
 <!--                        <td th:text="'₹'+${order.payment.transaction.amount}">54</td>-->
                         <td th:text="${order.orderDate}">54</td>
-                        <td th:text="'₹'+${order.deductedAmount}">54</td>
+                        <td th:text="'₹'+${#numbers.formatDecimal(order.deductedAmount,2,2)}">54</td>
                         <td th:text="${order.status}" class="order-status-field">54</td>
                     </tr>
                     <!-- More product rows -->

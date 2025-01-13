@@ -5,6 +5,7 @@ import com.e_commerce.SNEAKERHEAD.Entity.*;
 import com.e_commerce.SNEAKERHEAD.Mappers.AddressMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.CartMapper;
 import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
+import com.e_commerce.SNEAKERHEAD.Mappers.UserMapper;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
 import com.e_commerce.SNEAKERHEAD.Service.*;
 import com.razorpay.RazorpayClient;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +41,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/user")
 public class UserController {
 
+
+
     @Autowired
     ProductService productService;
     @Autowired
@@ -47,6 +51,10 @@ public class UserController {
     UserRepository userRepository;
     @Autowired
     UserService userService;
+
+    @Autowired
+    AdminManagementService adminManagementService;
+
     @Autowired
     AddressRepository addressRepository;
     @Autowired
@@ -99,6 +107,9 @@ public class UserController {
     @Autowired
     InvoiceService invoiceService;
 
+    @Autowired
+    UserMapper userMapper;
+
     @GetMapping("/home")
     public String AdminProduct()
     {
@@ -148,14 +159,18 @@ public class UserController {
 //        HttpSession session = request.getSession();
 //        String email =(String)session.getAttribute("userEmail");
 //        WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
-//        Category category = categoryRepository.findByName("Men").orElseThrow(()->new NullPointerException());
-//        List<ProductDto> products = productService.categoryProduct(category,user.getId());
 //        List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
-//        model.addAttribute("products",products);
+//        List<Category> categories = categoryRepository.findAll().stream().filter(Category::getStatus).toList();
+//        Map <String,String> filter = new HashMap<>();
+//        filter.put("category","men");
+//        Page<ShopProductDTO> productDtos = productService.getProducts(0,6,"id","ASC",null, filter,user.getId());
+//        model.addAttribute("products",productDtos);
 //        model.addAttribute("url","men");
 //        model.addAttribute("category","Men");
-//        model.addAttribute("brands",brands);
 //        model.addAttribute("breadcrumb","Men");
+//        model.addAttribute("brands",brands);
+//        model.addAttribute("categories",categories);
+//
 //        return "productList";
 //    }
 
@@ -166,6 +181,14 @@ public class UserController {
         String email =(String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         ProductDto details = productMapper.toDTO(productRepository.findById(id).orElse(new Product()));
+        if(details.getAppliedOffer()!=null && details.getAppliedOffer().getEndDate().isBefore(LocalDate.now()))
+        {
+            for(ProductVariantDTO variant : details.getProductVariantDTOs())
+                variant.setOfferPrice(null);
+            details.setAppliedOffer(null);
+            details.getDefaultVariantDTO().setOfferPrice(null);
+        }
+
         System.out.println(details);
         model.addAttribute("userId",user.getId());
         model.addAttribute("details",details);
@@ -339,7 +362,7 @@ public class UserController {
             if(y.getDefaultAddressStatus()==true)
             {
                 defaultAddressDTO.setId(y.getId());
-                defaultAddressDTO.setUser(user);
+                defaultAddressDTO.setUser(userMapper.toDTO(user));
                 defaultAddressDTO.setName(y.getName());
                 defaultAddressDTO.setPhone(y.getPhone());
                 defaultAddressDTO.setBuilding(y.getBuilding());
@@ -458,7 +481,11 @@ public class UserController {
                                                                                                         }).collect(Collectors.toList());
         for(ProductDto p : productDtos)
         {
-            System.out.println(p.getName());
+            if(p.getAppliedOffer()!=null && p.getAppliedOffer().getEndDate().isBefore(LocalDate.now()))
+            {
+                p.setAppliedOffer(null);
+                p.getDefaultVariantDTO().setOfferPrice(null);
+            }
         }
         model.addAttribute("products",productDtos);
         return "wishlist";
@@ -502,12 +529,18 @@ public class UserController {
         HttpSession session = request.getSession();
         String email = (String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
-        List<Cart> carts = cartRepository.findAllByUser_id(user.getId());
+        List<Cart> carts = cartRepository.findAllByUser_id(user.getId()).stream().filter(ct ->
+                ct.getProductVariant().getProduct().getStatus()).toList();
         if(carts.isEmpty())
             carts=null;
         else {
             Double subTotal = 0D;
             for (Cart cart : carts) {
+                if(cart.getProductVariant().getProduct().getAppliedOffer() != null &&cart.getProductVariant().getProduct().getAppliedOffer().getEndDate().isBefore(LocalDate.now()))
+                {
+                    cart.getProductVariant().setOfferPrice(null);
+                    cart.getProductVariant().getProduct().setAppliedOffer(null);
+                }
                 subTotal = subTotal + cart.getTotalAmount();
             }
 
@@ -563,7 +596,7 @@ public class UserController {
             response.put("message","Lack of products");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
-        cartDto.setTotalAmount(productVariant.getOfferPrice() != null ? productVariant.getOfferPrice()*cartDto.getQuantity()
+        cartDto.setTotalAmount(productVariant.getOfferPrice() != null && productVariant.getProduct().getAppliedOffer().getEndDate().isAfter(LocalDate.now()) ? productVariant.getOfferPrice()*cartDto.getQuantity()
                 : productVariant.getPrice()*cartDto.getQuantity());
         Cart newCart = cartMapper.toEntity(cartDto);
         newCart.setUser(user);
@@ -786,17 +819,18 @@ public class UserController {
     @GetMapping("/shop")
     public String showShop(Model model,HttpServletRequest request)
     {
-
         HttpSession session = request.getSession();
         String email =(String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()-> new NullPointerException());
         List<Brand> brands = brandRepository.findAll().stream().filter(Brand::getStatus).collect(Collectors.toList());
+        List<Category> categories = categoryRepository.findAll().stream().filter(Category::getStatus).toList();
         Page<ShopProductDTO> productDtos = productService.getProducts(0,6,"id","ASC",null,null,user.getId());
         model.addAttribute("products",productDtos);
         model.addAttribute("url","shop");
         model.addAttribute("category","Available");
         model.addAttribute("breadcrumb","Shop");
         model.addAttribute("brands",brands);
+        model.addAttribute("categories",categories);
 
         return "productList";
     }
@@ -885,6 +919,7 @@ public class UserController {
         Transaction transaction = new Transaction();
         transaction.setStatus("DEBITED");
         transaction.setAmount(amount/100);
+        transaction.setTransactionDate(LocalDate.now());
         transactionRepository.save(transaction);
 
         //update-payment-transaction-tables
@@ -1217,11 +1252,27 @@ public class UserController {
     {
         HttpSession session = request.getSession();
         String userEmail=(String)session.getAttribute("userEmail");
-        System.out.println(userEmail);
         WebUser user = userRepository.findByEmail(userEmail).orElseThrow(NullPointerException::new);
 
        Page<ShopProductDTO> products =  productService.getProducts(shopRequestDTO.getPage(),shopRequestDTO.getSize(),shopRequestDTO.getSortBy(),shopRequestDTO.getSortDirection(),shopRequestDTO.getSearchQuery(),shopRequestDTO.getFilters(),user.getId());
        return ResponseEntity.ok(products);
+    }
+
+    @ResponseBody
+    @PutMapping("/profile/changePassword")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePassword changePassword,BindingResult result,HttpServletRequest request)
+    {
+        System.out.println(changePassword);
+        if(result.hasErrors())
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    result.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
+        }
+        HttpSession session = request.getSession();
+        String userEmail=(String)session.getAttribute("userEmail");
+        WebUser user = userRepository.findByEmail(userEmail).orElseThrow(NullPointerException::new);
+
+        return adminManagementService.changePassword(changePassword,user);
     }
 
 

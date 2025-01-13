@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -429,10 +430,27 @@ public class ProductService {
 //    }
 
     public Page<ShopProductDTO> getProducts(Integer page, Integer size, String sortBy, String sortDirection, String searchQuery, Map<String, String> filters,Long userId) {
+        Specification<Product> spec = Specification.where(null);
         Sort sort = Sort.unsorted();
         if ("price".equals(sortBy)) {
-            sort = sortDirection.equalsIgnoreCase("asc") ? Sort.by("productVariants.price").ascending() : Sort.by("productVariants.price").descending();
+            spec = spec.and((root, query, criteriaBuilder) -> {
+                // Join productVariants
+                Join<Product, ProductVariant> variantsJoin = root.join("productVariants", JoinType.LEFT);
+
+                // Sort directly by price without considering offerPrice
+                Expression<Double> priceExpression = variantsJoin.get("price");
+
+                // Apply sorting (ASC or DESC) based on price
+                if ("asc".equalsIgnoreCase(sortDirection)) {
+                    query.orderBy(criteriaBuilder.asc(priceExpression)); // Ascending order
+                } else {
+                    query.orderBy(criteriaBuilder.desc(priceExpression)); // Descending order
+                }
+
+                return criteriaBuilder.conjunction(); // Return conjunction (no additional filters here)
+            });
         }
+
         else
         {
             sort = sortDirection.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -440,7 +458,6 @@ public class ProductService {
 
         Pageable pageable = PageRequest.of(page,size,sort);
         List<Wishlist> wishlists = wishlistRepository.findAllByUser_id(userId);
-        Specification<Product> spec = Specification.where(null);
         spec=spec.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("status"),true));
         if(searchQuery != null && !searchQuery.isEmpty())
@@ -487,8 +504,8 @@ public class ProductService {
         return productPage.map(product ->{
                     List<VariantCard> variantCards=new ArrayList<>();
                     product.getProductVariants().forEach(pv->
-                        variantCards.add(new VariantCard(pv.getColorCode(),pv.getColor(),pv.getQuantity(),pv.getImages().getFirst(),pv.getPrice(),pv.getOfferPrice(),pv.getStockStatus())));
-                    return new ShopProductDTO(product.getId(),product.getName(),product.getBrand().getName(),product.getStatus(),wishlists.stream().anyMatch(wi->wi.getProduct().equals(product)),product.getAppliedOffer()!=null ? product.getAppliedOffer().getOfferName():null,product.getAppliedOffer()!=null ? product.getAppliedOffer().getDiscountValue() : null,variantCards,variantCards.getFirst());
+                        variantCards.add(new VariantCard(pv.getColorCode(),pv.getColor(),pv.getQuantity(),pv.getImages().getFirst(),pv.getPrice(),(pv.getProduct().getAppliedOffer()!=null && pv.getProduct().getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? pv.getOfferPrice() : null,pv.getStockStatus())));
+                    return new ShopProductDTO(product.getId(),product.getName(),product.getBrand().getName(),product.getStatus(),wishlists.stream().anyMatch(wi->wi.getProduct().equals(product)),(product.getAppliedOffer()!=null && product.getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? product.getAppliedOffer().getOfferName():null,(product.getAppliedOffer()!=null && product.getAppliedOffer().getEndDate().isAfter(LocalDate.now())) ? product.getAppliedOffer().getDiscountValue() : null,variantCards,variantCards.getFirst());
 
                 }
                         );

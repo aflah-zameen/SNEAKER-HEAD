@@ -1,24 +1,28 @@
 package com.e_commerce.SNEAKERHEAD.DTO;
 
 import com.e_commerce.SNEAKERHEAD.Entity.UserAddress;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Component
-@Setter
 @Getter
-@ToString
-public class SalesOrderDTO {
+@Setter
+@Component
+@AllArgsConstructor
+@NoArgsConstructor
+public class OrderEntityDTO {
     private Long id;
     private String userName;
-    private UserAddress address;
-    private String paymentMethod;
-    private Double orderTotal;
+    private AddressDTO address;
     private Double deductedAmount;
+    private Double orderTotal;
     private LocalDate orderDate;
+    private String paymentMethod;
     private String orderStatus;
+    private boolean cancellation;
+
 }

@@ -21,12 +21,15 @@
             </a>
             <a href="/user/cart" class="text-dark d-none d-sm-flex"><i class="bi bi-bag fs-4"></i></a>
             <i class="bi bi-person fs-4" id="userIcon" data-bs-toggle="dropdown" aria-expanded="false"></i>
-            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;">
+            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;" th:if="${userName}">
                 <li style="padding-left:0.8rem;"><a href="/user/overview"><span style="font-size:15px;">Hello,</span><h6 style="font-weight:600;" th:text="${userName}"></h6></a></li>
                 <li><button class="dropdown-item" onclick="window.location.href='/user/orders'">Orders</button></li>
                 <li><button class="dropdown-item" onclick="window.location.href='/user/editprofile'">Edit profile</button></li>
                 <li><button class="dropdown-item" onclick="window.location.href='/user/addresses'">Saved addresses</button></li>
                 <li><button class="dropdown-item" onclick="window.location.href='/logout'">Logout</button></li>
+            </ul>
+            <ul class="dropdown-menu dropdown-toggle " aria-labelledby="userIcon" style="position:absolute; left:81rem;" th:unless="${userName}">
+                <li><button class="dropdown-item" onclick="window.location.href='/userlogin'">Login</button></li>
             </ul>
         </div>
     </div>
@@ -38,19 +41,19 @@
             <li class="nav-item">
                 <a class="nav-link" href="/user/shop">Shop</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/user/men">Men</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/user/women">Women</a>
-            </li>
+<!--            <li class="nav-item">-->
+<!--                <a class="nav-link" href="/user/men">Men</a>-->
+<!--            </li>-->
+<!--            <li class="nav-item">-->
+<!--                <a class="nav-link" href="/user/women">Women</a>-->
+<!--            </li>-->
             <li class="nav-item">
                 <a class="nav-link" href="#">Brands</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link sale" href="#">Sale</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" th:if="${userName}">
                 <a class="nav-link" href="#" onclick="openReferralModal()">Refer a Friend</a>
             </li>
             <li class="nav-item">

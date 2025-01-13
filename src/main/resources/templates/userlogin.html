@@ -209,6 +209,11 @@
                 </button>
             </div>
         </div>
+        <div class="position-absolute" style="right:5rem; top:10rem;">
+            <h4>Instant Login</h4>
+            <button onclick="instantSignIn(this)" data-user-name="aflahzameen3@gmail.com" data-user-password="Aflah@123" class="btn btn-dark">User Login</button>
+            <button onclick="instantSignIn(this)" data-user-name="admin@gmail.com" data-user-password="admin123" class="btn btn-dark">Admin Login</button>
+        </div>
 
         <footer class="footer">
             © 2023 Sneaker Head. All rights reserved.
@@ -293,6 +298,44 @@ async function loginWithGoogle() {
     } catch (error) {
         // Handle any errors
         const credentialError = document.getElementById('credentialError');
+        credentialError.style.display = 'block';
+        credentialError.textContent = `An error occurred: ${error.message}`;
+    }
+}
+
+async function instantSignIn(data)
+{
+            const userName = data.getAttribute("data-user-name");
+            const password = data.getAttribute("data-user-password");
+            const credentialError = document.getElementById('credentialError');
+            credentialError.style.display = 'none';
+            const formData = {
+            username: userName,
+            password: password, // Updated to use passwordInput
+            };
+    try {
+            const response = await fetch('/logindata', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded', // Use form-urlencoded for Spring Security
+                },
+                body: new URLSearchParams(formData).toString(), // Format as form-urlencoded
+            });
+
+            // Handle response
+            if (response.ok) {
+                credentialError.style.display = 'none'; // Hide error message on successful login
+                window.location.href = "/";
+            } else {
+                // Parse the error response
+                const errorData = await response.json();
+
+                // Display error message
+                credentialError.style.display = 'block'; // Show the error message
+                credentialError.textContent = errorData.message; // Update the message text
+            }
+    } catch (error) {
+        // Handle unexpected errors
         credentialError.style.display = 'block';
         credentialError.textContent = `An error occurred: ${error.message}`;
     }

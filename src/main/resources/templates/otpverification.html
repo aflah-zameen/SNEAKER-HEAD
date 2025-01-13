@@ -153,7 +153,7 @@
                     <div id="otpFeedback" style="color: red;"></div> <!-- This will show validation messages -->
 
                     <div class="timer">
-                        <span id="timer">00:20</span> sec
+                        <span id="timer">01:00</span> sec
                         <span class="ms-2">Don't receive code?</span>
                         <a href="#" class="resend" onclick="handleResend(event)" id="resendButton">Re-send</a>
                     </div>
@@ -170,7 +170,7 @@
             </div>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Handle OTP input fields
 const inputs = document.querySelectorAll('.otp-input');
@@ -200,7 +200,7 @@ inputs.forEach((input, index) => {
 });
 
 // Timer functionality
-let timeLeft = 20;
+let timeLeft = 60;
 const timerElement = document.getElementById('timer');
 const resendButton = document.getElementById('resendButton');
 
@@ -249,14 +249,24 @@ function submitOtp(event) {
         if (data.verified) {
             otpFeedback.textContent = "OTP verified successfully!";
             otpFeedback.style.color = 'green'; // Green for success
-            if(data.forgetPassword)
-            {
-                window.location.href="/resetpassword";
-            }
-            else
-            {
-            window.location.href="/login";
-            }
+            Swal.fire({
+                icon: "success",
+                title: "OTP successfully verified",
+                text: "Now you are a user. Enjoy the experience",
+                confirmButtonText: "OK",
+                allowOutsideClick: false,
+            })
+            .then(()=>{
+               if(data.forgetPassword)
+                {
+                    window.location.href="/resetpassword";
+                }
+                else
+                {
+                window.location.href="/login";
+                }
+            });
+
         } else {
             otpFeedback.textContent = "OTP is wrong, please try again.";
             otpFeedback.style.color = 'red'; // Red for error
@@ -274,7 +284,7 @@ function submitOtp(event) {
 function handleResend(event) {
     event.preventDefault();
     if (timeLeft === 0) {
-        timeLeft = 20; // Reset timer
+        timeLeft = 60; // Reset timer
         timerInterval = setInterval(updateTimer, 1000);
         resendButton.style.opacity = '0.5';
         resendButton.style.pointerEvents = 'none';

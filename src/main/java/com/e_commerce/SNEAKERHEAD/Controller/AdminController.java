@@ -2,9 +2,7 @@ package com.e_commerce.SNEAKERHEAD.Controller;
 
 import com.e_commerce.SNEAKERHEAD.DTO.*;
 import com.e_commerce.SNEAKERHEAD.Entity.*;
-import com.e_commerce.SNEAKERHEAD.Mappers.OfferMapper;
-import com.e_commerce.SNEAKERHEAD.Mappers.ProductMapper;
-import com.e_commerce.SNEAKERHEAD.Mappers.SalesOrderMapper;
+import com.e_commerce.SNEAKERHEAD.Mappers.*;
 import com.e_commerce.SNEAKERHEAD.Repository.*;
 import com.e_commerce.SNEAKERHEAD.Service.*;
 import com.e_commerce.SNEAKERHEAD.Service.AdminManagementService;
@@ -25,9 +23,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Date;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -114,6 +114,15 @@ AdminManagementService adminManagementService;
     @Autowired
     DashboardService dashboardService;
 
+    @Autowired
+    AllOrdersDTO allOrdersDTO;
+
+    @Autowired
+    AddressMapper addressMapper;
+
+    @Autowired
+    UserMapper userMapper;
+
     @GetMapping("/dashboard")
     public String showDashboard()
     {
@@ -180,8 +189,13 @@ AdminManagementService adminManagementService;
         return "addproduct";
     }
     @GetMapping("/product/editproduct/{id}")
-    public String EditProduct(@PathVariable Long id)
+    public String EditProduct(@PathVariable Long id,Model model)
     {
+        Product product = productRepository.findById(id).orElse(new Product());
+        ProductDto productDto=productMapper.toDTO(product);
+        AddProduct data = productService.addProduct();
+        model.addAttribute("data",data);
+        model.addAttribute("product",productDto);
         return "editproduct";
     }
 
@@ -223,9 +237,44 @@ AdminManagementService adminManagementService;
 
     }
 
-    @GetMapping("/product/variant")
-    public String getAddProduct(HttpServletRequest request,Model model)
+    @ResponseBody
+    @PutMapping("/product/edit/data")
+    public ResponseEntity<?> editProduct(@Valid @RequestBody ProductDto productDto,BindingResult result)
     {
+        if (result.hasErrors()) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(result.getAllErrors());
+        }
+        else if(productDto.getId()==null)
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("product not found");
+        }
+        Product product = productRepository.findById(productDto.getId()).orElse(new Product());
+        product.setName(productDto.getName());
+        product.setCategory(categoryRepository.findByName(productDto.getCategoryName()).orElse(new Category()));
+        product.setBrand(brandRepository.findByName(productDto.getBrandName()).orElse(new Brand()));
+        product.setWeight(productDto.getWeight());
+        product.setManufacturer(product.getManufacturer());
+        product.setGenericName(productDto.getGenericName());
+        product.setDescription(productDto.getDescription());
+        product.setImportedBy(productDto.getImportedBy());
+        product.setCountryOfOrigin(product.getCountryOfOrigin());
+        product.setMarketedBy(productDto.getMarketedBy());
+        productRepository.save(product);
+        return ResponseEntity.ok("success");
+    }
+
+    @GetMapping("/product/variant")
+    public String getAddProduct(@RequestParam(name = "productId", required = false) Long productId,HttpServletRequest request,Model model)
+    {
+        if(productId != null)
+        {
+            Product product = productRepository.findById(productId).orElse(new Product());
+            ProductDto productDto = productService.productToProductDto(product);
+            model.addAttribute("product",productDto);
+            return "addProductVariant";
+        }
         HttpSession session = request.getSession();
         String productName = (String)session.getAttribute("productName");
         if(productRepository.existsByName(productName))
@@ -243,20 +292,74 @@ AdminManagementService adminManagementService;
 
     @ResponseBody
     @PostMapping("/product/variant")
-    public ResponseEntity<?> addProduct(@RequestBody ProductVariantDTO productVariantDto, HttpServletRequest request )
+    public ResponseEntity<?> addProduct(@RequestParam("articleCode") String articleCode,
+                                        @RequestParam("colorCode") String colorCode,
+                                        @RequestParam("color") String color,
+                                        @RequestParam("price") Double price,
+                                        @RequestParam("quantity") Integer quantity,
+                                        @RequestParam("maxQuantity") Integer maxQuantity,
+                                        @RequestParam("size") String[] size,
+                                        @RequestParam("images") List<MultipartFile> images,
+                                        @RequestParam("productId") Long productId)
     {
-        if(productVariantRepository.existsByArticleCode(productVariantDto.getArticleCode()))
+        if(productVariantRepository.existsByArticleCode(articleCode))
         {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("This variant already exist");
         }
-        HttpSession session = request.getSession();
-        Long productId =(Long) session.getAttribute("productId");
-        adminManagementService.addProductVariant(productVariantDto,productId);
-        return ResponseEntity.ok("Product successfully added");
+        try {
+
+            adminManagementService.addProductVariant(articleCode,colorCode,color,price,quantity,maxQuantity,size,images, productId);
+            return ResponseEntity.ok("Product successfully added");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    @ResponseBody
+    @PutMapping("/product/variant/edit")
+    public ResponseEntity<?> editVariant(@RequestParam("articleCode") String articleCode,
+                                         @RequestParam("colorCode") String colorCode,
+                                         @RequestParam("color") String color,
+                                         @RequestParam("price") Double price,
+                                         @RequestParam("quantity") Integer quantity,
+                                         @RequestParam("maxQuantity") Integer maxQuantity,
+                                         @RequestParam(value = "size" , required = false) String[] size,
+                                         @RequestParam(value = "images" , required = false) List<MultipartFile> images,
+                                         @RequestParam("productId") Long productId,
+                                         @RequestParam("id") Long id) throws IOException
+    {
+        ProductVariant productVariant = productVariantRepository.findById(id).orElse(new ProductVariant());
+        productVariant.setColorCode(colorCode);
+       if(images != null && !images.isEmpty())
+       {
+           List<String> paths = adminManagementService.saveImagesToDirectory(images,articleCode,productVariant.getProduct().getName());
+           if(productVariant.getImages() != null)
+            paths.addAll(productVariant.getImages());
+           productVariant.setImages(paths);
+       }
+        productVariant.setArticleCode(articleCode);
+        if(size.length>0 )
+            productVariant.setSize(size);
+        productVariant.setPrice(price);
+        productVariant.setQuantity(quantity);
+        productVariant.setColor(color);
+        productVariant.setMaxQuantity(maxQuantity);
+        productVariantRepository.save(productVariant);
+        return ResponseEntity.ok("success");
+    }
 
+    @ResponseBody
+    @PutMapping("/variant/image/remove")
+    public ResponseEntity<?> removeImage(@RequestBody Map<String ,Object> formDataImage)
+    {
+        ProductVariant productVariant = productVariantRepository.findById(Long.parseLong((String)formDataImage.get("variantId"))).orElse(new ProductVariant());
+        List<String>finalImages = productVariant.getImages();
+        finalImages.removeAll((List<String>)formDataImage.get("images"));
+        productVariant.setImages(finalImages);
+        productVariantRepository.save(productVariant);
+        return ResponseEntity.ok("success");
+    }
 
     @GetMapping("/category")
     public String showCategory(Model model)
@@ -518,6 +621,7 @@ AdminManagementService adminManagementService;
         transaction.setWallet(wallet);
         transaction.setAmount(order.getOrderTotal());
         transaction.setStatus("REFUNDED");
+        transaction.setTransactionDate(LocalDate.now());
         transactionRepository.save(transaction);
 
 
@@ -527,6 +631,26 @@ AdminManagementService adminManagementService;
 
         return ResponseEntity.ok("success");
 
+    }
+
+    @ResponseBody
+    @GetMapping("/orders/sorting")
+    public ResponseEntity<AllOrdersDTO> sortOrders(@RequestParam(name = "sortBy") String sortBy,
+                                        @RequestParam(name="orderType") String orderType,
+                                        @RequestParam(name="pageNumber") Integer pageNumber,
+                                        @RequestParam(name="pageSize") Integer pageSize)
+    {
+
+            Pageable pageable = PageRequest.of(pageNumber,pageSize,Sort.Direction.fromString(orderType),sortBy);
+            Page<OrderEntity> orderEntities = orderRepository.findAll(pageable);
+            List<OrderEntityDTO> orderEntityDTOS = new ArrayList<>();
+            for(OrderEntity oe : orderEntities.getContent())
+            {
+                orderEntityDTOS.add(new OrderEntityDTO(oe.getId(),oe.getUser().getFullName(),addressMapper.toDTO(oe.getAddress()),oe.getDeductedAmount(),oe.getOrderTotal(),oe.getOrderDate(),oe.getPaymentMethod(),oe.getStatus(),oe.isCancellation()));
+            }
+            allOrdersDTO.setOrders(orderEntityDTOS);
+            allOrdersDTO.setTotalPages(orderEntities.getTotalPages());
+            return ResponseEntity.ok(allOrdersDTO);
     }
 
     @ResponseBody
@@ -803,7 +927,6 @@ AdminManagementService adminManagementService;
            orderEntities = orderRepository.findByOrderDateBetweenAndStatus(startDate,endDate,"DELIVERED");
        }// Map to DTO
         salesPaginationDTO.setOrdersList(salesOrderMapper.toDTOList(orderEntityPage.getContent()));
-        System.out.println(salesPaginationDTO.getOrdersList().getFirst().getDeductedAmount());
         salesPaginationDTO.setTotalPages(orderEntityPage.getTotalPages());
         salesPaginationDTO.setOverallOrders(orderEntities.stream().count());
         salesPaginationDTO.setOverallSales(orderEntities.stream().mapToDouble(OrderEntity::getOrderTotal).sum());

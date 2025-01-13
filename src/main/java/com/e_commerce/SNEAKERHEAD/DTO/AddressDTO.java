@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @ToString
 public class AddressDTO {
     private Long id;
-    private WebUser user;
+    private UserDTO user;
 
     @NotBlank(message = "Street address is required")
     private String street;

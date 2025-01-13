@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SNEAKER HEAD - Edit Product</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Cropper.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <style>
         .navbar-brand {
  font-weight: 600;
@@ -42,7 +44,6 @@ font-family: 'Trirong',serif;
     border: 2px dashed #dee2e6;
     padding: 20px;
     text-align: center;
-    margin: 10px 0;
     cursor: pointer;
 }
 
@@ -110,193 +111,585 @@ font-family: 'Trirong',serif;
 
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10 main-content">
-            <h2 class="mb-4">Edit Products</h2>
+            <div class="d-flex justify-content-between">
+                <h2 class="mb-4">Edit Products</h2>
+                <div style="height:2rem;">
+                    <button class="btn btn-primary" th:onclick="|window.location.href='/admin/product/variant?productId=${product.id}'|">Add Variant</button>
+                </div>
+            </div>
             <form id="editProductForm" novalidate>
-                <div class="mb-3">
-                    <label for="productName" class="form-label">Product name</label>
-                    <input type="text" class="form-control" id="productName" value="WMN'S Drunk" required>
-                    <div class="invalid-feedback">Please provide a product name.</div>
-                </div>
-                <div class="mb-3">
-                    <label for="productDescription" class="form-label">Description</label>
-                    <textarea class="form-control" id="productDescription" rows="3" required>Nike Series P-900000</textarea>
-                    <div class="invalid-feedback">Please provide a product description.</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label for="productColor" class="form-label">Color</label>
-                        <input type="text" class="form-control" id="productColor" value="Red" required>
-                        <div class="invalid-feedback">Please provide a color.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="productBrand" class="form-label">Brand</label>
-                        <input type="text" class="form-control" id="productBrand" value="Nike" required>
-                        <div class="invalid-feedback">Please provide a brand.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="productCategory" class="form-label">Category</label>
-                        <input type="text" class="form-control" id="productCategory" value="Sport" required>
-                        <div class="invalid-feedback">Please provide a category.</div>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="productPrice" class="form-label">Price</label>
-                        <input type="number" class="form-control" id="productPrice" value="32000" required min="0">
-                        <div class="invalid-feedback">Please provide a valid price.</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="productQuantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="productQuantity" value="67" required min="0">
-                        <div class="invalid-feedback">Please provide a valid quantity.</div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Product Images</label>
-                    <div class="file-upload">
-                        <input type="file" class="d-none" id="productImages" multiple accept="image/*">
-                        <label for="productImages" class="mb-0">
-                            Choose Files or Drag & Drop
-                        </label>
-                    </div>
-                    <div class="uploaded-files" id="uploadedFiles">
-                        <div class="uploaded-file">
-                            File.jpg
-                            <button type="button" class="btn-close btn-close-sm"></button>
-                        </div>
-                        <div class="uploaded-file">
-                            File2.jpeg
-                            <button type="button" class="btn-close btn-close-sm"></button>
-                        </div>
-                        <div class="uploaded-file">
-                            File3.jpeg
-                            <button type="button" class="btn-close btn-close-sm"></button>
-                        </div>
-                    </div>
-                    <div class="invalid-feedback">Please upload at least 3 images.</div>
-                </div>
+                <input type="text" class="d-none"th:value="${product.id}" name="id" required>
+               <div class="productContainer row">
+                   <div class="col-md-3 mb-3">
+                       <label for="productName" class="form-label">Product name</label>
+                       <input type="text" class="form-control" id="productName" th:value="${product.name}" name="name" required>
+                       <div class="invalid-feedback">Please provide a product name.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="productDescription" class="form-label">Description</label>
+                       <textarea class="form-control" id="productDescription" rows="3" th:text="${product.description}" name="description"
+                                 required></textarea>
+                       <div class="invalid-feedback">Please provide a product description.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="productBrand" class="form-label">Brand</label>
+                       <select class="form-select" id="productBrand" name="brand" required>
+                           <option th:value="${product.brandName}" selected disabled th:text="${product.brandName}">Select Brand</option>
+                           <option th:each="brand : ${data.brands}" th:value="${brand}" th:text="${brand}"
+                                   style="color:black;"></option>
+                       </select>
+                       <div class="invalid-feedback">Please select a brand.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="productCategory" class="form-label">Category</label>
+                       <select class="form-select" id="productCategory" name="category" required>
+                           <option th:value="${product.categoryName}" selected disabled th:text="${product.categoryName}">Select Category</option>
+                           <option th:each="category : ${data.categories}" th:value="${category}"
+                                   th:text="${category}"></option>
+                       </select>
+                       <div class="invalid-feedback">Please select a category.</div>
+                   </div>
+                   <div class="col-md-3 mb-1">
+                       <label for="genericName" class="form-label">Generic name</label>
+                       <input type="text" class="form-control" id="genericName" name="genericName" th:value="${product.genericName}">
+                       <div class="invalid-feedback">Please provide this detais.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="weight" class="form-label">Weight</label>
+                       <input type="number" class="form-control" id="weight" name="weight" step="0.01" min="0" th:value="${product.weight}">
+                       <div class="invalid-feedback">Please provide the weight.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="manufacturer" class="form-label">Manufacturer</label>
+                       <input type="text" class="form-control" id="manufacturer" name="manufacturer" th:value="${product.manufacturer}" >
+                       <div class="invalid-feedback">Please provide a article code.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="countryOfOrigin" class="form-label">Country of Origin</label>
+                       <input type="text" class="form-control" id="countryOfOrigin" name="countryOfOrigin" th:value="${product.countryOfOrigin}">
+                       <div class="invalid-feedback">Please provide country of origin.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="importedBy" class="form-label">Imported by</label>
+                       <input type="text" class="form-control" id="importedBy" name="importedBy" th:value="${product.importedBy}">
+                       <div class="invalid-feedback">Please provide this field.</div>
+                   </div>
+                   <div class="col-md-3 mb-3">
+                       <label for="marketedBy" class="form-label">Marketed by</label>
+                       <input type="text" class="form-control" id="marketedBy" name="marketedBy" th:value="${product.marketedBy}">
+                       <div class="invalid-feedback">Please provide this detail.</div>
+                   </div>
+               </div>
                 <button type="submit" class="btn btn-primary">Save Product</button>
             </form>
+
+            <div th:if="${product.productVariantDTOs}" th:each="variant : ${product.productVariantDTOs}">
+                <h2 class="mt-3">Edit Variant</h2>
+                <form>
+                    <input type="text" class="d-none" name="productId" th:value="${product.id}">
+                    <input type="text" class="d-none" name="id" th:value="${variant.id}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label  class="form-label">Article Code</label>
+                            <input type="text" class="form-control" name="articleCode" th:value="${variant.articleCode}">
+                            <div class="invalid-feedback">Please provide a article code.</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Color</label>
+                            <div  class="d-flex">
+                                <input type="text"  th:value="${variant.color}" class="color" name="color"  required>
+                                <input type="color" required style="height:2.5rem;" class="colorCode" name="colorCode" th:value="${variant.colorCode}">
+                            </div>
+                            <div class="invalid-feedback">Please provide a color.</div>
+                        </div>
+                        <div class="col-md-3 price-header">
+                            <label class="form-label">Price</label>
+                            <div style="display: flex; align-items: center;">
+                                <span style="padding: 8px; border: 1px solid #ccc;">₹</span>
+                                <input type="number" class="form-control product-price" name="price"
+                                       placeholder="e.g., 99.99"
+                                       step="0.01" min="0"
+                                       style="flex: 1; border: 1px solid #ccc; padding: 8px; border-radius: 0px;"
+                                       th:value="${variant.price}" >
+                            </div>
+                            <div class="invalid-feedback">Please provide a valid price.</div>
+                        </div>
+                        <div class="col-md-3 size-header">
+                            <label  class="form-label">Size</label>
+                            <select class="form-control product-size"  name="size" multiple>
+                                <option value="6">6</option>
+                                <option value="6.5">6.5</option>
+                                <option value="7">7</option>
+                                <option value="7.5">7.5</option>
+                                <option value="8">8</option>
+                                <option value="8.5">8.5</option>
+                                <option value="9">9</option>
+                                <option value="9.5">9.5</option>
+                                <option value="10">10</option>
+                                <option value="10.5">10.5</option>
+                                <option value="11">11</option>
+                                <option value="11.5">11.5</option>
+                                <option value="12">12</option>
+                                <option value="12.5">12.5</option>
+                                <option value="13">13</option>
+                            </select>
+                            <div class="invalid-feedback">Please provide sizes.</div>
+                        </div>
+                        <div class="col-md-2">
+                            <label  class="form-label">Quantity</label>
+                            <input type="number" class="form-control product-quantity"  value="67" required min="0" th:value="${variant.quantity}" name="quantity">
+                            <div class="invalid-feedback">Please provide a valid quantity.</div>
+                        </div>
+                        <div class="col-md-2">
+                            <label  class="form-label">Max quantity(per user)</label>
+                            <input type="number" class="form-control product-quantity"  required min="0" th:value="${variant.maxQuantity}" name="maxQuantity">
+                            <div class="invalid-feedback">Please provide a valid quantity.</div>
+                        </div>
+                        <div class="mb-3 col-md-4 product-image-header" >
+                            <label class="form-label">Product Images</label><span style="font-size:10px;">  (Please upload 7 images only)</span>
+                            <div class="file-upload">
+                                <input type="file" class="choose-file"  multiple accept="image/*">
+                            </div>
+                            <div class="invalid-feedback">Please upload 7 images.</div>
+                            <div  class="d-flex flex-wrap gap-2"></div>
+
+                        </div>
+                    </div>
+<!--                    <div>-->
+<!--                        <img th:src="${variant.images[0]}" style="width:10rem; height:10rem;" >-->
+<!--                    </div>-->
+                    <div class="d-flex flex-wrap gap-2 mb-3 image-header">
+                        <div th:if="variant.images" th:each="image : ${variant.images}" class="position-relative imageElement" th:data-image-name="${image}" >
+                            <img th:src="${image}" style="width:10rem; height:10rem;  cursor: pointer;">
+                            <button type="button" class="btn-close btn-image-close position-absolute top-0 end-0" th:data-image-url="${image}" onclick="removeImage(this)" ></button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary col-md-2 saveVariant"  >Save variant</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
-
+<div class="modal fade"  tabindex="-1" aria-labelledby="cropperModalLabel" id="cropperModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" >Crop Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="cropperImage"  class="img-fluid">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="cropImageButton" >Crop</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Handle file uploads
-    document.getElementById('productImages').addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        const uploadedFiles = document.getElementById('uploadedFiles');
-        
-        files.forEach(file => {
-            const fileElement = document.createElement('div');
-            fileElement.className = 'uploaded-file';
-            fileElement.innerHTML = `
-                ${file.name}
-                <button type="button" class="btn-close btn-close-sm"></button>
-            `;
-            uploadedFiles.appendChild(fileElement);
-        });
+    document.addEventListener('DOMContentLoaded', () => {
 
-        validateImages();
-    });
+    //product-form submission
 
-    // Handle drag and drop
-    const fileUpload = document.querySelector('.file-upload');
-    
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        fileUpload.addEventListener(eventName, preventDefaults, false);
-    });
+         const form = document.getElementById('editProductForm');
+        // Form Submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-    function preventDefaults (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
+            if (validateForm()) {
+                const formData = {
+                    id:Number(form.id.value),
+                    name: form.name.value,
+                    description: form.description.value,
+                    brandName: form.brand.value,
+                    categoryName: form.category.value,
+                    genericName:form.genericName.value,
+                    weight:form.weight.value,
+                    manufacturer:form.manufacturer.value,
+                    countryOfOrigin:form.countryOfOrigin.value,
+                    importedBy:form.importedBy.value,
+                    marketedBy:form.marketedBy.value
+                };
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        fileUpload.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        fileUpload.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight(e) {
-        fileUpload.classList.add('border-primary');
-    }
-
-    function unhighlight(e) {
-        fileUpload.classList.remove('border-primary');
-    }
-
-    fileUpload.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        document.getElementById('productImages').files = files;
-        
-        // Trigger change event to update UI
-        const event = new Event('change');
-        document.getElementById('productImages').dispatchEvent(event);
-    }
-
-    // Form validation and submission
-    const form = document.getElementById('editProductForm');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (validateForm()) {
-            // Here you would typically send the form data to a server
-            alert('Product updated successfully!');
-        }
-    });
-
-    function validateForm() {
-        let isValid = true;
-        const inputs = form.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            if (!input.value.trim()) {
-                isValid = false;
-                input.classList.add('is-invalid');
-            } else {
-                input.classList.remove('is-invalid');
+                // Send JSON data to the server
+                fetch('/admin/product/edit/data', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                })
+                    .then((response) => {
+                        if (response.ok) {
+                                  Swal.fire({
+                                    icon: "success",
+                                    title: "Changes Applied",
+                                    text: "Product details are updated",
+                                    confirmButtonText: "OK", // This sets the button text
+                                    allowOutsideClick: false,
+                                });
+                        } else {
+                              Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: "Failed to edit product",
+                                confirmButtonText: "OK", // This sets the button text
+                                allowOutsideClick: false,
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Failed to connect to the server. Please try again later.",
+                        });
+                    });
             }
         });
 
-        isValid = validateImages() && isValid;
+         // Form Validation
+         function validateForm() {
+             let isValid = true;
 
-        return isValid;
+             // Validate text fields
+             const textFields = form.querySelectorAll('input[type="text"], textarea ,input[type="number"]');
+             textFields.forEach((input) => {
+                 if (!input.value.trim()) {
+                     isValid = false;
+                     input.classList.add('is-invalid');
+                 } else {
+                     input.classList.remove('is-invalid');
+                 }
+             });
+
+
+
+             // Validate dropdowns (brand, category)
+             const dropdowns = form.querySelectorAll('select');
+             dropdowns.forEach((select) => {
+                 if (!select.value.trim()) {
+                     isValid = false;
+                     select.classList.add('is-invalid');
+                 } else {
+                     select.classList.remove('is-invalid');
+                 }
+             });
+            return isValid;
+         }
+
+         // Real-time Validation for Fields
+         form.querySelectorAll('input, textarea, select').forEach((input) => {
+             input.addEventListener('blur', function () {
+                 if (!this.value.trim()) {
+                     this.classList.add('is-invalid');
+                 } else {
+                     this.classList.remove('is-invalid');
+                 }
+             });
+         });
+
+
+     });
+
+
+
+
+
+
+
+
+
+    //variant-edit-save
+
+    let cropper = null;
+    let imageNames = []; // Array to store image names
+    let currentFile;
+    let currentForm="";
+    let imageQueue = [];
+    let removedImage=[];
+
+    function removeImage(data)
+    {
+        data.closest("div").remove();
+        const imageUrl = data.getAttribute("data-image-url");
+        removedImage.push(imageUrl);
+        console.log(removedImage);
     }
 
-    function validateImages() {
-        const uploadedFiles = document.getElementById('uploadedFiles');
-        const fileUploadContainer = uploadedFiles.closest('.mb-3');
-        if (uploadedFiles.children.length < 3) {
-            fileUploadContainer.classList.add('is-invalid');
-            return false;
-        } else {
-            fileUploadContainer.classList.remove('is-invalid');
-            return true;
-        }
-    }
 
-    // Remove uploaded file
-    document.getElementById('uploadedFiles').addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-close')) {
-            e.target.closest('.uploaded-file').remove();
-            validateImages();
+    const cropperModal = new bootstrap.Modal(document.getElementById('cropperModal'));
+    const cropperImage = document.getElementById('cropperImage');
+    const productImagesInput = document.getElementById('productImages');
+
+    // Handle Image Selection
+
+    document.querySelectorAll(".choose-file").forEach(add => {
+        add.addEventListener("change",function (e) {
+            currentForm = this.closest("form");
+            if (imageQueue.length >= 7) {
+              Swal.fire({
+                                icon: "error",
+                                title: "Limit Exceeded",
+                                text: `You can only upload 7 images!`,
+                                confirmButtonText: "OK", // This sets the button text
+                                allowOutsideClick: false,
+                            });
+                return;
+            }
+            const file = e.target.files[0];
+            if (file) {
+              currentFile = file;
+              const reader = new FileReader();
+              reader.onload = function (event) {
+                cropperImage.src = event.target.result; // Load the image into the cropper
+                cropperModal.show(); // Open the modal for cropping
+              };
+              reader.readAsDataURL(file);
+            }
+
+        });
+    });
+
+
+    // Initialize Cropper when Modal is Fully Shown
+     document.getElementById('cropperModal').addEventListener('shown.bs.modal', () => {
+         if (cropper) {
+             cropper.destroy();
+         }
+         cropper = new Cropper(cropperImage, {
+             aspectRatio: 1, // Optional aspect ratio
+             viewMode: 1,
+             responsive: true,
+             autoCropArea: 0.8,
+             zoomable: true,
+             scalable: true,
+         });
+     });
+
+     // Destroy Cropper when Modal is Hidden
+     document.getElementById('cropperModal').addEventListener('hidden.bs.modal', () => {
+         if (cropper) {
+             cropper.destroy();
+             cropper = null;
+         }
+     });
+
+     // Handle Cropping
+    document.getElementById("cropImageButton").addEventListener("click", () => {
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas({
+                width: 600, // Set larger canvas dimensions
+                height: 600,
+            });
+
+            canvas.toBlob((blob) => {
+                // Generate a unique name for the image
+                const fileName = `${Date.now()}_${currentFile.name}`;
+                const croppedImageURL = canvas.toDataURL("image/png");
+
+                // Add image to the queue
+                imageQueue.push({ fileName, blob });
+
+                // Add Cropped Image to Preview
+                const imageDiv = document.createElement("div");
+                imageDiv.className = "position-relative imageElement";
+                imageDiv.setAttribute("data-image-name", fileName);
+                imageDiv.innerHTML = `
+                    <img src="${croppedImageURL}" style="width:10rem; height:10rem; cursor: pointer;">
+                    <button type="button" class="btn-close btn-image-close position-absolute top-0 end-0"></button>
+                `;
+
+                const parentDiv = currentForm.querySelector(".image-header");
+                parentDiv.appendChild(imageDiv);
+
+                // Handle Image Removal
+                    imageDiv.querySelector(".btn-close").addEventListener("click", () => {
+                        imageDiv.remove();
+                        imageQueue = imageQueue.filter((image) => image.fileName !== fileName); // Remove from queue
+                    });
+
+                // Destroy cropper and hide modal
+                cropper.destroy();
+                cropper = null;
+                cropperModal.hide();
+            }, "image/png");
         }
     });
 
-    // Real-time validation
-    form.querySelectorAll('input, textarea').forEach(input => {
-        input.addEventListener('blur', function() {
-            if (!this.value.trim()) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
-            }
-        });
+     //select-size
+                function getSelectedSizes(currentForm) {
+                const selectElement = currentForm.querySelector(".product-size");
+                const selectedSizes = Array.from(selectElement.selectedOptions).map(option => option.value);
+                return selectedSizes;
+                }
+
+      // Form Validation
+                function validateVariantForm(currentForm) {
+                    let isValid = true;
+
+                    // Validate text fields
+                    const textFields = currentForm.querySelectorAll('input[type="text"], textarea,input[type="number"]');
+                    textFields.forEach((input) => {
+                        if (!input.value.trim()) {
+                            isValid = false;
+                            input.classList.add('is-invalid');
+                        } else {
+                        input.classList.remove('is-invalid');
+                        }
+                    });
+
+                    // Validate price
+                    const price = currentForm.querySelector(".product-price");
+                    const priceFeedback = document.querySelector('.price-header .invalid-feedback');
+
+                    if (!price.value.trim() || parseFloat(price.value) <= 0) {
+                        isValid = false;
+                        price.classList.add('is-invalid');
+                        if (priceFeedback) {
+                            priceFeedback.style.display = 'block';
+                        } else {
+                            console.error('Feedback element not found');
+                        }
+                    } else {
+                        price.classList.remove('is-invalid');
+                        if (priceFeedback) {
+                            priceFeedback.style.display = 'none';
+                        }
+                    }
+                    // Validate quantity
+                     const quantity = currentForm.querySelector(".product-quantity");
+                     if (!quantity.value.trim() || parseInt(quantity.value) <= 0) {
+                         isValid = false;
+                         quantity.classList.add('is-invalid');
+                     } else {
+                         quantity.classList.remove('is-invalid');
+                     }
+
+<!--                     // Validate size-->
+<!--                     const size = currentForm.querySelector(".product-size");-->
+<!--                     if (!size.value.trim() || isNaN(parseFloat(size.value)) || parseFloat(size.value) <= 0) {-->
+<!--                         isValid = false;-->
+<!--                         size.classList.add('is-invalid');-->
+<!--                     } else {-->
+<!--                         size.classList.remove('is-invalid');-->
+<!--                     }-->
+
+
+                     // Validate images
+                     const image = currentForm.querySelector(".image-header");
+                     const imageFeedback = currentForm.querySelector(".product-image-header");
+                     let count =0;
+                     const imageElements = image.querySelectorAll(".imageElement");
+                     imageElements.forEach(image => count++);
+                     if (count < 7) {
+                         isValid = false;
+                         imageFeedback.classList.add('is-invalid');
+                     }
+                     else{
+                     imageFeedback.classList.remove('is-invalid');
+                     }
+                     return isValid;
+                }
+
+
+    document.querySelectorAll(".saveVariant").forEach(btn => {
+           btn.addEventListener("click", function (){
+                currentForm = this.closest("form");
+
+
+
+
+
+                currentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                if (validateVariantForm(currentForm)) {
+                    const sizes = getSelectedSizes(currentForm);
+                    const variantId = currentForm.id.value;
+                    const formData = new FormData();
+                    formData.append("productId", currentForm.productId.value);
+                    formData.append("id", currentForm.id.value);
+                    formData.append("articleCode", currentForm.articleCode.value);
+                    formData.append("colorCode", currentForm.colorCode.value);
+                    formData.append("color", currentForm.color.value);
+                    formData.append("price", parseFloat(currentForm.price.value));
+                    formData.append("quantity", parseInt(currentForm.quantity.value));
+                    formData.append("maxQuantity", parseInt(currentForm.maxQuantity.value));
+                    formData.append("size", sizes);
+
+                   // Append images from the queue
+                        imageQueue.forEach((image, index) => {
+                            formData.append("images", image.blob, image.fileName); // Append each image
+                        });
+
+
+                    // Send JSON data to the server
+                    fetch('/admin/product/variant/edit', {
+                        method: 'PUT',
+                        body: formData,
+                    })
+                        .then((response) => {
+                            if (response.ok) {
+                                const formDataImage= {
+                                    variantId : variantId,
+                                    images : removedImage
+                                };
+                                  fetch("/admin/variant/image/remove",{
+                                    method: "PUT",
+                                     headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                    body : JSON.stringify(formDataImage),
+                                  })
+                                  .then(response => {
+                                        if(response.ok)
+                                        {
+                                            Swal.fire({
+                                            icon: "success",
+                                            title: "Product Added",
+                                            text: `Product added successfully!`,
+                                            confirmButtonText: "OK", // This sets the button text
+                                            allowOutsideClick: false,
+                                        });
+                                        removedImage=[];
+                                        imageFiles = [];
+                                        }
+                                        else {
+                                              Swal.fire({
+                                                icon: "error",
+                                                title: "Error",
+                                                text: "Failed to add variant",
+                                                confirmButtonText: "OK", // This sets the button text
+                                                allowOutsideClick: false,
+                                            });
+                                        }
+                                  })
+                            } else {
+                                  Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: "Failed to add variant",
+                                    confirmButtonText: "OK", // This sets the button text
+                                    allowOutsideClick: false,
+                                });
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: error,
+                            });
+                        });
+                }
+                });
+
+           });
     });
 </script>
 

@@ -57,7 +57,7 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             }
             else
             {
-                Integer wishlistCount = wishlistRepository.findAllByUser_id(user.getId()).size();
+                Integer wishlistCount = wishlistRepository.findAllByUser_id(user.getId()).stream().filter(wish -> wish.getProduct().getStatus()).toList().size();
                 session.setAttribute("wishlistCount",wishlistCount);
             }
 

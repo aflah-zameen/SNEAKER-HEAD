@@ -21,6 +21,7 @@ public class ProductVariantDTO {
    private String articleCode;
    private Double price;
    private String colorCode;
+   private String color;
    private Integer quantity;
    private String[] size;
    private List<String> images;

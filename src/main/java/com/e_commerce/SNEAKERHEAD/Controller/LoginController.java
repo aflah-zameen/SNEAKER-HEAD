@@ -1,5 +1,6 @@
 package com.e_commerce.SNEAKERHEAD.Controller;
 
+import com.e_commerce.SNEAKERHEAD.DTO.ResetPasswordDTO;
 import com.e_commerce.SNEAKERHEAD.DTO.UserDTO;
 import com.e_commerce.SNEAKERHEAD.Entity.WebUser;
 import com.e_commerce.SNEAKERHEAD.Mappers.UserMapper;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,11 +50,10 @@ public class LoginController {
             }
             else if("USER".equals(role))
             {
-                System.out.println(role+">>>>>");
-                return "redirect:/user/home";
+                return "redirect:/user/shop";
             }
         }
-        return "redirect:/userlogin";
+        return "index";
     }
     @GetMapping("/userlogin")
     public String LoginPage(HttpSession session)
@@ -86,7 +89,6 @@ public class LoginController {
 
             // Save user details and OTP in session
             HttpSession session = request.getSession();
-            System.out.println(userDTO);
             session.setAttribute("userdata", userDTO);
             session.setAttribute("password",user.getPassword());
             session.setAttribute("otp", otp);
@@ -104,6 +106,8 @@ public class LoginController {
     @GetMapping("/otpverification")
     public String Verification(HttpServletRequest request,Model model){
         HttpSession session = request.getSession();
+        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(1);
+        session.setAttribute("expirationTime",expirationTime);
         UserDTO user = (UserDTO) session.getAttribute("userdata");
         String email = user.getEmail();
         model.addAttribute("email",email);
@@ -114,6 +118,8 @@ public class LoginController {
     public String Verification(@PathVariable String email,HttpServletRequest request,Model model){
         HttpSession session = request.getSession();
         session.setAttribute("forgetPassword",true);
+        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(1);
+        session.setAttribute("expirationTime",expirationTime);
         model.addAttribute("email",email);
         return "otpverification";
     }
@@ -124,6 +130,7 @@ public class LoginController {
         Map<String, Object> response = new HashMap<>();
         HttpSession session = request.getSession();
         String Otp = (String)session.getAttribute("otp");
+        LocalDateTime expirationTime =(LocalDateTime) session.getAttribute("expirationTime");
         if((boolean)session.getAttribute("forgetPassword") )
         {
             response.put("forgetPassword",true);
@@ -131,7 +138,8 @@ public class LoginController {
         else{
             response.put("forgetPassword",false);
         }
-        if(Otp.equals(userOtp))
+        System.out.println(LocalDateTime.now()+">>"+expirationTime);
+        if(Otp.equals(userOtp) && LocalDateTime.now().isBefore(expirationTime) )
         {
             UserDTO userDTO =(UserDTO) session.getAttribute("userdata");
             adminManagementService.addUser(userDTO,session);
@@ -152,6 +160,9 @@ public class LoginController {
         UserDTO user =(UserDTO) session.getAttribute("userdata");
         otpService.sendOtpEmail(user.getEmail(), otp);
         session.setAttribute("otp", otp);
+        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(1);
+        System.out.println(expirationTime);
+        session.setAttribute("expirationTime",expirationTime);
         response.put("success", true);
         return ResponseEntity.ok(response);
     }
@@ -167,7 +178,8 @@ public class LoginController {
     {
         HttpSession session = request.getSession();
         WebUser user = userRepository.findByEmail(email).orElse(new WebUser());
-        session.setAttribute("userdata",user);
+        UserDTO userDTO = userMapper.toDTO(user);
+        session.setAttribute("userdata",userDTO);
         if(user.getId() == null)
             return ResponseEntity.status(HttpStatus.CONFLICT).body("user not found");
         // Generate OTP and send email
@@ -189,11 +201,19 @@ public class LoginController {
 
     @ResponseBody
     @PostMapping("/resetpassword/data")
-    public ResponseEntity<?> resetPassword(@RequestBody WebUser user, BindingResult result)
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO, BindingResult result)
     {
         if(result.hasErrors())
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Some went wrong");
-        adminManagementService.resetPassword(user);
-        return ResponseEntity.status(HttpStatus.OK).body("password changed successfully");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    result.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
+        if(adminManagementService.resetPassword(resetPasswordDTO))
+        {
+            return ResponseEntity.status(HttpStatus.OK).body("password changed successfully");
+        }
+        else
+        {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("The password same as your previous!");
+        }
+
     }
 }

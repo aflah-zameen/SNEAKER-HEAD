@@ -34,7 +34,7 @@ public class ProductVariant {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "color")
+    @Column(name = "color_name")
     private String color;
 
     @Column(name="color_code")

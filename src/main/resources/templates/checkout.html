@@ -207,8 +207,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-dark">Home</a></li>
-            <li class="breadcrumb-item active">Trending</li>
+            <li class="breadcrumb-item"><a href="/user/cart" class="text-decoration-none text-dark">cart</a></li>
+            <li class="breadcrumb-item active">checkout</li>
         </ol>
     </nav>
 
@@ -968,23 +968,23 @@
                         },
                          modal: {
                             ondismiss: function () {
-                            // Handle the case when the payment modal is closed
-                            fetch(`/user/razorpay?couponId=${data.couponId}&addressId=${data.addressId}&selectedMethod=${data.paymentMethod}&amount=${orderDetails.amount}&status=unpaid`, {
-                                method: 'POST',
-                            })
-                            .then((response) => {
-                                if (response.ok) {
-                                    Swal.fire({
-                                        icon: "warning",
-                                        title: "Payment Cancelled",
-                                        text: "Your order has been placed with an unpaid status. Complete payment from the orders page.",
-                                        confirmButtonText: "Go to Orders",
-                                    }).then(() => {
+                                // Handle the case when the payment modal is closed
+                                fetch(`/user/razorpay?couponId=${data.couponId}&addressId=${data.addressId}&selectedMethod=${data.paymentMethod}&amount=${orderDetails.amount}&status=unpaid&referralId=${referralId}`, {
+                                    method: 'POST',
+                                })
+                                .then((response) => {
+                                    if (response.ok) {
+                                        Swal.fire({
+                                            icon: "warning",
+                                            title: "Payment Cancelled",
+                                            text: "Your order has been placed with an unpaid status. Complete payment from the orders page.",
+                                            confirmButtonText: "Go to Orders",
+                                        }).then(() => {
                                         window.location.href = "/user/orders"; // Navigate to the orders page
-                                    });
-                                }
-                            })
-                            .catch((error) => console.error("Error handling unpaid order:", error));
+                                        });
+                                    }
+                                })
+                                .catch((error) => console.error("Error handling unpaid order:", error));
                             },
                          },
                     };
