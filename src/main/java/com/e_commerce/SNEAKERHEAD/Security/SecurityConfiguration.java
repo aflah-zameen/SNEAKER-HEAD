@@ -18,6 +18,8 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.stream.Collectors;
 
@@ -63,7 +65,11 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/**","/userlogin","/signup","/otpverification","/otpverification/data","/signup/userdata","/oauth2/authorization/google","/login/oauth2/code/google","/resend-otp","/forgetpassword/{email}","/forgetpassword","/otpverification/{email}","/resetpassword","/resetpassword/data","/","/user/shop").permitAll()
+                        .requestMatchers("/api/**","/userlogin","/signup","/otpverification",
+                                "/otpverification/data","/signup/userdata","/oauth2/authorization/google",
+                                "/login/oauth2/code/google","/resend-otp","/forgetpassword/{email}","/forgetpassword",
+                                "/otpverification/{email}","/resetpassword","/resetpassword/data","/",
+                                "/user/shop").permitAll()
                         .requestMatchers("/css/**","/assets/**","/js/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
@@ -91,7 +97,8 @@ public class SecurityConfiguration {
                                 .oidcUserService(customOidcUserService))
                 )
                 .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(withDefaults());
+                .requiresChannel(channel -> channel.anyRequest().requiresSecure()) // Enforce HTTPS
+                .httpBasic(AbstractHttpConfigurer::disable);
         return http.build();
     }
 
@@ -101,6 +108,19 @@ public class SecurityConfiguration {
         provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
         provider.setUserDetailsService(userDetailsService);
         return provider;
+    }
+
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("https://sneakerheadaz.shop")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+            }
+        };
     }
 
 }
