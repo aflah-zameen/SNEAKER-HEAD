@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -53,6 +54,9 @@ public class AdminManagementService {
     UserRepository userRepository;
     @Autowired
     UserMapper userMapper;
+
+    @Value("${app.image.dir}")
+    private String IMAGE_DIR;
 
     @Transactional
     public Product addProduct(ProductDto productDto, Brand brand, Category category)
@@ -108,7 +112,7 @@ public class AdminManagementService {
 
 
     public List<String> saveImagesToDirectory(List<MultipartFile> images,String articleCode,String productName) throws IOException {
-        final String IMAGE_DIR = "src/main/resources/static/assets/images/product/";
+
         List<String> paths = new ArrayList<>();
 
         // Ensure the directory exists
