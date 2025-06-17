@@ -863,10 +863,10 @@ public class UserController {
         return ResponseEntity.ok("completed");
     }
 
-    @Value("${razorpay.key.id}")
+    @Value("${RAZORPAY_KEY_ID}")
     private String razorpayKeyId;
 
-    @Value("${razorpay.key.secret}")
+    @Value("${RAZORPAY_KEY_SECRET}")
     private String razorpayKeySecret;
 
     @GetMapping("/razorpay-key")

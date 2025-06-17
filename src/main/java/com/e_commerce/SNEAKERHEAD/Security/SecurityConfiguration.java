@@ -97,7 +97,6 @@ public class SecurityConfiguration {
                                 .oidcUserService(customOidcUserService))
                 )
                 .csrf(AbstractHttpConfigurer::disable)
-                .requiresChannel(channel -> channel.anyRequest().requiresSecure()) // Enforce HTTPS
                 .httpBasic(AbstractHttpConfigurer::disable);
         return http.build();
     }
@@ -111,16 +110,5 @@ public class SecurityConfiguration {
     }
 
 
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("https://sneakerheadaz.shop")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE");
-            }
-        };
-    }
 
 }

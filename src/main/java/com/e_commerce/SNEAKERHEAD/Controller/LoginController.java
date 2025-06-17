@@ -62,7 +62,7 @@ public class LoginController {
         {
           return "redirect:/";
         }
-        return "/userlogin";
+        return "userlogin";
     }
     @GetMapping("/signup")
     public String Signup(Model model){
