@@ -32,6 +32,8 @@ import org.thymeleaf.model.IModel;
 import java.beans.Transient;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -634,6 +636,7 @@ public class UserController {
         WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());
         UserAddress address = addressRepository.findByUser_idAndDefaultAddressStatusAndStatus(user.getId(), true,"AVAILABLE").orElse(new UserAddress());
         Wallet wallet = walletRepository.findByUser_id(user.getId()).orElse(new Wallet());
+        wallet.setBalance(BigDecimal.valueOf(wallet.getBalance()).setScale(2, RoundingMode.HALF_UP).doubleValue());
         if(wallet.getId() == null)
         {
             wallet.setUser(user);
@@ -673,6 +676,9 @@ public class UserController {
     @PostMapping("/checkout")
     public ResponseEntity<?> postCheckout(@RequestBody OrderDto orderDto,BindingResult result,HttpServletRequest request)
     {
+        if(orderDto.getOrderTotal() == null || orderDto.getPaymentMethod().isEmpty() || orderDto.getPaymentMethod().trim().isEmpty()){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Order has incomplete data");
+        }
         HttpSession session = request.getSession();
         String email=(String)session.getAttribute("userEmail");
         WebUser user = userRepository.findByEmail(email).orElseThrow(()->new NullPointerException());

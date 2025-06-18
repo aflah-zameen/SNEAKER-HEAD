@@ -344,32 +344,6 @@
                 <h4 class="mb-4">2.Select a payment method</h4>
                 <div class="text-danger d-none" id="select-payment-method" >( select a method )</div>
                 <div class="payment-method">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="payment" id="credit">
-                        <label class="form-check-label" for="credit">
-                            Credit or debit card
-                        </label>
-                        <div class="payment-icons">
-<!--                            <img src="/placeholder.svg" alt="Visa">-->
-<!--                            <img src="/placeholder.svg" alt="Mastercard">-->
-<!--                            <img src="/placeholder.svg" alt="PayPal">-->
-                        </div>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="payment" id="netbanking">
-                        <label class="form-check-label" for="netbanking">
-                            Net banking
-                        </label>
-                        <select class="form-select ms-4 mt-2" style="width: auto;">
-                            <option>Choose an option</option>
-                        </select>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="payment" id="upi">
-                        <label class="form-check-label" for="upi">
-                            Other UPI Apps
-                        </label>
-                    </div>
                     <!-- Razorpay Integration -->
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="payment" id="razorpay" data-payment="razorpay">
@@ -552,14 +526,15 @@
             referralId:referralId,
             orderTotal: parseFloat(document.getElementById("totalAmountElement").textContent.replace(/[^0-9.-]+/g, ""))
         };
-        if( addressIdTemp==null || selectedMethod == null )
-         {
-                if(addressIdTemp == null)
-                    document.getElementById("select-address").classList.remove("d-none");
-                 if(selectedMethod == null )
-                    document.getElementById("select-payment-method").classList.remove("d-none");
+        if (addressIdTemp == null || selectedMethod == null || selectedMethod.trim() === "") {
+            if (addressIdTemp == null) {
+                document.getElementById("select-address").classList.remove("d-none");
+            }
+            if (selectedMethod == null || selectedMethod.trim() === "") {
+                document.getElementById("select-payment-method").classList.remove("d-none");
+            }
+        }
 
-         }
         else if(selectedMethod=='razorpay'){
             initiateRazorpay(bodyData);
          }
@@ -615,6 +590,16 @@
                         window.location.href="/user/cart";
                         });
                     });
+                }
+                else if(response.status === 409){
+                    return response.text().then(text =>{
+                        Swal.fire({
+                            icon : "warning",
+                            title : "Warning",
+                            text : "Please select a payment method",
+                            confirmButtonText : "OK"
+                        })
+                    })
                 }
                 else
                 {
