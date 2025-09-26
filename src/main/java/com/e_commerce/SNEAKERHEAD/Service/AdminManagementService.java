@@ -1,5 +1,7 @@
 package com.e_commerce.SNEAKERHEAD.Service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.e_commerce.SNEAKERHEAD.DTO.*;
 import com.e_commerce.SNEAKERHEAD.Entity.*;
 import com.e_commerce.SNEAKERHEAD.Enums.CategoryStatus;
@@ -27,6 +29,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -54,6 +57,8 @@ public class AdminManagementService {
     UserRepository userRepository;
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    Cloudinary cloudinary;
 
     @Value("${app.image.dir}")
     private String IMAGE_DIR;
@@ -113,24 +118,24 @@ public class AdminManagementService {
 
     public List<String> saveImagesToDirectory(List<MultipartFile> images,String articleCode,String productName) throws IOException {
 
-        List<String> paths = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
+        int x = 1;
 
-        // Ensure the directory exists
-        File directory = new File(IMAGE_DIR);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-
-        // Save each uploaded image
-        int x=1;
         for (MultipartFile image : images) {
-            String imageName = productName.replaceAll("\\s+", "")+"_"+articleCode+"_"+x+".jpeg";
+            String imageName = productName.replaceAll("\\s+", "") + "_" + articleCode + "_" + x;
             x++;
-            paths.add("/assets/images/product/"+imageName);
-            Path imagePath = Paths.get(IMAGE_DIR + imageName);
-            Files.write(imagePath, image.getBytes());
+
+            Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap(
+                    "public_id", imageName,
+                    "folder", "products"
+            ));
+
+            // Get the secure URL
+            String url = (String) uploadResult.get("secure_url");
+            urls.add(url);
         }
-        return paths;
+
+        return urls;
     }
 
     public boolean resetPassword(ResetPasswordDTO user) {
